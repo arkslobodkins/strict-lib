@@ -24,7 +24,7 @@
 
 // compile with -DSTRICT_ARRAY_DIVISION_ON to enable division by 0 checking, default is OFF
 #ifndef STRICT_ARRAY_DIVISION_ON
-#define STRICT_ARRAY_DEBUG_OFF
+#define STRICT_ARRAY_DIVISION_OFF
 #endif
 
 // No aliasing
@@ -35,9 +35,9 @@
 #endif
 
 #ifdef STRICT_ARRAY_DEBUG_OFF
-#define ASSERT_DEBUG(condition) ((void)0)
+#define ASSERT_STRICT_ARRAY_DEBUG(condition) ((void)0)
 #else
-#define ASSERT_DEBUG(condition) assert(condition)
+#define ASSERT_STRICT_ARRAY_DEBUG(condition) assert(condition)
 #endif
 
 static inline std::string trace_err(const char* file, const char* func, int line)
@@ -217,7 +217,7 @@ Array<T>::Array(S size, U val) : sz{size}, elem{new T[size]}
 {
    static_assert(SameType<T, U>);
    static_assert(SameType<size_type, S>);
-   ASSERT_DEBUG(size >= 1);
+   ASSERT_STRICT_ARRAY_DEBUG(size >= 1);
    std::fill(begin(), end(), val);
 }
 
@@ -241,7 +241,7 @@ template<RealType T> template<RealType U>
 Array<T> & Array<T>::operator=(const U val)
 {
    static_assert(SameType<T, U>);
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    std::fill(begin(), end(), val);
    return *this;
 }
@@ -258,7 +258,7 @@ template<RealType T>
 Array<T> & Array<T>::operator=(Array<T> && a)
 {
    if(this != &a) {
-      ASSERT_DEBUG(sz == a.sz);
+      ASSERT_STRICT_ARRAY_DEBUG(sz == a.sz);
 
       delete[] elem;
       elem = a.elem;
@@ -393,7 +393,7 @@ Array<T> & Array<T>::resize(S size)
    if(size == sz) return *this;
 
    delete[] elem;
-   ASSERT_DEBUG(size > -1);
+   ASSERT_STRICT_ARRAY_DEBUG(size > -1);
    elem = new T[size]{};
    sz = size;
    return *this;
@@ -410,21 +410,21 @@ Array<T> & Array<T>::resize_and_assign(const Array<T> & a)
 template<RealType T>
 T Array<T>::min() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    return *std::min_element(begin(), end());
 }
 
 template<RealType T>
 T Array<T>::max() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    return *std::max_element(begin(), end());
 }
 
 template<RealType T>
 std::pair<typename Array<T>::size_type, T> Array<T>::min_index() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    auto min = std::min_element(begin(), end());
    return {min - begin(), *min};
 }
@@ -432,7 +432,7 @@ std::pair<typename Array<T>::size_type, T> Array<T>::min_index() const
 template<RealType T>
 std::pair<typename Array<T>::size_type, T> Array<T>::max_index() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    auto max = std::max_element(begin(), end());
    return {max - begin(), *max};
 }
@@ -453,7 +453,7 @@ Array<T> Array<T>::sub_array(S1 first, S2 last)
 template<RealType T>
 T Array<T>::sum() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    return std::accumulate(begin(), end(), T(0.));
 }
 
@@ -463,7 +463,7 @@ void Array<T>::fill_random(U1 low, U2 high)
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
 
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(auto & x : *this)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
 }
@@ -472,7 +472,7 @@ void Array<T>::fill_random(U1 low, U2 high)
 template<RealType T>
 bool Array<T>::does_contain_zero() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(auto x : *this)
       if(x == T(0)) return true;
    return false;
@@ -481,7 +481,7 @@ bool Array<T>::does_contain_zero() const
 template<RealType T>
 bool Array<T>::positive() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(auto x : *this)
       if(x <= T(0)) return false;
    return true;
@@ -490,7 +490,7 @@ bool Array<T>::positive() const
 template<RealType T>
 bool Array<T>::non_negative() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(auto x : *this)
       if(x < T(0)) return false;
    return true;
@@ -510,14 +510,14 @@ Array<T1> array_random(S size, T1 low, T2 high)
 template<RealType T>
 T dot_prod(const Array<T> & v1, const Array<T> & v2)
 {
-   ASSERT_DEBUG(v1.size() == v2.size());
+   ASSERT_STRICT_ARRAY_DEBUG(v1.size() == v2.size());
    return std::inner_product(v1.begin(), v1.end(), v2.begin(), T(0));
 }
 
 template<RealType T>
 template<typename F> void Array<T>::apply0(F f)
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(size_type i = 0; i < sz; ++i)
       f(i);
 }
@@ -526,7 +526,7 @@ template<RealType T>
 template<ArrayBaseType ArrayType, typename F>
 void Array<T>::apply1(const ArrayType & A, F f)
 {
-   ASSERT_DEBUG(sz == A.size());
+   ASSERT_STRICT_ARRAY_DEBUG(sz == A.size());
    for(size_type i = 0; i < sz; ++i)
       f(i);
 }
@@ -554,7 +554,7 @@ public:
    BinExpr(const T1 & a, const T2 & b, Op op) : sz(a.size()), A(a), B(b), op(op)
    {
       static_assert( SameType<typename T1::value_type, typename T2::value_type> );
-      ASSERT_DEBUG(a.size() == b.size());
+      ASSERT_STRICT_ARRAY_DEBUG(a.size() == b.size());
    }
 
    value_type operator[](size_type i) const { return op(A[i], B[i]); }
@@ -571,7 +571,7 @@ private:
 template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op>
 bool BinExpr<T1, T2, Op>::does_contain_zero() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(size_type i = 0; i < sz; ++i)
       if((*this)[i] == 0.) return true;
    return false;
@@ -602,7 +602,7 @@ private:
 template<ArrayBaseType T1, OperationType Op>
 bool BinExprValLeft<T1, Op>::does_contain_zero() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(size_type i = 0; i < sz; ++i)
       if((*this)[i] == 0.) return true;
    return false;
@@ -633,7 +633,7 @@ private:
 template<ArrayBaseType T1, OperationType Op>
 bool BinExprValRight<T1, Op>::does_contain_zero() const
 {
-   ASSERT_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(size_type i = 0; i < sz; ++i)
       if((*this)[i] == 0.) return true;
    return false;
