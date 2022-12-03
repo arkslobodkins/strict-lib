@@ -438,6 +438,8 @@ std::pair<typename Array<T>::size_type, T> Array<T>::max_index() const
 template<RealType T> template<IntegerType S1, IntegerType S2>
 Array<T> Array<T>::sub_array(S1 first, S2 last)
 {
+   static_assert(SameType<size_type, S1>);
+   static_assert(SameType<size_type, S2>);
    size_type sub_sz = last - first + 1;
    Array<T> sub_array(sub_sz);
    for(size_type i = 0; i < sub_sz; ++i)
