@@ -31,7 +31,7 @@ indexing.
 Second, all operations must strictly respect the type of an object.  
 For example, suppose I have  
   
-Array<<float>(some_size) x;  
+Array<<float>>(some_size) x;  
 x += 1; //  won't compile, 1 is not of the same type as elements of x  
   
 This is a deliberate design. Instead,  
