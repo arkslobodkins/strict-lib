@@ -67,8 +67,8 @@ from the runtime disaster.
 for(**long int** i = 0; i < x.size(); ++i)  
    **x[i]** = ...;  // compiles and works as expected  
 
-Granted, all type guessing can be avoided by
-for(**typename Array<T>::size_type** i = 0; i < x.size(); ++i)  
+Granted, all type guessing can be avoided by  
+for(**typename Array<T>::size_type** i = 0; i < x.size(); ++i)    
   
   
     
