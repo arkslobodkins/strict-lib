@@ -19,13 +19,13 @@ requires expression templates to avoid temporaries. Vectorization and loop
 unrolling is successfully performed by the compiler.    
     
 Type safety, on the other hand, is more challenging, and can have somewhat different    
-meanings depending on the context. Since strict-array is primarily designed for numerical computation,    
+meanings depending on the context. **Since strict-array is primarily designed for numerical computation,    
 it employs the strictest type safety strategies available. It is important to point out that
-such safety comes at the expense of sacrificing flexibility.    
+such safety comes at the expense of sacrificing flexibility.**    
     
-For starters, it offers functionality for the following types:    
+For starters, it offers **functionality for the following types:    
 short, int, long int, long long int, float, double, long double, and    
-float128(GCC only). In addition, it uses long int for indexing rather    
+float128(GCC only).** In addition, it uses long int for indexing rather    
 than unsigned long, which allows catching errors associated with negative    
 indexing.    
     
