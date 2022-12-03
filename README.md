@@ -20,7 +20,7 @@ unrolling is successfully performed by the compiler.
     
 Type safety, on the other hand, is more challenging, and can have somewhat different    
 meanings depending on the context. **Since strict-array is primarily designed for numerical computation,    
-it employs the strictest type safety strategies available. It is important to point out that
+it employs the strictest type safety strategies. It is important to point out that
 such safety comes at the expense of sacrificing flexibility.**    
     
 For starters, it offers **functionality for the following types:    
