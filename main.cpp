@@ -204,6 +204,5 @@ int main()
    #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
    assert_all<float128> (10000, -3.2);
    #endif
-
    return EXIT_SUCCESS;
 }

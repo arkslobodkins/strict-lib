@@ -95,8 +95,8 @@ template<typename T> concept OperationType = std::is_base_of<Operation, T>::valu
 
 // Forward declarations(expression templates)
 template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op> class BinExpr;
-template<ArrayBaseType T1, OperationType Op> class BinExprValLeft;
-template<ArrayBaseType T1, OperationType Op> class BinExprValRight;
+template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
+template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -166,6 +166,7 @@ private:
    size_type sz;
    T* array_restrict_ptr elem;
 
+   inline bool is_valid_index(size_type index);
    template<typename F> void apply0(F f);
    template<ArrayBaseType ArrayType, typename F> void apply1(const ArrayType & A, F f);
 };
@@ -215,10 +216,10 @@ Array<T>::Array(S size) : sz{size}, elem{new T[size]{}}
 template<RealType T> template<IntegerType S, RealType U>
 Array<T>::Array(S size, U val) : sz{size}, elem{new T[size]}
 {
-   static_assert(SameType<T, U>);
    static_assert(SameType<size_type, S>);
+   static_assert(SameType<T, U>);
    ASSERT_STRICT_ARRAY_DEBUG(size >= 1);
-   std::fill(begin(), end(), val);
+   apply0([&](size_type i) { elem[i] = val; } );
 }
 
 template<RealType T>
@@ -227,7 +228,7 @@ Array<T>::Array(std::initializer_list<T> l) : Array(static_cast<size_type>(l.siz
 
 template<RealType T>
 Array<T>::Array(const Array<T> & a) : sz{a.size()}, elem{new T[a.size()]}
-{ std::copy(a.begin(), a.end(), begin()); }
+{ apply1(a, [&](size_type i) { elem[i] = a[i]; } ); }
 
 template<RealType T>
 Array<T>::Array(Array && a) : sz{a.sz}, elem{a.elem}
@@ -242,7 +243,7 @@ Array<T> & Array<T>::operator=(const U val)
 {
    static_assert(SameType<T, U>);
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   std::fill(begin(), end(), val);
+   apply0([&](size_type i) { elem[i] = val; } );
    return *this;
 }
 
@@ -299,7 +300,7 @@ inline T & Array<T>::operator[](S i)
 {
    static_assert(SameType<size_type, S>);
    #ifdef STRICT_ARRAY_DEBUG_ON
-   if(i < 0 || i > sz-1) STRICT_ARRAY_THROW_OUT_OF_RANGE();
+   if(!is_valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
    return elem[i];
 }
@@ -309,7 +310,7 @@ inline const T & Array<T>::operator[](S i) const
 {
    static_assert(SameType<size_type, S>);
    #ifdef STRICT_ARRAY_DEBUG_ON
-   if(i < 0 || i > sz-1) STRICT_ARRAY_THROW_OUT_OF_RANGE();
+   if(!is_valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
    return elem[i];
 }
@@ -357,6 +358,7 @@ Array<T> & Array<T>::operator/=(const U val)
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator+=(const ArrayType & A)
 {
+   static_assert(SameType<T, typename ArrayType::value_type>);
    apply1(A, [&](size_type i) { elem[i] += A[i]; });
    return *this;
 }
@@ -364,6 +366,7 @@ Array<T> & Array<T>::operator+=(const ArrayType & A)
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator-=(const ArrayType & A)
 {
+   static_assert(SameType<T, typename ArrayType::value_type>);
    apply1(A, [&](size_type i) { elem[i] -= A[i]; });
    return *this;
 }
@@ -371,6 +374,7 @@ Array<T> & Array<T>::operator-=(const ArrayType & A)
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator*=(const ArrayType & A)
 {
+   static_assert(SameType<T, typename ArrayType::value_type>);
    apply1(A, [&](size_type i) { elem[i] *= A[i]; });
    return *this;
 }
@@ -378,6 +382,7 @@ Array<T> & Array<T>::operator*=(const ArrayType & A)
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator/=(const ArrayType & A)
 {
+   static_assert(SameType<T, typename ArrayType::value_type>);
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(A.does_contain_zero()) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
@@ -462,7 +467,6 @@ void Array<T>::fill_random(U1 low, U2 high)
 {
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
-
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(auto & x : *this)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
@@ -500,8 +504,8 @@ bool Array<T>::non_negative() const
 template<IntegerType S, FloatingType T1, FloatingType T2>
 Array<T1> array_random(S size, T1 low, T2 high)
 {
-   static_assert(SameType<T1, T2>);
    static_assert(SameType<typename Array<T1>::size_type, S>);
+   static_assert(SameType<T1, T2>);
    Array<T1> a(size);
    a.fill_random(low, high);
    return a;
@@ -512,6 +516,14 @@ T dot_prod(const Array<T> & v1, const Array<T> & v2)
 {
    ASSERT_STRICT_ARRAY_DEBUG(v1.size() == v2.size());
    return std::inner_product(v1.begin(), v1.end(), v2.begin(), T(0));
+}
+
+template<RealType T>
+inline bool Array<T>::is_valid_index(size_type index)
+{
+   if(index < 0 || index > sz-1)
+      return false;
+   return true;
 }
 
 template<RealType T>
@@ -553,7 +565,7 @@ public:
    using value_type = typename T1::value_type;
    BinExpr(const T1 & a, const T2 & b, Op op) : sz(a.size()), A(a), B(b), op(op)
    {
-      static_assert( SameType<typename T1::value_type, typename T2::value_type> );
+      static_assert(SameType<typename T1::value_type, typename T2::value_type>);
       ASSERT_STRICT_ARRAY_DEBUG(a.size() == b.size());
    }
 
@@ -577,16 +589,15 @@ bool BinExpr<T1, T2, Op>::does_contain_zero() const
    return false;
 }
 
-template<ArrayBaseType T1, OperationType Op>
+template<ArrayBaseType T1, RealType T2, OperationType Op>
 class BinExprValLeft : private ArrayBase, private ArrayExpr
 {
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
 
-   template<RealType T2>
    BinExprValLeft(const T1 & b, T2 val, Op op) : sz(b.size()), B(b), val(val), op(op)
-   { static_assert( SameType<typename T1::value_type, T2> ); }
+   { static_assert(SameType<typename T1::value_type, T2>); }
 
    value_type operator[](size_type i) const { return op(val, B[i]); }
    size_type size() const { return sz; }
@@ -595,12 +606,12 @@ public:
 private:
    const size_type sz;
    const T1 & B;
-   const value_type val;
+   const T2 val;
    Op op;
 };
 
-template<ArrayBaseType T1, OperationType Op>
-bool BinExprValLeft<T1, Op>::does_contain_zero() const
+template<ArrayBaseType T1, RealType T2, OperationType Op>
+bool BinExprValLeft<T1, T2, Op>::does_contain_zero() const
 {
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(size_type i = 0; i < sz; ++i)
@@ -608,16 +619,15 @@ bool BinExprValLeft<T1, Op>::does_contain_zero() const
    return false;
 }
 
-template<ArrayBaseType T1, OperationType Op>
+template<ArrayBaseType T1, RealType T2, OperationType Op>
 class BinExprValRight : private ArrayBase, private ArrayExpr
 {
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
 
-   template<RealType T2>
    BinExprValRight(const T1 & a, T2 val, Op op) : sz(a.size()), A(a), val(val), op(op)
-   { static_assert( SameType<typename T1::value_type, T2> ); }
+   { static_assert(SameType<typename T1::value_type, T2>); }
 
    value_type operator[](size_type i) const { return op(A[i], val); }
    size_type size() const { return sz; }
@@ -626,12 +636,12 @@ public:
 private:
    const size_type sz;
    const T1 & A;
-   const value_type val;
+   const T2 val;
    Op op;
 };
 
-template<ArrayBaseType T1, OperationType Op>
-bool BinExprValRight<T1, Op>::does_contain_zero() const
+template<ArrayBaseType T1, RealType T2, OperationType Op>
+bool BinExprValRight<T1, T2, Op>::does_contain_zero() const
 {
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(size_type i = 0; i < sz; ++i)
@@ -643,28 +653,28 @@ bool BinExprValRight<T1, Op>::does_contain_zero() const
 template<ArrayBaseType T1, ArrayBaseType T2>
 BinExpr<T1, T2, Plus> operator+(const T1 & A, const T2 & B)
 {
-   static_assert( SameType<typename T1::value_type, typename T2::value_type> );
+   static_assert(SameType<typename T1::value_type, typename T2::value_type>);
    return BinExpr<T1, T2, Plus>(A, B, Plus{});
 }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
 BinExpr<T1, T2, Minus> operator-(const T1 & A, const T2 & B)
 {
-   static_assert( SameType<typename T1::value_type, typename T2::value_type> );
+   static_assert(SameType<typename T1::value_type, typename T2::value_type>);
    return BinExpr<T1, T2, Minus>(A, B, Minus{});
 }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
 BinExpr<T1, T2, Mult> operator*(const T1 & A, const T2 & B)
 {
-   static_assert( SameType<typename T1::value_type, typename T2::value_type> );
+   static_assert(SameType<typename T1::value_type, typename T2::value_type>);
    return BinExpr<T1, T2, Mult>(A, B, Mult{});
 }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
 BinExpr<T1, T2, Divide> operator/(const T1 & A, const T2 & B)
 {
-   static_assert( SameType<typename T1::value_type, typename T2::value_type> );
+   static_assert(SameType<typename T1::value_type, typename T2::value_type>);
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(B.does_contain_zero()) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
@@ -673,66 +683,66 @@ BinExpr<T1, T2, Divide> operator/(const T1 & A, const T2 & B)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
-BinExprValRight<T, Plus> operator+(const T & A, U val)
+BinExprValRight<T, U, Plus> operator+(const T & A, U val)
 {
-   static_assert( SameType<typename T::value_type, U> );
-   return BinExprValRight<T, Plus>(A, val, Plus{});
+   static_assert(SameType<typename T::value_type, U>);
+   return BinExprValRight<T, U, Plus>(A, val, Plus{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValRight<T, Minus> operator-(const T & A, U val)
+BinExprValRight<T, U, Minus> operator-(const T & A, U val)
 {
-   static_assert( SameType<typename T::value_type, U> );
-   return BinExprValRight<T, Minus>(A, val, Minus{});
+   static_assert(SameType<typename T::value_type, U>);
+   return BinExprValRight<T, U, Minus>(A, val, Minus{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValRight<T, Mult> operator*(const T & A, U val)
+BinExprValRight<T, U, Mult> operator*(const T & A, U val)
 {
-   static_assert( SameType<typename T::value_type, U> );
-   return BinExprValRight<T, Mult>(A, val, Mult{});
+   static_assert(SameType<typename T::value_type, U>);
+   return BinExprValRight<T, U, Mult>(A, val, Mult{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValRight<T, Divide> operator/(const T & A, U val)
+BinExprValRight<T, U, Divide> operator/(const T & A, U val)
 {
-   static_assert( SameType<typename T::value_type, U> );
+   static_assert(SameType<typename T::value_type, U>);
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(val == 0) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
-   return BinExprValRight<T, Divide>(A, val, Divide{});
+   return BinExprValRight<T, U, Divide>(A, val, Divide{});
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
-BinExprValLeft<T, Plus> operator+(U val, const T & B)
+BinExprValLeft<T, U, Plus> operator+(U val, const T & B)
 {
-   static_assert( SameType<typename T::value_type, U> );
-   return BinExprValLeft<T, Plus>(B, val, Plus{});
+   static_assert(SameType<typename T::value_type, U>);
+   return BinExprValLeft<T, U, Plus>(B, val, Plus{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValLeft<T, Minus> operator-(U val, const T & B)
+BinExprValLeft<T, U, Minus> operator-(U val, const T & B)
 {
-   static_assert( SameType<typename T::value_type, U> );
-   return BinExprValLeft<T, Minus>(B, val, Minus{});
+   static_assert(SameType<typename T::value_type, U>);
+   return BinExprValLeft<T, U, Minus>(B, val, Minus{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValLeft<T, Mult> operator*(U val, const T & B)
+BinExprValLeft<T, U, Mult> operator*(U val, const T & B)
 {
-   static_assert( SameType<typename T::value_type, U> );
-   return BinExprValLeft<T, Mult>(B, val, Mult{});
+   static_assert(SameType<typename T::value_type, U>);
+   return BinExprValLeft<T, U, Mult>(B, val, Mult{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValLeft<T, Divide> operator/(U val, const T & B)
+BinExprValLeft<T, U, Divide> operator/(U val, const T & B)
 {
-   static_assert( SameType<typename T::value_type, U> );
+   static_assert(SameType<typename T::value_type, U>);
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(B.does_contain_zero()) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
-   return BinExprValLeft<T, Divide>(B, val, Divide{});
+   return BinExprValLeft<T, U, Divide>(B, val, Divide{});
 }
 
 }
