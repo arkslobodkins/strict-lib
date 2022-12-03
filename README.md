@@ -53,7 +53,7 @@ consists of doubles? Odds are pretty high that it should be double. We have just
 prevented the loss of precision.  
   
 For the second example, consider indexing:  
-Array< floa t> x(some_large_size);  
+Array< float > x(some_large_size);  
 for(int i = 0; i < x.size(); ++i)  
    x[i] = ...;  
   
