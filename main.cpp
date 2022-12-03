@@ -163,6 +163,10 @@ void assert_all(int n, T val)
    za = +za;
    zv = +zv;
    assert_is_same(za, zv);
+
+   za.resize(10);
+   zv.resize(10);
+   assert(za.size() == zv.size());
 }
 
 int main()
