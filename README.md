@@ -60,12 +60,15 @@ for(**int** i = 0; i < x.size(); ++i)
   
 Here the size of x is a large value that exceeds maximum range of int.  
 Eventually i would exceed its range and cause undefined behaviour.  
-Therefore, indexing **x[i] requires i to be of type l**ong int. Thus,  
+Therefore, indexing **x[i] requires i to be of type long int.** Thus,  
 the previous code also results in compilation error and prevents  
 from the runtime disaster.  
   
 for(**long int** i = 0; i < x.size(); ++i)  
    **x[i]** = ...;  // compiles and works as expected  
+
+Granted, all type guessing can be avoided by
+for(**typename Array<T>::size_type** i = 0; i < x.size(); ++i)  
   
   
     
