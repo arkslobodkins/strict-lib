@@ -43,7 +43,7 @@ But why be so strict? Well, here is one reason:
 double global_minimum(**float parameter**) {    
    Array< double > x(some_size);    
    ...    
-   ** x *= parameter;  // smells like a bug **   
+   x *= parameter;  // smells like a bug    
    ...    
    return x.min();    
 }    
