@@ -151,6 +151,7 @@ public:
    std::pair<size_type, T> min_index() const;
    std::pair<size_type, T> max_index() const;
 
+   Array sub_array(size_type first, size_type last);
    T sum() const;
    void fill_random();
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
@@ -194,6 +195,8 @@ std::ostream & operator<<(std::ostream & os, Array<T> A)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<FloatingType T>
+Array<T> array_random(typename Array<T>::size_type size);
 template<FloatingType T>
 Array<T> array_random(typename Array<T>::size_type size);
 
@@ -434,6 +437,16 @@ std::pair<typename Array<T>::size_type, T> Array<T>::max_index() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<RealType T>
+Array<T> Array<T>::sub_array(size_type first, size_type last)
+{
+   size_type sub_sz = last - first + 1;
+   Array<T> sub_array(sub_sz);
+   for(size_type i = 0; i < sub_sz; ++i)
+      sub_array[i] = elem[first+i];
+   return sub_array;
+}
+
 template<RealType T>
 T Array<T>::sum() const
 {
