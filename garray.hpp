@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <numeric>
 
 #ifdef __GNUC__
 #include <quadmath.h>
@@ -210,17 +211,15 @@ Array<T> & Array<T>::operator=(const U val)
 {
    static_assert(SameType<T, U>);
    ASSERT_DEBUG(sz > 0);
-      for(size_type i = 0; i < sz; ++i) elem[i] = val;
+   std::fill(begin(), end(), val);
    return *this;
 }
 
 template<RealType T>
 Array<T> & Array<T>::operator=(const Array<T> & a)
 {
-   if(this != &a) {
-      ASSERT_DEBUG(sz == a.sz);
-      for(size_type i = 0; i < sz; ++i) elem[i] = a[i];
-   }
+   if(this != &a)
+      apply1(a, [&](size_type i) { elem[i] = a[i]; });
    return *this;
 }
 
@@ -392,27 +391,17 @@ T Array<T>::max() const
 template<RealType T>
 std::pair<typename Array<T>::size_type, T> Array<T>::min_index() const
 {
-   size_type min_index = 0;
-   T min = elem[0];
-   for(size_type i = 1; i < sz; ++i)
-      if(elem[i] < min) {
-         min_index = i;
-         min = elem[i];
-      }
-   return {min_index, min};
+   ASSERT_DEBUG(sz > 0);
+   auto min = std::min_element(begin(), end());
+   return {min - begin(), *min};
 }
 
 template<RealType T>
 std::pair<typename Array<T>::size_type, T> Array<T>::max_index() const
 {
-   size_type max_index = 0;
-   T max = elem[0];
-   for(size_type i = 1; i < sz; ++i)
-      if(elem[i] > max) {
-         max_index = i;
-         max = elem[i];
-      }
-   return {max_index, max};
+   ASSERT_DEBUG(sz > 0);
+   auto max = std::max_element(begin(), end());
+   return {max - begin(), *max};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -420,10 +409,7 @@ template<RealType T>
 T Array<T>::sum() const
 {
    ASSERT_DEBUG(sz > 0);
-   T s{};
-   for(auto x : *this)
-      s += x;
-   return s;
+   return std::accumulate(begin(), end(), T(0.));
 }
 
 template<RealType T>
@@ -505,10 +491,7 @@ template<RealType T>
 T dot_prod(const Array<T> & v1, const Array<T> & v2)
 {
    ASSERT_DEBUG(v1.size() == v2.size());
-   T prod{};
-   for(typename Array<T>::size_type i = 0; i < v1.size(); ++i)
-      prod += v1[i] * v2[i];
-   return prod;
+   return std::inner_product(v1.begin(), v1.end(), v2.begin(), T(0));
 }
 
 template<RealType T>

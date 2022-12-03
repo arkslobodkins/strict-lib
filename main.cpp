@@ -34,6 +34,10 @@ void assert_all(int n, T val)
    for(int i = 0; i < n; ++i) xv[i] = xa[i];
    for(int i = 0; i < n; ++i) yv[i] = ya[i];
 
+   xa = val;
+   xv = val;
+   assert_is_same(xa, xv);
+
    xa = ya + val;
    xv = yv + val;
    assert_is_same(xa, xv);
@@ -167,6 +171,5 @@ int main()
    assert_all<float64> (10000, -3.2);
    assert_all<float128> (10000, -3.2);
    assert_all<long double> (10000, -3.2);
-
    return EXIT_SUCCESS;
 }
