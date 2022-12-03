@@ -173,7 +173,7 @@ int main()
 {
    assert_all<float32> (10000, -3.2);
    assert_all<float64> (10000, -3.2);
-   assert_all<float128> (10000, -3.2);
    assert_all<long double> (10000, -3.2);
+   assert_all<float128> (10000, -3.2);
    return EXIT_SUCCESS;
 }
