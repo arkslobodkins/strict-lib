@@ -48,27 +48,34 @@ double global_minimum(**float parameter**) {
    return x.min();    
 }    
     
-Our array would not compile here, since *parameter* and elements of x are different types.    
-Are we really sure that *parameter* has to be float, whereas the rest of the function    
-consists of doubles? Odds are pretty high that it should be double. We have just    
-prevented the loss of precision.  
+Our array would not compile here, since *parameter* and elements of x are different types.      
+Are we really sure that *parameter* has to be float, whereas the rest of the function      
+consists of doubles? Odds are pretty high that it should be double. We have just      
+prevented the loss of precision.    
   
-For the second example, consider indexing:  
-Array< float > x(**some_large_size**);  
-for(**int** i = 0; i < x.size(); ++i)  
-   **x[i]** = ...;  
+For the second example, consider indexing:    
+Array< float > x(**some_large_size**);    
+for(**int** i = 0; i < x.size(); ++i)    
+   **x[i]** = ...;    
   
-Here the size of x is a large value that exceeds maximum range of int.  
-Eventually i would exceed its range and cause undefined behaviour.  
-Therefore, indexing **x[i] requires i to be of type long int.** Thus,  
-the previous code also results in compilation error and prevents  
-from the runtime disaster.  
+Here the size of x is a large value that exceeds maximum range of int.    
+Eventually i would exceed its range and cause undefined behaviour.    
+Therefore, indexing **x[i] requires i to be of type long int.** Thus,    
+the previous code also results in compilation error and prevents    
+from the runtime disaster.    
   
-for(**long int** i = 0; i < x.size(); ++i)  
-   **x[i]** = ...;  // compiles and works as expected  
+for(**long int** i = 0; i < x.size(); ++i)    
+   **x[i]** = ...;  // compiles and works as expected    
 
-Granted, all the type guessing can be avoided by  
-for(**typename Array<T>::size_type** i = 0; i < x.size(); ++i)    
+Granted, all the type guessing can be avoided by      
+for(**typename Array<T>::size_type** i = 0; i < x.size(); ++i),        
+although it does not reveal the actual type of i.  
+This may not sound portable, but static assertion is performed to   
+ensure that long int is 64 bits in size. However, it does   
+avoid surprises when 64-bit indexing is expected.  
+
+
+
   
   
     

@@ -198,11 +198,11 @@ void assert_all(long int n, T val)
 
 int main()
 {
-   assert_all<float32> (10000, -3.2);
+   assert_all<float32> (10000, -3.2F);
    assert_all<float64> (10000, -3.2);
-   assert_all<long double> (10000, -3.2);
+   assert_all<long double> (10000, -3.2L);
    #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
-   assert_all<float128> (10000, -3.2);
+   assert_all<float128> (10000, -3.2Q);
    #endif
    return EXIT_SUCCESS;
 }
