@@ -6,7 +6,7 @@ This could not be more true with concepts of C++20. They are a convenient way to
 of templates.    
     
 Certain fields require stronger type safety and more rigorous error handling than others.    
-That is certainly true when it comes to high-performance computing and    
+That is certainly the case when it comes to high-performance computing and    
 numerics. We want to know exactly what types we are dealing with, how many bytes    
 of memory they occupy, and how does that type handle different types of errors.    
     
