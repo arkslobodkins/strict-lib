@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <iomanip>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -162,6 +163,30 @@ private:
    template<typename F> void apply0(F f);
    template<ArrayBaseType ArrayType, typename F> void apply1(const ArrayType & A, F f);
 };
+
+template<FloatingType T>
+std::ostream & operator<<(std::ostream & os, Array<T> A)
+{
+   if constexpr(SameType<T, double> || SameType<T, long double>) {
+      for(auto e : A) os << std::setprecision(16) << e << std::endl;
+   }
+   else if constexpr(SameType<T, float>) {
+      for(auto e : A) os << std::setprecision(8) << e << std::endl;
+   }
+   else if constexpr(SameType<T, float128>) {
+      int width = 46;
+      char buf[128];
+      for(auto e : A)
+      {
+         quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, e);
+         os << buf << std::endl;
+      }
+   }
+   else {
+      for(auto e : A) os << e << std::endl;
+   }
+   return os;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<FloatingType T>
