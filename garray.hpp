@@ -13,7 +13,7 @@
 #include <utility>
 #include <numeric>
 
-#ifdef __GNUC__
+#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
 #include <quadmath.h>
 #endif
 
@@ -52,6 +52,7 @@
 
 namespace garray {
 
+static_assert(sizeof(long int) == 8);
 static_assert(sizeof(float) == 4);
 static_assert(sizeof(double) == 8);
 using float32 = float;
@@ -67,7 +68,7 @@ concept IntegerType = std::is_same<std::remove_cv_t<T>, std::remove_cv_t<short>>
                       std::is_same<std::remove_cv_t<T>, std::remove_cv_t<long long int>>::value;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#ifdef __GNUC__
+#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
 static_assert(sizeof(__float128) == 16);
 using float128 = __float128;
 
@@ -84,13 +85,15 @@ concept RealType = FloatingType<T> || IntegerType<T>;
 
 class ArrayExpr{};
 class ArrayBase{};
+class Operation{};
 template<typename T> concept ArrayBaseType = std::is_base_of<ArrayBase, T>::value;
 template<typename T> concept ArrayExprType = std::is_base_of<ArrayExpr, T>::value;
+template<typename T> concept OperationType = std::is_base_of<Operation, T>::value;
 
 // Forward declarations(expression templates)
-template<ArrayBaseType T1, ArrayBaseType T2, typename Op> class BinExpr;
-template<ArrayBaseType T1, typename Op> class BinExprValLeft;
-template<ArrayBaseType T1, typename Op> class BinExprValRight;
+template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op> class BinExpr;
+template<ArrayBaseType T1, OperationType Op> class BinExprValLeft;
+template<ArrayBaseType T1, OperationType Op> class BinExprValRight;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -167,13 +170,14 @@ private:
 template<FloatingType T>
 std::ostream & operator<<(std::ostream & os, Array<T> A)
 {
-   if constexpr(SameType<T, double> || SameType<T, long double>) {
+   if(SameType<T, double> || SameType<T, long double>) {
       for(auto e : A) os << std::setprecision(16) << e << std::endl;
    }
-   else if constexpr(SameType<T, float>) {
+   else if(SameType<T, float>) {
       for(auto e : A) os << std::setprecision(8) << e << std::endl;
    }
-   else if constexpr(SameType<T, float128>) {
+   #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+   else if(SameType<T, float128>) {
       int width = 46;
       char buf[128];
       for(auto e : A)
@@ -182,6 +186,7 @@ std::ostream & operator<<(std::ostream & os, Array<T> A)
          os << buf << std::endl;
       }
    }
+   #endif
    else {
       for(auto e : A) os << e << std::endl;
    }
@@ -205,7 +210,7 @@ Array<T>::Array() : sz{0}, elem{nullptr}
 
 template<RealType T>
 Array<T>::Array(size_type size) : sz{size}, elem{new T[size]{}}
-{ ASSERT_DEBUG(size >= 0); }
+{}
 
 template<RealType T> template<RealType U>
 Array<T>::Array(size_type size, U val) : sz{size}, elem{new T[size]}
@@ -341,8 +346,7 @@ Array<T> & Array<T>::operator/=(const U val)
    #ifdef QUAD_DIVISION_ON
    if(val == 0) GARRAY_THROW_ZERO_DIVISION();
    #endif
-   T reciprocal{T(1.)/val};
-   apply0([&](size_type i) { elem[i] *= reciprocal; } );
+   apply0([&](size_type i) { elem[i] /= val; } );
    return *this;
 }
 
@@ -486,14 +490,6 @@ bool Array<T>::non_negative() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-template<typename F> void Array<T>::apply0(F f)
-{
-   ASSERT_DEBUG(sz > 0);
-   for(size_type i = 0; i < sz; ++i)
-      f(i);
-}
-
 template<FloatingType T>
 Array<T> array_random(typename Array<T>::size_type size)
 {
@@ -520,6 +516,14 @@ T dot_prod(const Array<T> & v1, const Array<T> & v2)
 }
 
 template<RealType T>
+template<typename F> void Array<T>::apply0(F f)
+{
+   ASSERT_DEBUG(sz > 0);
+   for(size_type i = 0; i < sz; ++i)
+      f(i);
+}
+
+template<RealType T>
 template<ArrayBaseType ArrayType, typename F>
 void Array<T>::apply1(const ArrayType & A, F f)
 {
@@ -529,13 +533,20 @@ void Array<T>::apply1(const ArrayType & A, F f)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct Plus { template<RealType T> T operator()(const T left, const T right) const { return left + right; } };
-struct Minus { template<RealType T> T operator()(const T left, const T right) const { return left - right; } };
-struct Mult { template<RealType T> T operator()(const T left, const T right) const { return left * right; } };
-struct Divide { template<RealType T> T operator()(const T left, const T right) const { return left / right; } };
+struct Plus : private Operation
+{ template<RealType T> T operator()(const T left, const T right) const { return left + right; } };
+
+struct Minus : private Operation
+{ template<RealType T> T operator()(const T left, const T right) const { return left - right; } };
+
+struct Mult : private Operation
+{ template<RealType T> T operator()(const T left, const T right) const { return left * right; } };
+
+struct Divide : private Operation
+{ template<RealType T> T operator()(const T left, const T right) const { return left / right; } };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType T1, ArrayBaseType T2, typename Op>
+template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op>
 class BinExpr : private ArrayBase, private ArrayExpr
 {
 public:
@@ -558,7 +569,7 @@ private:
    Op op;
 };
 
-template<ArrayBaseType T1, ArrayBaseType T2, typename Op>
+template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op>
 bool BinExpr<T1, T2, Op>::does_contain_zero() const
 {
    ASSERT_DEBUG(sz > 0);
@@ -567,7 +578,7 @@ bool BinExpr<T1, T2, Op>::does_contain_zero() const
    return false;
 }
 
-template<ArrayBaseType T1, typename Op>
+template<ArrayBaseType T1, OperationType Op>
 class BinExprValLeft : private ArrayBase, private ArrayExpr
 {
 public:
@@ -589,7 +600,7 @@ private:
    Op op;
 };
 
-template<ArrayBaseType T1, typename Op>
+template<ArrayBaseType T1, OperationType Op>
 bool BinExprValLeft<T1, Op>::does_contain_zero() const
 {
    ASSERT_DEBUG(sz > 0);
@@ -598,7 +609,7 @@ bool BinExprValLeft<T1, Op>::does_contain_zero() const
    return false;
 }
 
-template<ArrayBaseType T1, typename Op>
+template<ArrayBaseType T1, OperationType Op>
 class BinExprValRight : private ArrayBase, private ArrayExpr
 {
 public:
@@ -620,7 +631,7 @@ private:
    Op op;
 };
 
-template<ArrayBaseType T1, typename Op>
+template<ArrayBaseType T1, OperationType Op>
 bool BinExprValRight<T1, Op>::does_contain_zero() const
 {
    ASSERT_DEBUG(sz > 0);

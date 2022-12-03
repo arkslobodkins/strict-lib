@@ -3,6 +3,7 @@
 #include <iostream>
 #include <valarray>
 #include "garray.hpp"
+#include <vector>
 
 using namespace std;
 using namespace garray;
@@ -12,13 +13,28 @@ void assert_is_same(Array<T> x, valarray<T> y)
 { for(int i = 0; i < x.size(); ++i) assert(x[i] == y[i]); }
 
 template<typename T>
+void assert_within_tol(T x, T y)
+{
+
+   T max_val = std::max(x, y);
+   if(max_val < 1.e-6) return;
+
+   T diff = x - y;
+   T abs_diff = diff > T(0) ? diff : -diff;
+   assert(abs_diff / max_val < 1.e-6);
+}
+
+template<typename T>
 void assert_within_tol(Array<T> x, valarray<T> y)
 {
    for(int i = 0; i < x.size(); ++i)
    {
+      T max_val = std::max(x[i], y[i]);
+      if(max_val < 1.e-6) return;
+
       T diff = x[i] - y[i];
-      T abs_val = diff > 0 ? diff : -diff;
-      assert(abs_val < 1.e-3);
+      T abs_diff = diff > T(0) ? diff : -diff;
+      assert(abs_diff / max_val < 1.e-6);
    }
 }
 
@@ -36,67 +52,70 @@ void assert_all(int n, T val)
 
    xa = val;
    xv = val;
-   assert_is_same(xa, xv);
+   assert_within_tol(xa, xv);
 
    xa = ya + val;
    xv = yv + val;
-   assert_is_same(xa, xv);
+   assert_within_tol(xa, xv);
 
    xa = ya - val;
    xv = yv - val;
-   assert_is_same(xa, xv);
+   assert_within_tol(xa, xv);
 
    xa = ya * val;
    xv = yv * val;
-   assert_is_same(xa, xv);
+   assert_within_tol(xa, xv);
 
    xa = ya / val;
    xv = yv / val;
-   assert_is_same(xa, xv);
+   assert_within_tol(xa, xv);
 
    xa = val + ya;
    xv = val + yv;
-   assert_is_same(xa, xv);
+   assert_within_tol(xa, xv);
 
    xa = val - ya;
    xv = val - yv;
-   assert_is_same(xa, xv);
+   assert_within_tol(xa, xv);
 
    xa = val * ya;
    xv = val * yv;
-   assert_is_same(xa, xv);
+   assert_within_tol(xa, xv);
 
    xa = val / ya;
    xv = val / yv;
-   assert_is_same(xa, xv);
+   assert_within_tol(xa, xv);
 
    za = xa + ya;
    zv = xv + yv;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
 
    za = xa - ya;
    zv = xv - yv;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
 
    za = xa * ya;
    zv = xv * yv;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
 
    za = xa / ya;
    zv = xv / yv;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
 
    za += val;
    zv += val;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za -= val;
    zv -= val;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za *= val;
    zv *= val;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za /= val;
    zv /= val;
@@ -105,39 +124,47 @@ void assert_all(int n, T val)
 
    za += xa;
    zv += xv;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za -= xa;
    zv -= xv;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za *= xa;
    zv *= xv;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za /= xa;
    zv /= xv;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za += xa + ya - val;
    zv += xv + yv - val;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za -= xa + ya - val;
    zv -= xv + yv - val;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za *= xa + ya - val;
    zv *= xv + yv - val;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za /= xa + ya - val;
    zv /= xv + yv - val;
-   assert_is_same(za, zv);
+   assert_within_tol(za, zv);
+   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    auto sum_a = za.sum();
    auto sum_v = zv.sum();
-   assert(sum_a == sum_v);
+   assert_within_tol(sum_a, sum_v);
 
    auto max_a = za.max();
    auto max_v = zv.max();
@@ -152,8 +179,8 @@ void assert_all(int n, T val)
    auto min_index = za.min_index();
    assert(min_a == min_index.second);
 
-   Array l_a = {1., 2., 3., -1., -2., -3.};
-   valarray l_v = {1., 2., 3., -1., -2., -3.};
+   Array l_a = {T(1), T(2), T(3), T(-1), T(-2), T(-3)};
+   valarray l_v = {T(1), T(2), T(3), T(-1), T(-2), T(-3)};
    assert_is_same(l_a, l_v);
 
    za = -za;
@@ -174,6 +201,9 @@ int main()
    assert_all<float32> (10000, -3.2);
    assert_all<float64> (10000, -3.2);
    assert_all<long double> (10000, -3.2);
+   #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
    assert_all<float128> (10000, -3.2);
+   #endif
+
    return EXIT_SUCCESS;
 }
