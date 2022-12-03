@@ -104,8 +104,8 @@ public:
    using value_type = T;
 
    explicit Array();
-   explicit Array(size_type size);
-   template<RealType U> explicit Array(size_type size, U val);
+   template<IntegerType S> explicit Array(S size);
+   template<IntegerType S, RealType U> explicit Array(S size, U val);
    Array(std::initializer_list<T>);
    Array(const Array & a);
    Array(Array && a);
@@ -120,8 +120,8 @@ public:
    ~Array();
 
    inline size_type size() const;
-   inline T & operator[](size_type i);
-   inline const T & operator[](size_type i) const;
+   template<IntegerType S> inline T & operator[](S i);
+   template<IntegerType S> inline const T & operator[](S i) const;
 
    const Array & operator+() const;
    Array operator-() const;
@@ -143,7 +143,7 @@ public:
    const T* begin() const { return sz ? elem : nullptr; }
    const T* end() const { return sz ? elem+sz : nullptr; }
 
-   Array & resize(size_type size);
+   template<IntegerType S> Array & resize(S size);
    Array & resize_and_assign(const Array & a);
 
    T min() const;
@@ -151,7 +151,7 @@ public:
    std::pair<size_type, T> min_index() const;
    std::pair<size_type, T> max_index() const;
 
-   Array sub_array(size_type first, size_type last);
+   template<IntegerType S1, IntegerType S2> Array sub_array(S1 first, S2 last);
    T sum() const;
    void fill_random();
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
@@ -197,11 +197,9 @@ std::ostream & operator<<(std::ostream & os, Array<T> A)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<FloatingType T>
 Array<T> array_random(typename Array<T>::size_type size);
-template<FloatingType T>
-Array<T> array_random(typename Array<T>::size_type size);
 
-template<FloatingType T, FloatingType U1, FloatingType U2>
-Array<T> array_random(typename Array<T>::size_type size, U1 low, U2 high);
+template<IntegerType S, FloatingType T1, FloatingType T2>
+Array<T1> array_random(S size, T1 low, T2 high);
 
 template<RealType T>
 T dot_prod(const Array<T> & v1, const Array<T> & v2);
@@ -211,15 +209,16 @@ template<RealType T>
 Array<T>::Array() : sz{0}, elem{nullptr}
 {}
 
-template<RealType T>
-Array<T>::Array(size_type size) : sz{size}, elem{new T[size]{}}
-{}
+template<RealType T> template<IntegerType S>
+Array<T>::Array(S size) : sz{size}, elem{new T[size]{}}
+{ static_assert(SameType<size_type, S>); }
 
-template<RealType T> template<RealType U>
-Array<T>::Array(size_type size, U val) : sz{size}, elem{new T[size]}
+template<RealType T> template<IntegerType S, RealType U>
+Array<T>::Array(S size, U val) : sz{size}, elem{new T[size]}
 {
-   ASSERT_DEBUG(size >= 1);
    static_assert(SameType<T, U>);
+   static_assert(SameType<size_type, S>);
+   ASSERT_DEBUG(size >= 1);
    std::fill(begin(), end(), val);
 }
 
@@ -296,18 +295,20 @@ Array<T>::~Array() { delete[] elem; }
 template<RealType T>
 inline typename Array<T>::size_type Array<T>::size() const { return sz; }
 
-template<RealType T>
-inline T & Array<T>::operator[](size_type i)
+template<RealType T> template<IntegerType S>
+inline T & Array<T>::operator[](S i)
 {
+   static_assert(SameType<size_type, S>);
    #ifdef STRICT_ARRAY_DEBUG_ON
    if(i < 0 || i > sz-1) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
    return elem[i];
 }
 
-template<RealType T>
-inline const T & Array<T>::operator[](size_type i) const
+template<RealType T> template<IntegerType S>
+inline const T & Array<T>::operator[](S i) const
 {
+   static_assert(SameType<size_type, S>);
    #ifdef STRICT_ARRAY_DEBUG_ON
    if(i < 0 || i > sz-1) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
@@ -357,21 +358,21 @@ Array<T> & Array<T>::operator/=(const U val)
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator+=(const ArrayType & A)
 {
-   apply1(A, [&](int i) { elem[i] += A[i]; });
+   apply1(A, [&](size_type i) { elem[i] += A[i]; });
    return *this;
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator-=(const ArrayType & A)
 {
-   apply1(A, [&](int i) { elem[i] -= A[i]; });
+   apply1(A, [&](size_type i) { elem[i] -= A[i]; });
    return *this;
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator*=(const ArrayType & A)
 {
-   apply1(A, [&](int i) { elem[i] *= A[i]; });
+   apply1(A, [&](size_type i) { elem[i] *= A[i]; });
    return *this;
 }
 
@@ -381,14 +382,15 @@ Array<T> & Array<T>::operator/=(const ArrayType & A)
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(A.does_contain_zero()) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
-   apply1(A, [&](int i) { elem[i] /= A[i]; });
+   apply1(A, [&](size_type i) { elem[i] /= A[i]; });
    return *this;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-Array<T> & Array<T>::resize(size_type size)
+template<RealType T> template<IntegerType S>
+Array<T> & Array<T>::resize(S size)
 {
+   static_assert(SameType<size_type, S>);
    if(size == sz) return *this;
 
    delete[] elem;
@@ -437,8 +439,8 @@ std::pair<typename Array<T>::size_type, T> Array<T>::max_index() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-Array<T> Array<T>::sub_array(size_type first, size_type last)
+template<RealType T> template<IntegerType S1, IntegerType S2>
+Array<T> Array<T>::sub_array(S1 first, S2 last)
 {
    size_type sub_sz = last - first + 1;
    Array<T> sub_array(sub_sz);
@@ -466,8 +468,8 @@ void Array<T>::fill_random()
 template<RealType T> template<FloatingType U1, FloatingType U2>
 void Array<T>::fill_random(U1 low, U2 high)
 {
-   static_assert(std::is_same<T, U1>::value);
-   static_assert(std::is_same<U1, U2>::value);
+   static_assert(SameType<T, U1>);
+   static_assert(SameType<U1, U2>);
 
    ASSERT_DEBUG(sz > 0);
    for(auto & x : *this)
@@ -511,12 +513,12 @@ Array<T> array_random(typename Array<T>::size_type size)
    return a;
 }
 
-template<FloatingType T, FloatingType U1, FloatingType U2>
-Array<T> array_random(typename Array<T>::size_type size, U1 low, U2 high)
+template<IntegerType S, FloatingType T1, FloatingType T2>
+Array<T1> array_random(S size, T1 low, T2 high)
 {
-   static_assert(std::is_same<T, U1>::value);
-   static_assert(std::is_same<U1, U2>::value);
-   Array<T> a(size);
+   static_assert(SameType<T1, T2>);
+   static_assert(SameType<typename Array<T1>::size_type, S>);
+   Array<T1> a(size);
    a.fill_random(low, high);
    return a;
 }
@@ -567,7 +569,7 @@ public:
    using value_type = typename T1::value_type;
    BinExpr(const T1 & a, const T2 & b, Op op) : sz(a.size()), A(a), B(b), op(op)
    {
-      static_assert( std::is_same<typename T1::value_type, typename T2::value_type>::value );
+      static_assert( SameType<typename T1::value_type, typename T2::value_type> );
       ASSERT_DEBUG(a.size() == b.size());
    }
 
@@ -600,7 +602,7 @@ public:
 
    template<RealType T2>
    BinExprValLeft(const T1 & b, T2 val, Op op) : sz(b.size()), B(b), val(val), op(op)
-   { static_assert( std::is_same<typename T1::value_type, T2>::value ); }
+   { static_assert( SameType<typename T1::value_type, T2> ); }
 
    value_type operator[](size_type i) const { return op(val, B[i]); }
    size_type size() const { return sz; }
@@ -631,7 +633,7 @@ public:
 
    template<RealType T2>
    BinExprValRight(const T1 & a, T2 val, Op op) : sz(a.size()), A(a), val(val), op(op)
-   { static_assert( std::is_same<typename T1::value_type, T2>::value ); }
+   { static_assert( SameType<typename T1::value_type, T2> ); }
 
    value_type operator[](size_type i) const { return op(A[i], val); }
    size_type size() const { return sz; }
@@ -657,28 +659,28 @@ bool BinExprValRight<T1, Op>::does_contain_zero() const
 template<ArrayBaseType T1, ArrayBaseType T2>
 BinExpr<T1, T2, Plus> operator+(const T1 & A, const T2 & B)
 {
-   static_assert( std::is_same<typename T1::value_type, typename T2::value_type>::value );
+   static_assert( SameType<typename T1::value_type, typename T2::value_type> );
    return BinExpr<T1, T2, Plus>(A, B, Plus{});
 }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
 BinExpr<T1, T2, Minus> operator-(const T1 & A, const T2 & B)
 {
-   static_assert( std::is_same<typename T1::value_type, typename T2::value_type>::value );
+   static_assert( SameType<typename T1::value_type, typename T2::value_type> );
    return BinExpr<T1, T2, Minus>(A, B, Minus{});
 }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
 BinExpr<T1, T2, Mult> operator*(const T1 & A, const T2 & B)
 {
-   static_assert( std::is_same<typename T1::value_type, typename T2::value_type>::value );
+   static_assert( SameType<typename T1::value_type, typename T2::value_type> );
    return BinExpr<T1, T2, Mult>(A, B, Mult{});
 }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
 BinExpr<T1, T2, Divide> operator/(const T1 & A, const T2 & B)
 {
-   static_assert( std::is_same<typename T1::value_type, typename T2::value_type>::value );
+   static_assert( SameType<typename T1::value_type, typename T2::value_type> );
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(B.does_contain_zero()) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
@@ -689,28 +691,28 @@ BinExpr<T1, T2, Divide> operator/(const T1 & A, const T2 & B)
 template<ArrayBaseType T, RealType U>
 BinExprValRight<T, Plus> operator+(const T & A, U val)
 {
-   static_assert( std::is_same<typename T::value_type, U>::value );
+   static_assert( SameType<typename T::value_type, U> );
    return BinExprValRight<T, Plus>(A, val, Plus{});
 }
 
 template<ArrayBaseType T, RealType U>
 BinExprValRight<T, Minus> operator-(const T & A, U val)
 {
-   static_assert( std::is_same<typename T::value_type, U>::value );
+   static_assert( SameType<typename T::value_type, U> );
    return BinExprValRight<T, Minus>(A, val, Minus{});
 }
 
 template<ArrayBaseType T, RealType U>
 BinExprValRight<T, Mult> operator*(const T & A, U val)
 {
-   static_assert( std::is_same<typename T::value_type, U>::value );
+   static_assert( SameType<typename T::value_type, U> );
    return BinExprValRight<T, Mult>(A, val, Mult{});
 }
 
 template<ArrayBaseType T, RealType U>
 BinExprValRight<T, Divide> operator/(const T & A, U val)
 {
-   static_assert( std::is_same<typename T::value_type, U>::value );
+   static_assert( SameType<typename T::value_type, U> );
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(val == 0) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
@@ -721,28 +723,28 @@ BinExprValRight<T, Divide> operator/(const T & A, U val)
 template<ArrayBaseType T, RealType U>
 BinExprValLeft<T, Plus> operator+(U val, const T & B)
 {
-   static_assert( std::is_same<typename T::value_type, U>::value );
+   static_assert( SameType<typename T::value_type, U> );
    return BinExprValLeft<T, Plus>(B, val, Plus{});
 }
 
 template<ArrayBaseType T, RealType U>
 BinExprValLeft<T, Minus> operator-(U val, const T & B)
 {
-   static_assert( std::is_same<typename T::value_type, U>::value );
+   static_assert( SameType<typename T::value_type, U> );
    return BinExprValLeft<T, Minus>(B, val, Minus{});
 }
 
 template<ArrayBaseType T, RealType U>
 BinExprValLeft<T, Mult> operator*(U val, const T & B)
 {
-   static_assert( std::is_same<typename T::value_type, U>::value );
+   static_assert( SameType<typename T::value_type, U> );
    return BinExprValLeft<T, Mult>(B, val, Mult{});
 }
 
 template<ArrayBaseType T, RealType U>
 BinExprValLeft<T, Divide> operator/(U val, const T & B)
 {
-   static_assert( std::is_same<typename T::value_type, U>::value );
+   static_assert( SameType<typename T::value_type, U> );
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(B.does_contain_zero()) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif

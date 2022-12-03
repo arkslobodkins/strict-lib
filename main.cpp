@@ -10,7 +10,7 @@ using namespace strict_array;
 
 template<typename T>
 void assert_is_same(Array<T> x, valarray<T> y)
-{ for(int i = 0; i < x.size(); ++i) assert(x[i] == y[i]); }
+{ for(long int i = 0; i < x.size(); ++i) assert(x[i] == y[i]); }
 
 template<typename T>
 void assert_within_tol(T x, T y)
@@ -27,7 +27,7 @@ void assert_within_tol(T x, T y)
 template<typename T>
 void assert_within_tol(Array<T> x, valarray<T> y)
 {
-   for(int i = 0; i < x.size(); ++i)
+   for(long int i = 0; i < x.size(); ++i)
    {
       T max_val = std::max(x[i], y[i]);
       if(max_val < 1.e-6) return;
@@ -39,16 +39,16 @@ void assert_within_tol(Array<T> x, valarray<T> y)
 }
 
 template<typename T>
-void assert_all(int n, T val)
+void assert_all(long int n, T val)
 {
-   Array xa = array_random<T>(n, T(0.1), T(0.9));
-   Array ya = array_random<T>(n, T(0.1), T(0.9));
+   Array xa = array_random(n, T(0.1), T(0.9));
+   Array ya = array_random(n, T(0.1), T(0.9));
    Array za = array_random<T>(n);
    valarray<T> xv(n);
    valarray<T> yv(n);
    valarray<T> zv(n);
-   for(int i = 0; i < n; ++i) xv[i] = xa[i];
-   for(int i = 0; i < n; ++i) yv[i] = ya[i];
+   for(long int i = 0; i < n; ++i) xv[i] = xa[i];
+   for(long int i = 0; i < n; ++i) yv[i] = ya[i];
 
    xa = val;
    xv = val;
@@ -105,62 +105,62 @@ void assert_all(int n, T val)
    za += val;
    zv += val;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za -= val;
    zv -= val;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za *= val;
    zv *= val;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za /= val;
    zv /= val;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za += xa;
    zv += xv;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za -= xa;
    zv -= xv;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za *= xa;
    zv *= xv;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za /= xa;
    zv /= xv;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za += xa + ya - val;
    zv += xv + yv - val;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za -= xa + ya - val;
    zv -= xv + yv - val;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za *= xa + ya - val;
    zv *= xv + yv - val;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    za /= xa + ya - val;
    zv /= xv + yv - val;
    assert_within_tol(za, zv);
-   for(int i = 0; i < za.size(); ++i) zv[i] = za[i];
+   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
    auto sum_a = za.sum();
    auto sum_v = zv.sum();
@@ -191,8 +191,8 @@ void assert_all(int n, T val)
    zv = +zv;
    assert_is_same(za, zv);
 
-   za.resize(10);
-   zv.resize(10);
+   za.resize(10L);
+   zv.resize(10L);
    assert(za.size() == zv.size());
 }
 
