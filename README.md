@@ -60,7 +60,7 @@ for(**int** i = 0; i < x.size(); ++i)
   
 Here the size of x is a large value that exceeds maximum range of int.  
 Eventually i would exceed its range and cause undefined behaviour.  
-Therefore, indexing x[i] requires i to be of type long int. Thus,  
+Therefore, indexing **x[i] requires i to be of type l**ong int. Thus,  
 the previous code also results in compilation error and prevents  
 from the runtime disaster.  
   
