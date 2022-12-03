@@ -49,7 +49,7 @@ double global_minimum(float parameter) {
 }    
     
 Our array would not compile here, since *parameter* and elements of x are different types.    
-Are we really sure that parameter has to be float, whereas the rest of the function    
+Are we really sure that *parameter* has to be float, whereas the rest of the function    
 consists of doubles? Odds are pretty high that it should be double. We have just    
 prevented the loss of precision.  
   
