@@ -16,7 +16,7 @@ The former is not particularly difficult: performing operations
 by traversing an array linearly is all one can really do for standard    
 operations. The only challenge is to write a user-friendly interface, which    
 requires expression templates to avoid temporaries. Vectorization and loop    
-unrolling is successfully performed by compiler.    
+unrolling is successfully performed by the compiler.    
     
 Type safety, on the other hand, is more challenging, and can have somewhat different    
 meanings depending on the context. Since strict-array is primarily designed for numerical computation,    
