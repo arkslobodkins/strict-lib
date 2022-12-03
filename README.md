@@ -32,17 +32,17 @@ Second, all operations must strictly respect the type of an object.
 For example, suppose I have  
   
 Array<double>(some_size) x;  
-x += 1; // won't compile, 1 is not of the same type as elements of x  
+x += 1; //  won't compile, 1 is not of the same type as elements of x  
   
 This is a deliberate design. Instead,  
-x += 1.; // compiles correctly  
+x += 1.F; //  compiles correctly  
   
 But why be so strict? Well, here is one reason:  
   
 double global_minimum(float parameter) {  
    Array<double> x(some_size);  
    ...  
-   x *= parameter; // smells like a bug  
+   x *= parameter;  // smells like a bug  
    ...  
    return x.min();  
 }  
@@ -64,7 +64,7 @@ the previous code also results in compilation error and prevents
 from the runtime disaster.
 
 for(long int i = 0; i < x.size(); ++i)
-   x[i] = ...; // compiles and works as expected
+   x[i] = ...;  // compiles and works as expected
 
 
 
