@@ -2,11 +2,11 @@
 #include <cstdlib>
 #include <iostream>
 #include <valarray>
-#include "garray.hpp"
+#include "strict_array.hpp"
 #include <vector>
 
 using namespace std;
-using namespace garray;
+using namespace strict_array;
 
 template<typename T>
 void assert_is_same(Array<T> x, valarray<T> y)

@@ -17,14 +17,14 @@
 #include <quadmath.h>
 #endif
 
-// compile with -DGARRAY_DEBUG_ON to enable range checking, default is OFF
-#ifndef GARRAY_DEBUG_ON
-#define GARRAY_DEBUG_OFF
+// compile with -DSTRICT_ARRAY_DEBUG_ON to enable range checking, default is OFF
+#ifndef STRICT_ARRAY_DEBUG_ON
+#define STRICT_ARRAY_DEBUG_OFF
 #endif
 
-// compile with -DGARRAY_DEBUG_ON to enable division by 0 checking, default is OFF
-#ifndef GARRAY_DIVISION_ON
-#define GARRAY_DIVISION_OFF
+// compile with -DSTRICT_ARRAY_DIVISION_ON to enable division by 0 checking, default is OFF
+#ifndef STRICT_ARRAY_DIVISION_ON
+#define STRICT_ARRAY_DEBUG_OFF
 #endif
 
 // No aliasing
@@ -34,23 +34,23 @@
 #define array_restrict_ptr
 #endif
 
-#ifdef GARRAY_DEBUG_OFF
+#ifdef STRICT_ARRAY_DEBUG_OFF
 #define ASSERT_DEBUG(condition) ((void)0)
 #else
 #define ASSERT_DEBUG(condition) assert(condition)
 #endif
 
-#define GARRAY_THROW_OUT_OF_RANGE()                                                            \
-   do {                                                                                        \
-   throw std::out_of_range{"OUT OF RANGE"};                                                    \
+#define STRICT_ARRAY_THROW_OUT_OF_RANGE()                  \
+   do {                                                    \
+   throw std::out_of_range{"OUT OF RANGE"};                \
    } while(0)
 
-#define GARRAY_THROW_ZERO_DIVISION()                                                           \
-   do {                                                                                        \
-   throw std::runtime_error{"ZERO_DIVISION"};                                                  \
+#define STRICT_ARRAY_THROW_ZERO_DIVISION()                 \
+   do {                                                    \
+   throw std::runtime_error{"ZERO_DIVISION"};              \
    } while(0)
 
-namespace garray {
+namespace strict_array {
 
 static_assert(sizeof(long int) == 8);
 static_assert(sizeof(float) == 4);
@@ -299,8 +299,8 @@ inline typename Array<T>::size_type Array<T>::size() const { return sz; }
 template<RealType T>
 inline T & Array<T>::operator[](size_type i)
 {
-   #ifdef GARRAY_DEBUG_ON
-   if(i < 0 || i > sz-1) GARRAY_THROW_OUT_OF_RANGE();
+   #ifdef STRICT_ARRAY_DEBUG_ON
+   if(i < 0 || i > sz-1) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
    return elem[i];
 }
@@ -308,8 +308,8 @@ inline T & Array<T>::operator[](size_type i)
 template<RealType T>
 inline const T & Array<T>::operator[](size_type i) const
 {
-   #ifdef GARRAY_DEBUG_ON
-   if(i < 0 || i > sz-1) GARRAY_THROW_OUT_OF_RANGE();
+   #ifdef STRICT_ARRAY_DEBUG_ON
+   if(i < 0 || i > sz-1) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
    return elem[i];
 }
@@ -347,7 +347,7 @@ Array<T> & Array<T>::operator/=(const U val)
 {
    static_assert(SameType<T, U>);
    #ifdef QUAD_DIVISION_ON
-   if(val == 0) GARRAY_THROW_ZERO_DIVISION();
+   if(val == 0) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
    apply0([&](size_type i) { elem[i] /= val; } );
    return *this;
@@ -378,8 +378,8 @@ Array<T> & Array<T>::operator*=(const ArrayType & A)
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator/=(const ArrayType & A)
 {
-   #ifdef GARRAY_DIVISION_ON
-   if(A.does_contain_zero()) GARRAY_THROW_ZERO_DIVISION();
+   #ifdef STRICT_ARRAY_DIVISION_ON
+   if(A.does_contain_zero()) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
    apply1(A, [&](int i) { elem[i] /= A[i]; });
    return *this;
@@ -679,8 +679,8 @@ template<ArrayBaseType T1, ArrayBaseType T2>
 BinExpr<T1, T2, Divide> operator/(const T1 & A, const T2 & B)
 {
    static_assert( std::is_same<typename T1::value_type, typename T2::value_type>::value );
-   #ifdef GARRAY_DIVISION_ON
-   if(B.does_contain_zero()) GARRAY_THROW_ZERO_DIVISION();
+   #ifdef STRICT_ARRAY_DIVISION_ON
+   if(B.does_contain_zero()) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
    return BinExpr<T1, T2, Divide>(A, B, Divide{});
 }
@@ -711,8 +711,8 @@ template<ArrayBaseType T, RealType U>
 BinExprValRight<T, Divide> operator/(const T & A, U val)
 {
    static_assert( std::is_same<typename T::value_type, U>::value );
-   #ifdef GARRAY_DIVISION_ON
-   if(val == 0) GARRAY_THROW_ZERO_DIVISION();
+   #ifdef STRICT_ARRAY_DIVISION_ON
+   if(val == 0) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
    return BinExprValRight<T, Divide>(A, val, Divide{});
 }
@@ -743,8 +743,8 @@ template<ArrayBaseType T, RealType U>
 BinExprValLeft<T, Divide> operator/(U val, const T & B)
 {
    static_assert( std::is_same<typename T::value_type, U>::value );
-   #ifdef GARRAY_DIVISION_ON
-   if(B.does_contain_zero()) GARRAY_THROW_ZERO_DIVISION();
+   #ifdef STRICT_ARRAY_DIVISION_ON
+   if(B.does_contain_zero()) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
    return BinExprValLeft<T, Divide>(B, val, Divide{});
 }
