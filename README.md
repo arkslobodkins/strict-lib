@@ -40,7 +40,7 @@ x += 1.F; //  compiles correctly
 But why be so strict? Well, here is one reason:  
   
 double global_minimum(float parameter) {  
-   Array<double> x(some_size);  
+   Array< doubl e> x(some_size);  
    ...  
    x *= parameter;  // smells like a bug  
    ...  
@@ -53,7 +53,7 @@ consists of doubles? Odds are pretty high that it should be double. We have just
 prevented the loss of precision.
 
 For the second example, consider indexing:
-Array<float> x(some_large_size);
+Array< floa t> x(some_large_size);
 for(int i = 0; i < x.size(); ++i)
    x[i] = ...;
 
