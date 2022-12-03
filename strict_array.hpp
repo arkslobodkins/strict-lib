@@ -153,7 +153,6 @@ public:
 
    template<IntegerType S1, IntegerType S2> Array sub_array(S1 first, S2 last);
    T sum() const;
-   void fill_random();
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
 
    bool does_contain_zero() const;
@@ -195,9 +194,6 @@ std::ostream & operator<<(std::ostream & os, Array<T> A)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<FloatingType T>
-Array<T> array_random(typename Array<T>::size_type size);
-
 template<IntegerType S, FloatingType T1, FloatingType T2>
 Array<T1> array_random(S size, T1 low, T2 high);
 
@@ -456,15 +452,6 @@ T Array<T>::sum() const
    return std::accumulate(begin(), end(), T(0.));
 }
 
-template<RealType T>
-void Array<T>::fill_random()
-{
-   static_assert(FloatingType<T>);
-   ASSERT_DEBUG(sz > 0);
-   for(auto & x : *this)
-      x = T(std::rand()) / T(RAND_MAX);
-}
-
 template<RealType T> template<FloatingType U1, FloatingType U2>
 void Array<T>::fill_random(U1 low, U2 high)
 {
@@ -505,14 +492,6 @@ bool Array<T>::non_negative() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<FloatingType T>
-Array<T> array_random(typename Array<T>::size_type size)
-{
-   Array<T> a(size);
-   a.fill_random();
-   return a;
-}
-
 template<IntegerType S, FloatingType T1, FloatingType T2>
 Array<T1> array_random(S size, T1 low, T2 high)
 {

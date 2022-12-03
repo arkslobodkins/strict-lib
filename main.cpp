@@ -43,7 +43,7 @@ void assert_all(long int n, T val)
 {
    Array xa = array_random(n, T(0.1), T(0.9));
    Array ya = array_random(n, T(0.1), T(0.9));
-   Array za = array_random<T>(n);
+   Array<T> za(n);
    valarray<T> xv(n);
    valarray<T> yv(n);
    valarray<T> zv(n);
