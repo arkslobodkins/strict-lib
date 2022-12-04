@@ -22,10 +22,10 @@ explicit vectorization using vector intrinsics may be beneficial.Either way,
 strict_array class uses expression templates and  yields performance
 similar to std::valarray class.
     
-Type safety, on the other hand, is more challenging, and can have somewhat different    
-meanings depending on the context. **Since strict-array is primarily designed for numerical computation,    
-it employs the strictest type safety strategies. It is important to point out that
-such safety comes at the expense of sacrificing flexibility.**    
+Type safety is more challenging and can have somewhat different meanings  
+depending on the context.  **Since strict-array is primarily designed for  
+numerical computation, it employs the strictest type safety strategies.  
+It is important to point out that such safety comes at the expense of sacrificing flexibility.**    
     
 For starters, it offers **functionality for the following types:    
 short, int, long int, long long int, float, double, long double, and    
