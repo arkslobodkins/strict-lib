@@ -172,38 +172,15 @@ private:
    template<ArrayBaseType ArrayType, typename F> void apply1(const ArrayType & A, F f);
 };
 
-template<RealType T>
-std::ostream & operator<<(std::ostream & os, Array<T> A)
-{
-   if(SameType<T, double> || SameType<T, long double>) {
-      for(auto e : A) os << std::setprecision(16) << e << std::endl;
-   }
-   else if(SameType<T, float>) {
-      for(auto e : A) os << std::setprecision(8) << e << std::endl;
-   }
-   #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
-   else if(SameType<T, float128>) {
-      int width = 46;
-      char buf[128];
-      for(auto e : A)
-      {
-         quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, e);
-         os << buf << std::endl;
-      }
-   }
-   #endif
-   else {
-      for(auto e : A) os << e << std::endl;
-   }
-   return os;
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<IntegerType S, RealType T1, RealType T2>
 Array<T1> array_random(S size, T1 low, T2 high);
 
 template<RealType T>
 T dot_prod(const Array<T> & v1, const Array<T> & v2);
+
+template<RealType T>
+std::ostream & operator<<(std::ostream & os, Array<T> A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -508,6 +485,31 @@ bool Array<T>::non_negative() const
    return true;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<RealType T>
+inline bool Array<T>::is_valid_index(size_type index)
+{
+   if(index < 0 || index > sz-1)
+      return false;
+   return true;
+}
+
+template<RealType T> template<typename F>
+void Array<T>::apply0(F f)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   for(size_type i = 0; i < sz; ++i)
+      f(i);
+}
+
+template<RealType T> template<ArrayBaseType ArrayType, typename F>
+void Array<T>::apply1(const ArrayType & A, F f)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz == A.size());
+   for(size_type i = 0; i < sz; ++i)
+      f(i);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<IntegerType S, RealType T1, RealType T2>
 Array<T1> array_random(S size, T1 low, T2 high)
@@ -527,28 +529,29 @@ T dot_prod(const Array<T> & v1, const Array<T> & v2)
 }
 
 template<RealType T>
-inline bool Array<T>::is_valid_index(size_type index)
+std::ostream & operator<<(std::ostream & os, Array<T> A)
 {
-   if(index < 0 || index > sz-1)
-      return false;
-   return true;
-}
-
-template<RealType T>
-template<typename F> void Array<T>::apply0(F f)
-{
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   for(size_type i = 0; i < sz; ++i)
-      f(i);
-}
-
-template<RealType T>
-template<ArrayBaseType ArrayType, typename F>
-void Array<T>::apply1(const ArrayType & A, F f)
-{
-   ASSERT_STRICT_ARRAY_DEBUG(sz == A.size());
-   for(size_type i = 0; i < sz; ++i)
-      f(i);
+   if(SameType<T, double> || SameType<T, long double>) {
+      for(auto e : A) os << std::setprecision(16) << e << std::endl;
+   }
+   else if(SameType<T, float>) {
+      for(auto e : A) os << std::setprecision(8) << e << std::endl;
+   }
+   #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+   else if(SameType<T, float128>) {
+      int width = 46;
+      char buf[128];
+      for(auto e : A)
+      {
+         quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, e);
+         os << buf << std::endl;
+      }
+   }
+   #endif
+   else {
+      for(auto e : A) os << e << std::endl;
+   }
+   return os;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
