@@ -15,8 +15,12 @@ strict-array is a class that addresses two
 The former is not particularly difficult: performing operations    
 by traversing an array linearly is all one can really do for standard    
 operations. The only challenge is to write a user-friendly interface, which    
-requires expression templates to avoid temporaries. Vectorization and loop    
-unrolling is successfully performed by the compiler.    
+requires expression templates to avoid temporaries. Vectorization and loop      
+unrolling is successfully performed by the compiler. Some compilers  
+do it better than others, and  depending on compiler and hardware,   
+explicit vectorization using vector intrinsics may be beneficial.Either way,   
+strict_array class uses expression templates and should yield   
+near-optimal performance with compiler optimizations.  
     
 Type safety, on the other hand, is more challenging, and can have somewhat different    
 meanings depending on the context. **Since strict-array is primarily designed for numerical computation,    
