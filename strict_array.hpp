@@ -160,8 +160,8 @@ public:
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
 
    bool does_contain_zero() const;
-   bool positive() const;
-   bool non_negative() const;
+   bool is_positive() const;
+   bool is_nonnegative() const;
 
 private:
    size_type sz;
@@ -391,7 +391,7 @@ template<RealType T>
 T Array<T>::sum() const
 {
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   return std::accumulate(begin(), end(), T(0.));
+   return std::accumulate(begin(), end(), T(0));
 }
 
 template<RealType T>
@@ -468,7 +468,7 @@ bool Array<T>::does_contain_zero() const
 }
 
 template<RealType T>
-bool Array<T>::positive() const
+bool Array<T>::is_positive() const
 {
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(auto x : *this)
@@ -477,7 +477,7 @@ bool Array<T>::positive() const
 }
 
 template<RealType T>
-bool Array<T>::non_negative() const
+bool Array<T>::is_nonnegative() const
 {
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    for(auto x : *this)
