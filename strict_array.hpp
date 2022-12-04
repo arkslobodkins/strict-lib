@@ -149,13 +149,14 @@ public:
    template<IntegerType S> Array & resize(S size);
    Array & resize_and_assign(const Array & a);
 
+   T sum() const;
    T min() const;
    T max() const;
    std::pair<size_type, T> min_index() const;
    std::pair<size_type, T> max_index() const;
 
    template<IntegerType S1, IntegerType S2> Array sub_array(S1 first, S2 last);
-   T sum() const;
+   template<IntegerType U1, IntegerType U2> void fill_random(U1 low, U2 high);
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
 
    bool does_contain_zero() const;
@@ -171,7 +172,7 @@ private:
    template<ArrayBaseType ArrayType, typename F> void apply1(const ArrayType & A, F f);
 };
 
-template<FloatingType T>
+template<RealType T>
 std::ostream & operator<<(std::ostream & os, Array<T> A)
 {
    if(SameType<T, double> || SameType<T, long double>) {
@@ -198,7 +199,7 @@ std::ostream & operator<<(std::ostream & os, Array<T> A)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<IntegerType S, FloatingType T1, FloatingType T2>
+template<IntegerType S, RealType T1, RealType T2>
 Array<T1> array_random(S size, T1 low, T2 high);
 
 template<RealType T>
@@ -218,7 +219,6 @@ Array<T>::Array(S size, U val) : sz{size}, elem{new T[size]}
 {
    static_assert(SameType<size_type, S>);
    static_assert(SameType<T, U>);
-   ASSERT_STRICT_ARRAY_DEBUG(size >= 1);
    apply0([&](size_type i) { elem[i] = val; } );
 }
 
@@ -242,7 +242,6 @@ template<RealType T> template<RealType U>
 Array<T> & Array<T>::operator=(const U val)
 {
    static_assert(SameType<T, U>);
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    apply0([&](size_type i) { elem[i] = val; } );
    return *this;
 }
@@ -250,8 +249,7 @@ Array<T> & Array<T>::operator=(const U val)
 template<RealType T>
 Array<T> & Array<T>::operator=(const Array<T> & a)
 {
-   if(this != &a)
-      apply1(a, [&](size_type i) { elem[i] = a[i]; });
+   if(this != &a) apply1(a, [&](size_type i) { elem[i] = a[i]; });
    return *this;
 }
 
@@ -413,6 +411,13 @@ Array<T> & Array<T>::resize_and_assign(const Array<T> & a)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
+T Array<T>::sum() const
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   return std::accumulate(begin(), end(), T(0.));
+}
+
+template<RealType T>
 T Array<T>::min() const
 {
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
@@ -455,11 +460,14 @@ Array<T> Array<T>::sub_array(S1 first, S2 last)
    return sub_array;
 }
 
-template<RealType T>
-T Array<T>::sum() const
+template<RealType T> template<IntegerType U1, IntegerType U2>
+void Array<T>::fill_random(U1 low, U2 high)
 {
+   static_assert(SameType<T, U1>);
+   static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   return std::accumulate(begin(), end(), T(0.));
+   for(auto & x : *this)
+      x = low + T(std::rand() % (1+high-low));
 }
 
 template<RealType T> template<FloatingType U1, FloatingType U2>
@@ -501,7 +509,7 @@ bool Array<T>::non_negative() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<IntegerType S, FloatingType T1, FloatingType T2>
+template<IntegerType S, RealType T1, RealType T2>
 Array<T1> array_random(S size, T1 low, T2 high)
 {
    static_assert(SameType<typename Array<T1>::size_type, S>);
