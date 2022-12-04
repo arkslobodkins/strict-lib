@@ -68,14 +68,14 @@ for(**long int** i = 0; i < x.size(); ++i)
    **x[i]** = ...;  // compiles and works as expected    
 
 Granted, all the type guessing can be avoided by      
-for(**typename Array<T>::size_type** i = 0; i < x.size(); ++i)        
-, although it does not reveal the actual type of i.  
-This may not sound portable, but static assertion is performed to   
-ensure that long int is 64 bits in size. However, it does     
-avoid surprises when 64-bit indexing is expected. 
-I will consider replacing it with long long int, or better yet, 
-allowing user to decide which integer type will be used for indexing.
-Array<double, IndexType<int32_t>> x(int32_t(10));
+for(**typename Array<T>::size_type** i = 0; i < x.size(); ++i)          
+, although it does not reveal the actual type of i.    
+This may not sound portable, but static assertion is performed to     
+ensure that long int is 64 bits in size. However, it does       
+avoid surprises when 64-bit indexing is expected.   
+I will consider replacing it with long long int, or better yet,   
+allowing user to decide which integer type will be used for indexing.  
+Array<double, IndexType<int32_t>> x(int32_t(10));  
 
 
 
