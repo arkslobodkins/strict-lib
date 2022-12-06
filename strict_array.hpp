@@ -11,7 +11,6 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <numeric>
 
 #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
 #include <quadmath.h>
@@ -109,7 +108,7 @@ public:
    explicit Array();
    template<IntegerType S> explicit Array(S size);
    template<IntegerType S, RealType U> explicit Array(S size, U val);
-   Array(std::initializer_list<T>);
+   template<RealType U> Array(std::initializer_list<U>);
    Array(const Array & a);
    Array(Array && a);
 
@@ -119,6 +118,9 @@ public:
 
    template<ArrayExprType ArrExpr> Array(const ArrExpr & expr);
    template<ArrayExprType ArrExpr> Array & operator=(const ArrExpr & expr);
+
+   template<IntegerType S> Array & resize(S size);
+   Array & resize_and_assign(const Array & a);
 
    ~Array();
 
@@ -146,21 +148,9 @@ public:
    const T* begin() const { return sz ? elem : nullptr; }
    const T* end() const { return sz ? elem+sz : nullptr; }
 
-   template<IntegerType S> Array & resize(S size);
-   Array & resize_and_assign(const Array & a);
-
-   T sum() const;
-   T min() const;
-   T max() const;
-   std::pair<size_type, T> min_index() const;
-   std::pair<size_type, T> max_index() const;
-
    template<IntegerType S1, IntegerType S2> Array sub_array(S1 first, S2 last);
    template<IntegerType U1, IntegerType U2> void fill_random(U1 low, U2 high);
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
-
-   bool is_positive() const;
-   bool is_nonnegative() const;
 
 private:
    size_type sz;
@@ -175,14 +165,35 @@ private:
 template<IntegerType S, RealType T1, RealType T2>
 Array<T1> array_random(S size, T1 low, T2 high);
 
-template<RealType T>
-T dot_prod(const Array<T> & v1, const Array<T> & v2);
+template<ArrayBaseType ArrayType>
+std::ostream & operator<<(std::ostream & os, const ArrayType & A);
 
-template<RealType T>
-std::ostream & operator<<(std::ostream & os, Array<T> A);
+template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
+auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
 
 template<ArrayBaseType ArrayType>
 bool does_contain_zero(const ArrayType & A);
+
+template<ArrayBaseType ArrayType>
+bool is_positive(const ArrayType & A);
+
+template<ArrayBaseType ArrayType>
+bool is_nonnegative(const ArrayType & A);
+
+template<ArrayBaseType ArrayType>
+auto sum(const ArrayType & A);
+
+template<ArrayBaseType ArrayType>
+auto min(const ArrayType & A);
+
+template<ArrayBaseType ArrayType>
+auto max(const ArrayType & A);
+
+template<ArrayBaseType ArrayType>
+auto min_index(const ArrayType & A);
+
+template<ArrayBaseType ArrayType>
+auto max_index(const ArrayType & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -201,9 +212,12 @@ Array<T>::Array(S size, U val) : sz{size}, elem{new T[size]}
    apply0([&](size_type i) { elem[i] = val; } );
 }
 
-template<RealType T>
-Array<T>::Array(std::initializer_list<T> l) : Array(static_cast<size_type>(l.size()))
-{ std::copy(l.begin(), l.end(), begin()); }
+template<RealType T> template<RealType U>
+Array<T>::Array(std::initializer_list<U> l) : Array(static_cast<size_type>(l.size()))
+{
+   static_assert(SameType<T, U>);
+   std::copy(l.begin(), l.end(), begin());
+}
 
 template<RealType T>
 Array<T>::Array(const Array<T> & a) : sz{a.size()}, elem{new T[a.size()]}
@@ -252,6 +266,7 @@ template<RealType T> template<ArrayExprType ArrExpr>
 Array<T>::Array(const ArrExpr & expr)
    : sz{expr.size()}, elem{new T[expr.size()]}
 {
+   static_assert(SameType<size_type, typename ArrExpr::size_type>);
    static_assert(SameType<T, typename ArrExpr::value_type>);
    apply1(expr, [&](size_type i) { elem[i] = expr[i]; });
 }
@@ -259,9 +274,31 @@ Array<T>::Array(const ArrExpr & expr)
 template<RealType T> template<ArrayExprType ArrExpr>
 Array<T> & Array<T>::operator=(const ArrExpr & expr)
 {
+   static_assert(SameType<size_type, typename ArrExpr::size_type>);
    static_assert(SameType<T, typename ArrExpr::value_type>);
    apply1(expr, [&](size_type i) { elem[i] = expr[i]; });
    return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<RealType T> template<IntegerType S>
+Array<T> & Array<T>::resize(S size)
+{
+   static_assert(SameType<size_type, S>);
+   if(size == sz) return *this;
+
+   delete[] elem;
+   ASSERT_STRICT_ARRAY_DEBUG(size > -1);
+   elem = new T[size]{};
+   sz = size;
+   return *this;
+}
+
+template<RealType T>
+Array<T> & Array<T>::resize_and_assign(const Array<T> & a)
+{
+   resize(a.size());
+   return *this = a;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -368,65 +405,6 @@ Array<T> & Array<T>::operator/=(const ArrayType & A)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> template<IntegerType S>
-Array<T> & Array<T>::resize(S size)
-{
-   static_assert(SameType<size_type, S>);
-   if(size == sz) return *this;
-
-   delete[] elem;
-   ASSERT_STRICT_ARRAY_DEBUG(size > -1);
-   elem = new T[size]{};
-   sz = size;
-   return *this;
-}
-
-template<RealType T>
-Array<T> & Array<T>::resize_and_assign(const Array<T> & a)
-{
-   resize(a.size());
-   return *this = a;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-T Array<T>::sum() const
-{
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   return std::accumulate(begin(), end(), T(0));
-}
-
-template<RealType T>
-T Array<T>::min() const
-{
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   return *std::min_element(begin(), end());
-}
-
-template<RealType T>
-T Array<T>::max() const
-{
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   return *std::max_element(begin(), end());
-}
-
-template<RealType T>
-std::pair<typename Array<T>::size_type, T> Array<T>::min_index() const
-{
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   auto min = std::min_element(begin(), end());
-   return {min - begin(), *min};
-}
-
-template<RealType T>
-std::pair<typename Array<T>::size_type, T> Array<T>::max_index() const
-{
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   auto max = std::max_element(begin(), end());
-   return {max - begin(), *max};
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<IntegerType S1, IntegerType S2>
 Array<T> Array<T>::sub_array(S1 first, S2 last)
 {
@@ -459,25 +437,6 @@ void Array<T>::fill_random(U1 low, U2 high)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-bool Array<T>::is_positive() const
-{
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   for(auto x : *this)
-      if(x <= T(0)) return false;
-   return true;
-}
-
-template<RealType T>
-bool Array<T>::is_nonnegative() const
-{
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   for(auto x : *this)
-      if(x < T(0)) return false;
-   return true;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 inline bool Array<T>::is_valid_index(size_type index)
@@ -498,6 +457,7 @@ void Array<T>::apply0(F f)
 template<RealType T> template<ArrayBaseType ArrayType, typename F>
 void Array<T>::apply1(const ArrayType & A, F f)
 {
+   (void)A;
    ASSERT_STRICT_ARRAY_DEBUG(sz == A.size());
    for(size_type i = 0; i < sz; ++i)
       f(i);
@@ -514,37 +474,50 @@ Array<T1> array_random(S size, T1 low, T2 high)
    return a;
 }
 
-template<RealType T>
-T dot_prod(const Array<T> & v1, const Array<T> & v2)
+template<ArrayBaseType ArrayType>
+std::ostream & operator<<(std::ostream & os, const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(v1.size() == v2.size());
-   return std::inner_product(v1.begin(), v1.end(), v2.begin(), T(0));
-}
+   using T = typename ArrayType::value_type;
+   using sz_T = typename ArrayType::size_type;
 
-template<RealType T>
-std::ostream & operator<<(std::ostream & os, Array<T> A)
-{
    if(SameType<T, double> || SameType<T, long double>) {
-      for(auto e : A) os << std::setprecision(16) << e << std::endl;
+      for(sz_T i = 0; i < A.size(); ++i) {
+         os << std::setprecision(16) << A[i] << std::endl;
+      }
    }
    else if(SameType<T, float>) {
-      for(auto e : A) os << std::setprecision(8) << e << std::endl;
+      for(sz_T i = 0; i < A.size(); ++i) {
+         os << std::setprecision(8) << A[i] << std::endl;
+      }
    }
    #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
    else if(SameType<T, float128>) {
       int width = 46;
       char buf[128];
-      for(auto e : A)
-      {
-         quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, e);
+      for(sz_T i = 0; i < A.size(); ++i) {
+         quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, A[i]);
          os << buf << std::endl;
       }
    }
    #endif
    else {
-      for(auto e : A) os << e << std::endl;
+      for(sz_T i = 0; i < A.size(); ++i) {
+         os << A[i] << std::endl;
+      }
    }
    return os;
+}
+
+template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
+auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
+{
+   static_assert(SameType<typename ArrayType1::size_type, typename ArrayType2::size_type>);
+   static_assert(SameType<typename ArrayType1::value_type, typename ArrayType2::value_type>);
+   ASSERT_STRICT_ARRAY_DEBUG(A1.size() == A2.size());
+   typename ArrayType1::value_type prod{};
+   for(typename ArrayType1::size_type i = 0; i < A1.size(); ++i)
+      prod += A1[i] * A2[i];
+   return prod;
 }
 
 template<ArrayBaseType ArrayType>
@@ -554,6 +527,89 @@ bool does_contain_zero(const ArrayType & A)
    for(typename ArrayType::size_type i = 0; i < A.size(); ++i)
       if(A[i] == typename ArrayType::value_type(0)) return true;
    return false;
+}
+
+template<ArrayBaseType ArrayType>
+bool is_positive(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   for(typename ArrayType::size_type i = 0; i < A.size(); ++i)
+      if(A[i] <= typename ArrayType::value_type(0)) return false;
+   return true;
+}
+
+template<ArrayBaseType ArrayType>
+bool is_nonnegative(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   for(typename ArrayType::size_type i = 0; i < A.size(); ++i)
+      if(A[i] < typename ArrayType::value_type(0)) return false;
+   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<ArrayBaseType ArrayType>
+auto sum(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   typename ArrayType::value_type s{};
+   for(typename ArrayType::size_type i = 0; i < A.size(); ++i)
+      s += A[i];
+   return s;
+}
+
+template<ArrayBaseType ArrayType>
+auto min(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   using sz_T = typename ArrayType::size_type;
+   using T = typename ArrayType::value_type;
+
+   T m = A[sz_T(0)];
+   for(sz_T i = 1; i < A.size(); ++i)
+      if(A[i] < m) m = A[i];
+   return m;
+}
+
+template<ArrayBaseType ArrayType>
+auto max(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   using sz_T = typename ArrayType::size_type;
+   using T = typename ArrayType::value_type;
+
+   T m = A[sz_T(0)];
+   for(sz_T i = 1; i < A.size(); ++i)
+      if(A[i] > m) m = A[i];
+   return m;
+}
+
+template<ArrayBaseType ArrayType>
+auto min_index(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   using sz_T = typename ArrayType::size_type;
+   using T = typename ArrayType::value_type;
+
+   std::pair<sz_T, T> min = {0, A[sz_T(0)]};
+   for(sz_T i = 1; i < A.size(); ++i)
+      if(A[i] < min.second)
+         min = {i, A[i]};
+   return min;
+}
+
+template<ArrayBaseType ArrayType>
+auto max_index(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   using sz_T = typename ArrayType::size_type;
+   using T = typename ArrayType::value_type;
+
+   std::pair<sz_T, T> max = {0, A[sz_T(0)]};
+   for(sz_T i = 1; i < A.size(); ++i)
+      if(A[i] > max.second)
+         max = {i, A[i]};
+   return max;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -581,6 +637,8 @@ public:
       static_assert(SameType<typename T1::value_type, typename T2::value_type>);
       ASSERT_STRICT_ARRAY_DEBUG(a.size() == b.size());
    }
+   BinExpr(const BinExpr &) = default;
+   BinExpr & operator=(const BinExpr &) = default;
 
    value_type operator[](size_type i) const { return op(A[i], B[i]); }
    size_type size() const { return sz; }
@@ -601,6 +659,8 @@ public:
 
    BinExprValLeft(const T1 & b, T2 val, Op op) : sz(b.size()), B(b), val(val), op(op)
    { static_assert(SameType<typename T1::value_type, T2>); }
+   BinExprValLeft(const BinExprValLeft &) = default;
+   BinExprValLeft & operator=(const BinExprValLeft &) = default;
 
    value_type operator[](size_type i) const { return op(val, B[i]); }
    size_type size() const { return sz; }
@@ -621,6 +681,8 @@ public:
 
    BinExprValRight(const T1 & a, T2 val, Op op) : sz(a.size()), A(a), val(val), op(op)
    { static_assert(SameType<typename T1::value_type, T2>); }
+   BinExprValRight(const BinExprValRight &) = default;
+   BinExprValRight & operator=(const BinExprValRight &) = default;
 
    value_type operator[](size_type i) const { return op(A[i], val); }
    size_type size() const { return sz; }

@@ -162,24 +162,24 @@ void assert_all(long int n, T val)
    assert_within_tol(za, zv);
    for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
 
-   auto sum_a = za.sum();
+   auto sum_a = sum(za);
    auto sum_v = zv.sum();
    assert_within_tol(sum_a, sum_v);
 
-   auto max_a = za.max();
+   auto max_a = max(za);
    auto max_v = zv.max();
    assert(max_a == max_v);
 
-   auto min_a = za.min();
+   auto min_a = min(za);
    auto min_v = zv.min();
    assert(min_a == min_v);
 
-   auto max_index = za.max_index();
-   assert(max_a == max_index.second);
-   auto min_index = za.min_index();
-   assert(min_a == min_index.second);
+   auto max_ind = max_index(za);
+   assert(max_a == max_ind.second);
+   auto min_ind = min_index(za);
+   assert(min_a == min_ind.second);
 
-   Array l_a = {T(1), T(2), T(3), T(-1), T(-2), T(-3)};
+   Array<T> l_a = {T(1), T(2), T(3), T(-1), T(-2), T(-3)};
    valarray l_v = {T(1), T(2), T(3), T(-1), T(-2), T(-3)};
    assert_is_same(l_a, l_v);
 
