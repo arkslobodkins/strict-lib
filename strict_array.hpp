@@ -433,7 +433,9 @@ Array<T> Array<T>::sub_array(S1 first, S2 last)
 {
    static_assert(SameType<size_type, S1>);
    static_assert(SameType<size_type, S2>);
+   ASSERT_STRICT_ARRAY_DEBUG(last >= first);
    size_type sub_sz = last - first + 1;
+
    Array<T> sub_array(sub_sz);
    for(size_type i = 0; i < sub_sz; ++i)
       sub_array[i] = elem[first+i];
