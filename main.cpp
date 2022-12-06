@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <valarray>
+#include <numeric>
 #include "strict_array.hpp"
 
 using namespace strict_array;
@@ -42,6 +43,9 @@ int main()
 
    Array<float64> y(20L);
    y.resize_and_assign(v);
+
+   Array<short> D(20L, short(1)); // fill with ones
+   std::iota(D.begin(), D.end(), short(0)); // fill with 0, 1, ...
 
    return EXIT_SUCCESS;
 }
