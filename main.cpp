@@ -31,12 +31,12 @@ int main()
    Array<float64> v{1., 2., 3., 4., 5., -1., 8., 0.};
    Array<float64> u{-1., -2., 3., 4., 5., -1., 8., 0.};
    float64 val = max(v);
-   val = min(u+v);
+   val = min(u + v);
    val = dot_prod(2.*u, v);
-   val = sum(-u+2.*v);
+   val = sum(-u + 2.*v);
    bool b = is_positive(v);
    b = is_nonnegative(v);
-   b = does_contain_zero(v-2.);
+   b = does_contain_zero(v - 2.);
 
    Array<float64> y(20L);
    y.resize_and_assign(v);

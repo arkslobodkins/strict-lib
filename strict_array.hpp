@@ -167,7 +167,7 @@ private:
    size_type sz;
    T* array_restrict_ptr elem;
 
-   inline bool is_valid_index(size_type index);
+   inline bool is_valid_index(size_type index) const;
    template<typename F> void apply0(F f);
    template<ArrayBaseType ArrayType, typename F> void apply1(const ArrayType & A, F f);
 };
@@ -455,7 +455,7 @@ void Array<T>::fill_random(U1 low, U2 high)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-inline bool Array<T>::is_valid_index(size_type index)
+inline bool Array<T>::is_valid_index(size_type index) const
 {
    if(index < 0 || index > sz-1)
       return false;
@@ -485,6 +485,7 @@ Array<T1> array_random(S size, T1 low, T2 high)
 {
    static_assert(SameType<typename Array<T1>::size_type, S>);
    static_assert(SameType<T1, T2>);
+   ASSERT_STRICT_ARRAY_DEBUG(high > low);
    Array<T1> a(size);
    a.fill_random(low, high);
    return a;
@@ -553,7 +554,7 @@ bool does_contain_zero(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 bool is_positive(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    for(typename ArrayType::size_type i = 0; i < A.size(); ++i)
       if(A[i] <= typename ArrayType::value_type(0)) return false;
    return true;
@@ -562,7 +563,7 @@ bool is_positive(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 bool is_nonnegative(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    for(typename ArrayType::size_type i = 0; i < A.size(); ++i)
       if(A[i] < typename ArrayType::value_type(0)) return false;
    return true;
@@ -572,7 +573,7 @@ bool is_nonnegative(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    typename ArrayType::value_type s{};
    for(typename ArrayType::size_type i = 0; i < A.size(); ++i)
       s += A[i];
@@ -582,7 +583,7 @@ auto sum(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto min(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
 
@@ -595,7 +596,7 @@ auto min(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto max(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
 
@@ -608,7 +609,7 @@ auto max(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto min_index(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
 
@@ -622,7 +623,7 @@ auto min_index(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto max_index(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
 
