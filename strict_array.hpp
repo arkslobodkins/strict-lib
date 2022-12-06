@@ -184,6 +184,9 @@ template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
 
 template<NotQuadArrayBaseType ArrayType>
+auto norm_inf(const ArrayType & A);
+
+template<NotQuadArrayBaseType ArrayType>
 auto norm2(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
@@ -448,9 +451,9 @@ void Array<T>::fill_random(U1 low, U2 high)
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   ASSERT_STRICT_ARRAY_DEBUG(high > low);
+   ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    for(auto & x : *this)
-      x = low + T(std::rand() % (1+high-low));
+      x = low + T(std::rand() % (T(1)+high-low));
 }
 
 template<RealType T> template<FloatingType U1, FloatingType U2>
@@ -459,7 +462,7 @@ void Array<T>::fill_random(U1 low, U2 high)
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   ASSERT_STRICT_ARRAY_DEBUG(high > low);
+   ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    for(auto & x : *this)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
 }
@@ -496,7 +499,7 @@ Array<T1> array_random(S size, T1 low, T2 high)
 {
    static_assert(SameType<typename Array<T1>::size_type, S>);
    static_assert(SameType<T1, T2>);
-   ASSERT_STRICT_ARRAY_DEBUG(high > low);
+   ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    Array<T1> a(size);
    a.fill_random(low, high);
    return a;
@@ -532,10 +535,27 @@ auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
    static_assert(SameType<typename ArrayType1::size_type, typename ArrayType2::size_type>);
    static_assert(SameType<typename ArrayType1::value_type, typename ArrayType2::value_type>);
    ASSERT_STRICT_ARRAY_DEBUG(A1.size() == A2.size());
+
    typename ArrayType1::value_type prod{};
    for(typename ArrayType1::size_type i = 0; i < A1.size(); ++i)
       prod += A1[i] * A2[i];
    return prod;
+}
+
+template<NotQuadArrayBaseType ArrayType>
+auto norm_inf(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   using sz_T = typename ArrayType::size_type;
+   using T = typename ArrayType::value_type;
+   auto real_abs = [](T x) { return x > T(0) ? x : -x; };
+
+   T max_abs = real_abs(A[0]);
+   for(sz_T i = 1; i < A.size(); ++i) {
+      T abs_i = real_abs(A[i]);
+      max_abs = abs_i > max_abs ? abs_i : max_abs;
+   }
+   return max_abs;
 }
 
 template<NotQuadArrayBaseType ArrayType>

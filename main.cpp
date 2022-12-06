@@ -34,6 +34,7 @@ int main()
    val = min(u + v);
    val = dot_prod(2.*u, v);
    val = sum(-u + 2.*v);
+   val = norm_inf(-u*v);
    val = norm2(u*v);
    bool b = is_positive(v);
    b = is_nonnegative(v);
