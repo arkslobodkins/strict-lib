@@ -31,6 +31,7 @@ int main()
 
    Array<float64> v{1., 2., 3., 4., 5., -1., 8., 0.};
    Array<float64> u{-1., -2., 3., 4., 5., -1., 8., 0.};
+   Array<float64> abs_u = abs(u);
    float64 val = max(v);
    val = min(u + v);
    val = dot_prod(2.*u, v);

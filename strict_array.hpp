@@ -74,15 +74,10 @@ concept IntegerType = std::is_same<std::remove_cv_t<T>, std::remove_cv_t<short>>
 #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
 static_assert(sizeof(__float128) == 16);
 using float128 = __float128;
-
-template<typename T>
-concept FloatingType = std::is_floating_point<T>::value || SameType<float128, T>;
-
+template<typename T> concept FloatingType = std::is_floating_point<T>::value || SameType<float128, T>;
 #else
-template<typename T>
-concept FloatingType = std::is_floating_point<T>::value;
+template<typename T> concept FloatingType = std::is_floating_point<T>::value;
 #endif
-
 template<typename T>
 concept RealType = FloatingType<T> || IntegerType<T>;
 
@@ -92,21 +87,18 @@ class Operation{};
 template<typename T> concept ArrayBaseType = std::is_base_of<ArrayBase, T>::value;
 template<typename T> concept ArrayExprType = std::is_base_of<ArrayExpr, T>::value;
 template<typename T> concept OperationType = std::is_base_of<Operation, T>::value;
-
 // Forward declarations(expression templates)
+template<ArrayBaseType T1, typename Op> class UnaryExpr;
 template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op> class BinExpr;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 
 #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
 #define STRICT_ARRAY_QUADRUPLE_PRECISION
-template<typename T>
-   concept QuadArrayBaseType = std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>;
-
-template<typename T>
-   concept NotQuadArrayBaseType = !(std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>);
+template<typename T> concept QuadArrayBaseType = std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>;
+template<typename T> concept NotQuadArrayBaseType = !(std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>);
 #else
-concept NotQuadArrayBaseType = true;
+template<typename T> concept NotQuadArrayBaseType = false;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,6 +189,9 @@ bool is_positive(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
 bool is_nonnegative(const ArrayType & A);
+
+template<ArrayBaseType ArrayType>
+auto abs(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
 auto sum(const ArrayType & A);
@@ -548,7 +543,7 @@ auto norm_inf(const ArrayType & A)
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
-   auto real_abs = [](T x) { return x > T(0) ? x : -x; };
+   auto real_abs = [](T x) { return x < T(0) ? -x : x; };
 
    T max_abs = real_abs(A[0]);
    for(sz_T i = 1; i < A.size(); ++i) {
@@ -593,6 +588,14 @@ bool is_nonnegative(const ArrayType & A)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<ArrayBaseType ArrayType>
+auto abs(const ArrayType & A)
+{
+   using T = typename ArrayType::value_type;
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   return UnaryExpr(A, [](T x){return x < T(0) ? -x : x;});
+}
+
 template<ArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
@@ -693,6 +696,25 @@ struct Divide : private Operation
 { template<RealType T> T operator()(const T left, const T right) const { return left / right; } };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<ArrayBaseType T1, typename Op>
+class UnaryExpr : private ArrayBase, private ArrayExpr
+{
+public:
+   using size_type = typename T1::size_type;
+   using value_type = typename T1::value_type;
+   UnaryExpr(const T1 & a, Op op) : sz(a.size()), A(a), op(op) {}
+   UnaryExpr(const UnaryExpr &) = default;
+   UnaryExpr & operator=(const UnaryExpr &) = default;
+
+   value_type operator[](size_type i) const { return op(A[i]); }
+   size_type size() const { return sz; }
+
+private:
+   const size_type sz;
+   const T1 & A;
+   Op op;
+};
+
 template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op>
 class BinExpr : private ArrayBase, private ArrayExpr
 {
