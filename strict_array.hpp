@@ -97,6 +97,16 @@ template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op> class BinExpr;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 
+#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+template<typename T>
+   concept QuadArrayBaseType = std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>;
+
+template<typename T>
+   concept NotQuadArrayBaseType = !(std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>);
+#else
+concept NotQuadArrayBaseType = true;
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 class Array : private ArrayBase
@@ -165,8 +175,13 @@ private:
 template<IntegerType S, RealType T1, RealType T2>
 Array<T1> array_random(S size, T1 low, T2 high);
 
-template<ArrayBaseType ArrayType>
+template<NotQuadArrayBaseType ArrayType>
 std::ostream & operator<<(std::ostream & os, const ArrayType & A);
+
+#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+template<QuadArrayBaseType ArrayType>
+std::ostream & operator<<(std::ostream & os, const ArrayType & A);
+#endif
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
@@ -474,7 +489,7 @@ Array<T1> array_random(S size, T1 low, T2 high)
    return a;
 }
 
-template<ArrayBaseType ArrayType>
+template<NotQuadArrayBaseType ArrayType>
 std::ostream & operator<<(std::ostream & os, const ArrayType & A)
 {
    using T = typename ArrayType::value_type;
@@ -490,16 +505,6 @@ std::ostream & operator<<(std::ostream & os, const ArrayType & A)
          os << std::setprecision(8) << A[i] << std::endl;
       }
    }
-   #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
-   else if(SameType<T, float128>) {
-      int width = 46;
-      char buf[128];
-      for(sz_T i = 0; i < A.size(); ++i) {
-         quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, A[i]);
-         os << buf << std::endl;
-      }
-   }
-   #endif
    else {
       for(sz_T i = 0; i < A.size(); ++i) {
          os << A[i] << std::endl;
@@ -507,6 +512,21 @@ std::ostream & operator<<(std::ostream & os, const ArrayType & A)
    }
    return os;
 }
+
+#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+template<QuadArrayBaseType ArrayType>
+std::ostream & operator<<(std::ostream & os, const ArrayType & A)
+{
+   using sz_T = typename ArrayType::size_type;
+   int width = 46;
+   char buf[128];
+   for(sz_T i = 0; i < A.size(); ++i) {
+      quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, A[i]);
+      os << buf << std::endl;
+   }
+   return os;
+}
+#endif
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)

@@ -1,208 +1,45 @@
-#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <valarray>
 #include "strict_array.hpp"
-#include <vector>
 
-using namespace std;
 using namespace strict_array;
-
-template<typename T>
-void assert_is_same(Array<T> x, valarray<T> y)
-{ for(long int i = 0; i < x.size(); ++i) assert(x[i] == y[i]); }
-
-template<typename T>
-void assert_within_tol(T x, T y)
-{
-
-   T max_val = std::max(x, y);
-   if(max_val < 1.e-6) return;
-
-   T diff = x - y;
-   T abs_diff = diff > T(0) ? diff : -diff;
-   assert(abs_diff / max_val < 1.e-6);
-}
-
-template<typename T>
-void assert_within_tol(Array<T> x, valarray<T> y)
-{
-   for(long int i = 0; i < x.size(); ++i)
-   {
-      T max_val = std::max(x[i], y[i]);
-      if(max_val < 1.e-6) return;
-
-      T diff = x[i] - y[i];
-      T abs_diff = diff > T(0) ? diff : -diff;
-      assert(abs_diff / max_val < 1.e-6);
-   }
-}
-
-template<typename T>
-void assert_all(long int n, T val)
-{
-   Array xa = array_random(n, T(5), T(10));
-   Array ya = array_random(n, T(5), T(10));
-   Array<T> za(n);
-   valarray<T> xv(n);
-   valarray<T> yv(n);
-   valarray<T> zv(n);
-   for(long int i = 0; i < n; ++i) xv[i] = xa[i];
-   for(long int i = 0; i < n; ++i) yv[i] = ya[i];
-
-   xa = val;
-   xv = val;
-   assert_within_tol(xa, xv);
-
-   xa = ya + val;
-   xv = yv + val;
-   assert_within_tol(xa, xv);
-
-   xa = ya - val;
-   xv = yv - val;
-   assert_within_tol(xa, xv);
-
-   xa = ya * val;
-   xv = yv * val;
-   assert_within_tol(xa, xv);
-
-   xa = ya / val;
-   xv = yv / val;
-   assert_within_tol(xa, xv);
-
-   xa = val + ya;
-   xv = val + yv;
-   assert_within_tol(xa, xv);
-
-   xa = val - ya;
-   xv = val - yv;
-   assert_within_tol(xa, xv);
-
-   xa = val * ya;
-   xv = val * yv;
-   assert_within_tol(xa, xv);
-
-   xa = val / ya;
-   xv = val / yv;
-   assert_within_tol(xa, xv);
-
-   za = xa + ya;
-   zv = xv + yv;
-   assert_within_tol(za, zv);
-
-   za = xa - ya;
-   zv = xv - yv;
-   assert_within_tol(za, zv);
-
-   za = xa * ya;
-   zv = xv * yv;
-   assert_within_tol(za, zv);
-
-   za = xa / ya;
-   zv = xv / yv;
-   assert_within_tol(za, zv);
-
-   za += val;
-   zv += val;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za -= val;
-   zv -= val;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za *= val;
-   zv *= val;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za /= val;
-   zv /= val;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za += xa;
-   zv += xv;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za -= xa;
-   zv -= xv;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za *= xa;
-   zv *= xv;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za /= xa;
-   zv /= xv;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za += xa + ya - val;
-   zv += xv + yv - val;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za -= xa + ya - val;
-   zv -= xv + yv - val;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za *= xa + ya - val;
-   zv *= xv + yv - val;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   za /= xa + ya - val;
-   zv /= xv + yv - val;
-   assert_within_tol(za, zv);
-   for(long int i = 0; i < za.size(); ++i) zv[i] = za[i];
-
-   auto sum_a = sum(za);
-   auto sum_v = zv.sum();
-   assert_within_tol(sum_a, sum_v);
-
-   auto max_a = max(za);
-   auto max_v = zv.max();
-   assert(max_a == max_v);
-
-   auto min_a = min(za);
-   auto min_v = zv.min();
-   assert(min_a == min_v);
-
-   auto max_ind = max_index(za);
-   assert(max_a == max_ind.second);
-   auto min_ind = min_index(za);
-   assert(min_a == min_ind.second);
-
-   Array<T> l_a = {T(1), T(2), T(3), T(-1), T(-2), T(-3)};
-   valarray l_v = {T(1), T(2), T(3), T(-1), T(-2), T(-3)};
-   assert_is_same(l_a, l_v);
-
-   za = -za;
-   zv = -zv;
-   assert_is_same(za, zv);
-
-   za = +za;
-   zv = +zv;
-   assert_is_same(za, zv);
-
-   za.resize(10L);
-   zv.resize(10L);
-   assert(za.size() == zv.size());
-}
 
 int main()
 {
-   assert_all<float32> (10000, -3.2F);
-   assert_all<float64> (10000, -3.2);
-   assert_all<long double> (10000, -3.2L);
-   #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
-   assert_all<float128> (10000, -3.2Q);
-   #endif
+   // some examples
+   Array<float32> y1 = array_random(10L, 1.F, 2.F);
+   Array<float32> y2 = array_random(10L, -2.F, -1.F);
+   y2 -= 1.F;
+   y2 -= y1 - 2.F;
+   std::cout << y2 << std::endl;
+
+   Array<float128> z1 = array_random(10L, 1.Q, 2.Q);
+   Array<float128> z2 = array_random(10L, -2.Q, -1.Q);
+   z2 *= -1.Q;
+   z2 *= z1 * 2.Q;
+   std::cout << z2 << std::endl;
+
+   Array<int> u1 = array_random(10L, 1, 2);
+   Array<int> u2 = array_random(10L, -2, -1);
+   u1 /= -1;
+   u2 /= u1 * 2;
+   std::cout << u2 << std::endl;
+
+   Array<float64> v{1., 2., 3., 4., 5., -1., 8., 0.};
+   std::cout << max(v) << std::endl;
+   std::cout << min(v) << std::endl;
+   std::cout << min(2.*v) << std::endl;
+   std::cout << dot_prod(2.*v, v) << std::endl;
+   std::cout << is_positive(v) << std::endl;
+   std::cout << is_nonnegative(v) << std::endl;
+   std::cout << does_contain_zero(v) << std::endl;
+   std::cout << sum(2.*v) << std::endl;
+
+   std::cout << std::endl;
+   Array<float64> y(20L);
+   y.resize_and_assign(v);
+   std::cout << y << std::endl;
+
    return EXIT_SUCCESS;
 }
