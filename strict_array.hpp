@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstdlib>
 #include <iomanip>
 #include <stdexcept>
@@ -179,13 +180,11 @@ Array<T1> array_random(S size, T1 low, T2 high);
 template<NotQuadArrayBaseType ArrayType>
 std::ostream & operator<<(std::ostream & os, const ArrayType & A);
 
-#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
-template<QuadArrayBaseType ArrayType>
-std::ostream & operator<<(std::ostream & os, const ArrayType & A);
-#endif
-
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
+
+template<NotQuadArrayBaseType ArrayType>
+auto norm2(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
 bool does_contain_zero(const ArrayType & A);
@@ -210,6 +209,14 @@ auto min_index(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
 auto max_index(const ArrayType & A);
+
+#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+template<QuadArrayBaseType ArrayType>
+std::ostream & operator<<(std::ostream & os, const ArrayType & A);
+
+template<QuadArrayBaseType ArrayType>
+auto norm2(const ArrayType & A);
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -439,6 +446,7 @@ void Array<T>::fill_random(U1 low, U2 high)
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(high > low);
    for(auto & x : *this)
       x = low + T(std::rand() % (1+high-low));
 }
@@ -449,6 +457,7 @@ void Array<T>::fill_random(U1 low, U2 high)
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(high > low);
    for(auto & x : *this)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
 }
@@ -515,21 +524,6 @@ std::ostream & operator<<(std::ostream & os, const ArrayType & A)
    return os;
 }
 
-#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
-template<QuadArrayBaseType ArrayType>
-std::ostream & operator<<(std::ostream & os, const ArrayType & A)
-{
-   using sz_T = typename ArrayType::size_type;
-   int width = 46;
-   char buf[128];
-   for(sz_T i = 0; i < A.size(); ++i) {
-      quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, A[i]);
-      os << buf << std::endl;
-   }
-   return os;
-}
-#endif
-
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
 {
@@ -540,6 +534,13 @@ auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
    for(typename ArrayType1::size_type i = 0; i < A1.size(); ++i)
       prod += A1[i] * A2[i];
    return prod;
+}
+
+template<NotQuadArrayBaseType ArrayType>
+auto norm2(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   return std::sqrt(dot_prod(A, A));
 }
 
 template<ArrayBaseType ArrayType>
@@ -633,6 +634,28 @@ auto max_index(const ArrayType & A)
          max = {i, A[i]};
    return max;
 }
+
+#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+template<QuadArrayBaseType ArrayType>
+std::ostream & operator<<(std::ostream & os, const ArrayType & A)
+{
+   using sz_T = typename ArrayType::size_type;
+   int width = 46;
+   char buf[128];
+   for(sz_T i = 0; i < A.size(); ++i) {
+      quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, A[i]);
+      os << buf << std::endl;
+   }
+   return os;
+}
+
+template<QuadArrayBaseType ArrayType>
+auto norm2(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   return sqrtq(dot_prod(A, A));
+}
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Plus : private Operation
