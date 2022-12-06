@@ -98,6 +98,7 @@ template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 
 #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+#define STRICT_ARRAY_QUADRUPLE_PRECISION
 template<typename T>
    concept QuadArrayBaseType = std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>;
 
