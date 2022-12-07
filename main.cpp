@@ -1,8 +1,11 @@
+#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <valarray>
 #include <numeric>
+
 #include "strict_array.hpp"
+#include "util.hpp"
 
 using namespace strict_array;
 
@@ -36,8 +39,8 @@ int main()
    val = min(u + v);
    val = dot_prod(2.*u, v);
    val = sum(-u + 2.*v);
-   val = norm_inf(-u*v);
-   val = norm2(u*v);
+   val = norm_inf(-u * v);
+   val = norm2(u * v);
    bool b = is_positive(v);
    b = is_nonnegative(v);
    b = does_contain_zero(v - 2.);
@@ -48,5 +51,18 @@ int main()
    Array<short> D(20L, short(1)); // fill with ones
    std::iota(D.begin(), D.end(), short(0)); // fill with 0, 1, ...
 
+   Array<float64> sa(10'000'000L, 1.);
+   Array<float64> sb(10'000'000L, 1.);
+   Array<float64> sc(10'000'000L, 1.);
+   std::valarray<double> va(1., 10'000'000L);
+   std::valarray<double> vb(1., 10'000'000L);
+   std::valarray<double> vc(1., 10'000'000L);
+   TIME(sa += sb + 1.);
+   TIME(va += vb + 1.);
+   for(auto i = 0L; i < sa.size(); ++i) assert(sa[i] == va[i]);
+
+   TIME(sc = 2.*sa + 2.*sb);
+   TIME(vc = 2.*va + 2.*vb);
+   for(auto i = 0L; i < sa.size(); ++i) assert(sc[i] == vc[i]);
    return EXIT_SUCCESS;
 }

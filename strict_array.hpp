@@ -96,9 +96,19 @@ template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
 #define STRICT_ARRAY_QUADRUPLE_PRECISION
 template<typename T> concept QuadArrayBaseType = std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>;
-template<typename T> concept NotQuadArrayBaseType = !(std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>);
+template<typename T> concept NotQuadArrayBaseType = !std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>;
 #else
-template<typename T> concept NotQuadArrayBaseType = false;
+template<typename T> concept NotQuadArrayBaseType = ArrayBaseType<T>;
+#endif
+
+#if defined __AVX512F__ || defined __AVX512CD__ || defined __AVX512BW__ || defined __AVX512DQ__ || defined __AVX512VL__
+constexpr inline std::size_t bytes_width() { return 64; }
+#elif defined __AVX2__
+constexpr inline std::size_t bytes_width() { return 32; }
+#elif defined __AVX__
+constexpr inline std::size_t bytes_width() { return 32; }
+#else
+constexpr inline std::size_t bytes_width() { return 16; }
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +122,7 @@ public:
    explicit Array();
    template<IntegerType S> explicit Array(S size);
    template<IntegerType S, RealType U> explicit Array(S size, U val);
-   template<RealType U> Array(std::initializer_list<U>);
+   template<RealType U> Array(std::initializer_list<U> list);
    Array(const Array & a);
    Array(Array && a);
 
@@ -133,7 +143,7 @@ public:
    template<IntegerType S> inline const T & operator[](S i) const;
 
    const Array & operator+() const;
-   Array operator-() const;
+   auto operator-() const;
 
    template<RealType U> Array & operator+=(U val);
    template<RealType U> Array & operator-=(U val);
@@ -175,7 +185,7 @@ std::ostream & operator<<(std::ostream & os, const ArrayType & A);
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
 
-template<NotQuadArrayBaseType ArrayType>
+template<ArrayBaseType ArrayType>
 auto norm_inf(const ArrayType & A);
 
 template<NotQuadArrayBaseType ArrayType>
@@ -222,11 +232,11 @@ Array<T>::Array() : sz{size_type(0)}, elem{nullptr}
 {}
 
 template<RealType T> template<IntegerType S>
-Array<T>::Array(S size) : sz{size}, elem{new (std::align_val_t(32)) T[size]{}}
+Array<T>::Array(S size) : sz{size}, elem{new (std::align_val_t(bytes_width())) T[size]{}}
 { static_assert(SameType<size_type, S>); }
 
 template<RealType T> template<IntegerType S, RealType U>
-Array<T>::Array(S size, U val) : sz{size}, elem(new (std::align_val_t(32)) T[size])
+Array<T>::Array(S size, U val) : sz{size}, elem(new (std::align_val_t(bytes_width())) T[size])
 {
    static_assert(SameType<size_type, S>);
    static_assert(SameType<T, U>);
@@ -234,14 +244,14 @@ Array<T>::Array(S size, U val) : sz{size}, elem(new (std::align_val_t(32)) T[siz
 }
 
 template<RealType T> template<RealType U>
-Array<T>::Array(std::initializer_list<U> l) : Array(static_cast<size_type>(l.size()))
+Array<T>::Array(std::initializer_list<U> list) : Array(static_cast<size_type>(list.size()))
 {
    static_assert(SameType<T, U>);
-   std::copy(l.begin(), l.end(), begin());
+   std::copy(list.begin(), list.end(), begin());
 }
 
 template<RealType T>
-Array<T>::Array(const Array<T> & a) : sz{a.size()}, elem{new (std::align_val_t(32)) T[a.size()]}
+Array<T>::Array(const Array<T> & a) : sz{a.size()}, elem{new (std::align_val_t(bytes_width())) T[a.size()]}
 { apply1(a, [&](size_type i) { elem[i] = a[i]; } ); }
 
 template<RealType T>
@@ -285,7 +295,7 @@ Array<T> & Array<T>::operator=(Array<T> && a)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<ArrayExprType ArrExpr>
 Array<T>::Array(const ArrExpr & expr)
-   : sz{expr.size()}, elem{new (std::align_val_t(32)) T[expr.size()]}
+   : sz{expr.size()}, elem{new (std::align_val_t(bytes_width())) T[expr.size()]}
 {
    static_assert(SameType<size_type, typename ArrExpr::size_type>);
    static_assert(SameType<T, typename ArrExpr::value_type>);
@@ -310,7 +320,7 @@ Array<T> & Array<T>::resize(S size)
 
    delete[] elem;
    ASSERT_STRICT_ARRAY_DEBUG(size > size_type(-1));
-   elem = new (std::align_val_t(32)) T[size]{};
+   elem = new (std::align_val_t(bytes_width())) T[size]{};
    sz = size;
    return *this;
 }
@@ -354,7 +364,8 @@ template<RealType T>
 const Array<T> & Array<T>::operator+() const { return *this; }
 
 template<RealType T>
-Array<T> Array<T>::operator-() const { return *this * T(-1); }
+auto Array<T>::operator-() const
+{ return UnaryExpr(*this, [](T x){return -x;}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<RealType U>
@@ -538,13 +549,13 @@ auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
    return prod;
 }
 
-template<NotQuadArrayBaseType ArrayType>
+template<ArrayBaseType ArrayType>
 auto norm_inf(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
-   auto real_abs = [](T x) { return x < T(sz_T(0)) ? -x : x; };
+   auto real_abs = [](T x) { return x < T(0) ? -x : x; };
 
    T max_abs = real_abs(A[sz_T(0)]);
    for(sz_T i = sz_T(1); i < A.size(); ++i) {
@@ -599,7 +610,7 @@ auto abs(const ArrayType & A)
    using T = typename ArrayType::value_type;
    using sz_T = typename ArrayType::size_type;
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
-   return UnaryExpr(A, [](T x){return x < T(sz_T(0)) ? -x : x;});
+   return UnaryExpr(A, [](T x){return x < T(0) ? -x : x;});
 }
 
 template<ArrayBaseType ArrayType>
