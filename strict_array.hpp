@@ -133,6 +133,7 @@ public:
    template<ArrayExprType ArrExpr> Array(const ArrExpr & expr);
    template<ArrayExprType ArrExpr> Array & operator=(const ArrExpr & expr);
 
+   template<IntegerType S> Array & remove_element(S index);
    template<IntegerType S> Array & resize(S size);
    Array & resize_and_assign(const Array & a);
 
@@ -166,6 +167,9 @@ public:
    template<IntegerType U1, IntegerType U2> void fill_random(U1 low, U2 high);
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
 
+   void sort_increasing();
+   void sort_decreasing();
+
 private:
    size_type sz;
    T* array_restrict_ptr elem;
@@ -176,8 +180,8 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<IntegerType S, RealType T1, RealType T2>
-Array<T1> array_random(S size, T1 low, T2 high);
+template<IntegerType S, RealType T1, RealType T2> Array<T1>
+array_random(S size, T1 low, T2 high);
 
 template<NotQuadArrayBaseType ArrayType>
 std::ostream & operator<<(std::ostream & os, const ArrayType & A);
@@ -218,6 +222,21 @@ auto min_index(const ArrayType & A);
 template<ArrayBaseType ArrayType>
 auto max_index(const ArrayType & A);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<ArrayBaseType T1, ArrayBaseType T2> auto operator+(const T1 & A, const T2 & B);
+template<ArrayBaseType T1, ArrayBaseType T2> auto operator-(const T1 & A, const T2 & B);
+template<ArrayBaseType T1, ArrayBaseType T2> auto operator*(const T1 & A, const T2 & B);
+template<ArrayBaseType T1, ArrayBaseType T2> auto operator/(const T1 & A, const T2 & B);
+template<ArrayBaseType T, RealType U> auto operator+(const T & A, U val);
+template<ArrayBaseType T, RealType U> auto operator-(const T & A, U val);
+template<ArrayBaseType T, RealType U> auto operator*(const T & A, U val);
+template<ArrayBaseType T, RealType U> auto operator/(const T & A, U val);
+template<ArrayBaseType T, RealType U> auto operator+(U val, const T & B);
+template<ArrayBaseType T, RealType U> auto operator-(U val, const T & B);
+template<ArrayBaseType T, RealType U> auto operator*(U val, const T & B);
+template<ArrayBaseType T, RealType U> auto operator/(U val, const T & B);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
 template<QuadArrayBaseType ArrayType>
 std::ostream & operator<<(std::ostream & os, const ArrayType & A);
@@ -312,6 +331,17 @@ Array<T> & Array<T>::operator=(const ArrExpr & expr)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<RealType T> template<IntegerType S>
+Array<T> & Array<T>::remove_element(S index)
+{
+   static_assert(SameType<size_type, S>);
+   ASSERT_STRICT_ARRAY_DEBUG(is_valid_index(index));
+   for(size_type i = index; i < sz-1; ++i)
+      elem[i] = elem[i+1];
+   --sz;
+   return *this;
+}
+
 template<RealType T> template<IntegerType S>
 Array<T> & Array<T>::resize(S size)
 {
@@ -472,6 +502,14 @@ void Array<T>::fill_random(U1 low, U2 high)
    for(auto & x : *this)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
 }
+
+template<RealType T>
+void Array<T>::sort_increasing()
+{ std::sort(begin(), end(), [](T a, T b) { return a < b; }); }
+
+template<RealType T>
+void Array<T>::sort_decreasing()
+{ std::sort(begin(), end(), [](T a, T b) { return a > b; }); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -770,7 +808,6 @@ class BinExprValLeft : private ArrayBase, private ArrayExpr
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
-
    BinExprValLeft(const T1 & b, T2 val, Op op) : sz(b.size()), B(b), val(val), op(op)
    { static_assert(SameType<typename T1::value_type, T2>); }
    BinExprValLeft(const BinExprValLeft &) = default;
@@ -816,28 +853,28 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T1, ArrayBaseType T2>
-BinExpr<T1, T2, Plus> operator+(const T1 & A, const T2 & B)
+auto operator+(const T1 & A, const T2 & B)
 {
    static_assert(SameType<typename T1::value_type, typename T2::value_type>);
    return BinExpr<T1, T2, Plus>(A, B, Plus{});
 }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
-BinExpr<T1, T2, Minus> operator-(const T1 & A, const T2 & B)
+auto operator-(const T1 & A, const T2 & B)
 {
    static_assert(SameType<typename T1::value_type, typename T2::value_type>);
    return BinExpr<T1, T2, Minus>(A, B, Minus{});
 }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
-BinExpr<T1, T2, Mult> operator*(const T1 & A, const T2 & B)
+auto operator*(const T1 & A, const T2 & B)
 {
    static_assert(SameType<typename T1::value_type, typename T2::value_type>);
    return BinExpr<T1, T2, Mult>(A, B, Mult{});
 }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
-BinExpr<T1, T2, Divide> operator/(const T1 & A, const T2 & B)
+auto operator/(const T1 & A, const T2 & B)
 {
    static_assert(SameType<typename T1::value_type, typename T2::value_type>);
    #ifdef STRICT_ARRAY_DIVISION_ON
@@ -848,28 +885,28 @@ BinExpr<T1, T2, Divide> operator/(const T1 & A, const T2 & B)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
-BinExprValRight<T, U, Plus> operator+(const T & A, U val)
+auto operator+(const T & A, U val)
 {
    static_assert(SameType<typename T::value_type, U>);
    return BinExprValRight<T, U, Plus>(A, val, Plus{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValRight<T, U, Minus> operator-(const T & A, U val)
+auto operator-(const T & A, U val)
 {
    static_assert(SameType<typename T::value_type, U>);
    return BinExprValRight<T, U, Minus>(A, val, Minus{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValRight<T, U, Mult> operator*(const T & A, U val)
+auto operator*(const T & A, U val)
 {
    static_assert(SameType<typename T::value_type, U>);
    return BinExprValRight<T, U, Mult>(A, val, Mult{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValRight<T, U, Divide> operator/(const T & A, U val)
+auto operator/(const T & A, U val)
 {
    static_assert(SameType<typename T::value_type, U>);
    #ifdef STRICT_ARRAY_DIVISION_ON
@@ -880,28 +917,28 @@ BinExprValRight<T, U, Divide> operator/(const T & A, U val)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
-BinExprValLeft<T, U, Plus> operator+(U val, const T & B)
+auto operator+(U val, const T & B)
 {
    static_assert(SameType<typename T::value_type, U>);
    return BinExprValLeft<T, U, Plus>(B, val, Plus{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValLeft<T, U, Minus> operator-(U val, const T & B)
+auto operator-(U val, const T & B)
 {
    static_assert(SameType<typename T::value_type, U>);
    return BinExprValLeft<T, U, Minus>(B, val, Minus{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValLeft<T, U, Mult> operator*(U val, const T & B)
+auto operator*(U val, const T & B)
 {
    static_assert(SameType<typename T::value_type, U>);
    return BinExprValLeft<T, U, Mult>(B, val, Mult{});
 }
 
 template<ArrayBaseType T, RealType U>
-BinExprValLeft<T, U, Divide> operator/(U val, const T & B)
+auto operator/(U val, const T & B)
 {
    static_assert(SameType<typename T::value_type, U>);
    #ifdef STRICT_ARRAY_DIVISION_ON
