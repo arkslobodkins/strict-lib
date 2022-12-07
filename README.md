@@ -1,10 +1,5 @@
 Your math professor is strict and so am I.    
     
-Facilities of generic programming allow us to write code with extensive amount of flexibility.    
-On the other hand, the exact same facilities allow us to specify how flexible we want to be.    
-This could not be more true with concepts of C++20. They are a convenient way to control the generality    
-of templates.    
-    
 Certain fields require stronger type safety and more rigorous error handling than others.    
 That is certainly the case when it comes to high-performance computing and    
 numerics. We want to know exactly what types we are dealing with, how many bytes    
