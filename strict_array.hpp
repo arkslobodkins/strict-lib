@@ -222,11 +222,11 @@ Array<T>::Array() : sz{size_type(0)}, elem{nullptr}
 {}
 
 template<RealType T> template<IntegerType S>
-Array<T>::Array(S size) : sz{size}, elem{new T[size]{}}
+Array<T>::Array(S size) : sz{size}, elem{new (std::align_val_t(32)) T[size]{}}
 { static_assert(SameType<size_type, S>); }
 
 template<RealType T> template<IntegerType S, RealType U>
-Array<T>::Array(S size, U val) : sz{size}, elem{new T[size]}
+Array<T>::Array(S size, U val) : sz{size}, elem(new (std::align_val_t(32)) T[size])
 {
    static_assert(SameType<size_type, S>);
    static_assert(SameType<T, U>);
@@ -241,7 +241,7 @@ Array<T>::Array(std::initializer_list<U> l) : Array(static_cast<size_type>(l.siz
 }
 
 template<RealType T>
-Array<T>::Array(const Array<T> & a) : sz{a.size()}, elem{new T[a.size()]}
+Array<T>::Array(const Array<T> & a) : sz{a.size()}, elem{new (std::align_val_t(32)) T[a.size()]}
 { apply1(a, [&](size_type i) { elem[i] = a[i]; } ); }
 
 template<RealType T>
@@ -285,7 +285,7 @@ Array<T> & Array<T>::operator=(Array<T> && a)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<ArrayExprType ArrExpr>
 Array<T>::Array(const ArrExpr & expr)
-   : sz{expr.size()}, elem{new T[expr.size()]}
+   : sz{expr.size()}, elem{new (std::align_val_t(32)) T[expr.size()]}
 {
    static_assert(SameType<size_type, typename ArrExpr::size_type>);
    static_assert(SameType<T, typename ArrExpr::value_type>);
@@ -310,7 +310,7 @@ Array<T> & Array<T>::resize(S size)
 
    delete[] elem;
    ASSERT_STRICT_ARRAY_DEBUG(size > size_type(-1));
-   elem = new T[size]{};
+   elem = new (std::align_val_t(32)) T[size]{};
    sz = size;
    return *this;
 }
