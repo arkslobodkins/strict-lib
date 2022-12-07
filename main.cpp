@@ -47,6 +47,9 @@ int main()
    bool b = is_positive(v);
    b = is_nonnegative(v);
    b = does_contain_zero(v - 2.);
+   std::cout << u << std::endl;
+   auto vec_it = u.within_range(-1., 3.);
+   for(auto it : vec_it) std::cout << *it << std::endl;
 
    Array<float64> y(20L);
    y.resize_and_assign(v);

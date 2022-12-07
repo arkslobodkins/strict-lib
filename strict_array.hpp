@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
 #include <quadmath.h>
@@ -170,6 +171,9 @@ public:
    void sort_increasing();
    void sort_decreasing();
 
+   template<RealType U1, RealType U2> std::vector<T*> within_range(U1 low, U2 high);
+   template<RealType U1, RealType U2> std::vector<const T*> within_range(U1 low, U2 high) const;
+
 private:
    size_type sz;
    T* array_restrict_ptr elem;
@@ -204,6 +208,7 @@ bool is_positive(const ArrayType & A);
 template<ArrayBaseType ArrayType>
 bool is_nonnegative(const ArrayType & A);
 
+// returns expression template
 template<ArrayBaseType ArrayType>
 auto abs(const ArrayType & A);
 
@@ -223,6 +228,7 @@ template<ArrayBaseType ArrayType>
 auto max_index(const ArrayType & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// All arithmetic operators below return appropriate expression templates
 template<ArrayBaseType T1, ArrayBaseType T2> auto operator+(const T1 & A, const T2 & B);
 template<ArrayBaseType T1, ArrayBaseType T2> auto operator-(const T1 & A, const T2 & B);
 template<ArrayBaseType T1, ArrayBaseType T2> auto operator*(const T1 & A, const T2 & B);
@@ -510,6 +516,32 @@ void Array<T>::sort_increasing()
 template<RealType T>
 void Array<T>::sort_decreasing()
 { std::sort(begin(), end(), [](T a, T b) { return a > b; }); }
+
+template<RealType T> template<RealType U1, RealType U2>
+std::vector<T*> Array<T>::within_range(U1 low, U2 high)
+{
+   static_assert(SameType<T, U1>);
+   static_assert(SameType<U1, U2>);
+   ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   std::vector<T*> x{};
+   for(auto it = begin(); it != end(); ++it)
+      if(*it >= low && *it <= high)
+         x.push_back(it);
+   return x;
+}
+
+template<RealType T> template<RealType U1, RealType U2>
+std::vector<const T*> Array<T>::within_range(U1 low, U2 high) const
+{
+   static_assert(SameType<T, U1>);
+   static_assert(SameType<U1, U2>);
+   ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   std::vector<const T*> x{};
+   for(auto it = begin(); it != end(); ++it)
+      if(*it >= low && *it <= high)
+         x.push_back(it);
+   return x;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
