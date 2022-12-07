@@ -171,8 +171,8 @@ public:
    void sort_increasing();
    void sort_decreasing();
 
-   template<RealType U1, RealType U2> std::vector<T*> within_range(U1 low, U2 high);
-   template<RealType U1, RealType U2> std::vector<const T*> within_range(U1 low, U2 high) const;
+   template<RealType U1, RealType U2> std::vector<T*> within_range(U1 low, U2 high) &;
+   template<RealType U1, RealType U2> std::vector<const T*> within_range(U1 low, U2 high) const &;
 
 private:
    size_type sz;
@@ -518,7 +518,7 @@ void Array<T>::sort_decreasing()
 { std::sort(begin(), end(), [](T a, T b) { return a > b; }); }
 
 template<RealType T> template<RealType U1, RealType U2>
-std::vector<T*> Array<T>::within_range(U1 low, U2 high)
+std::vector<T*> Array<T>::within_range(U1 low, U2 high) &
 {
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
@@ -531,7 +531,7 @@ std::vector<T*> Array<T>::within_range(U1 low, U2 high)
 }
 
 template<RealType T> template<RealType U1, RealType U2>
-std::vector<const T*> Array<T>::within_range(U1 low, U2 high) const
+std::vector<const T*> Array<T>::within_range(U1 low, U2 high) const &
 {
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
