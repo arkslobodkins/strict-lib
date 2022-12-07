@@ -26,7 +26,6 @@ int main()
    z2.remove_element(5L);
    z2.sort_decreasing();
    std::cout << z2 << std::endl;
-
    #endif
 
    Array<int> u1 = array_random(10L, 1, 2);

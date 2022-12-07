@@ -157,19 +157,19 @@ public:
    template<ArrayBaseType ArrayType> Array & operator*=(const ArrayType & A);
    template<ArrayBaseType ArrayType> Array & operator/=(const ArrayType & A);
 
-   T* data() { return sz ? elem : nullptr; }
-   T* begin() { return sz ? elem : nullptr; }
-   T* end() { return sz ? elem+sz : nullptr; }
-   const T* data() const { return sz ? elem : nullptr; }
-   const T* begin() const { return sz ? elem : nullptr; }
-   const T* end() const { return sz ? elem+sz : nullptr; }
+   T* data() & { return sz ? elem : nullptr; }
+   T* begin() & { return sz ? elem : nullptr; }
+   T* end() & { return sz ? elem+sz : nullptr; }
+   const T* data() const & { return sz ? elem : nullptr; }
+   const T* begin() const & { return sz ? elem : nullptr; }
+   const T* end() const & { return sz ? elem+sz : nullptr; }
 
    template<IntegerType S1, IntegerType S2> Array sub_array(S1 first, S2 last);
    template<IntegerType U1, IntegerType U2> void fill_random(U1 low, U2 high);
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
 
-   void sort_increasing();
-   void sort_decreasing();
+   void sort_increasing() &;
+   void sort_decreasing() & ;
 
    template<RealType U1, RealType U2> std::vector<T*> within_range(U1 low, U2 high) &;
    template<RealType U1, RealType U2> std::vector<const T*> within_range(U1 low, U2 high) const &;
@@ -510,11 +510,11 @@ void Array<T>::fill_random(U1 low, U2 high)
 }
 
 template<RealType T>
-void Array<T>::sort_increasing()
+void Array<T>::sort_increasing() &
 { std::sort(begin(), end(), [](T a, T b) { return a < b; }); }
 
 template<RealType T>
-void Array<T>::sort_decreasing()
+void Array<T>::sort_decreasing() &
 { std::sort(begin(), end(), [](T a, T b) { return a > b; }); }
 
 template<RealType T> template<RealType U1, RealType U2>
