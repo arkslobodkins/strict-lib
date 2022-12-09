@@ -34,8 +34,8 @@ int main()
    u2 /= u1 * 2;
    std::cout << u2 << std::endl;
 
-   Array<float64> v{1., 2., 3., 4., 5., -1., 8., 0.};
-   Array<float64> u{-1., -2., 3., 4., 5., -1., 8., 0.};
+   Array<float64> v{+0., +1., +2., +3., +4., +5., +6., +7.};
+   Array<float64> u{-7., -6., -5., -4., -3., -2., -1., -0.};
    Array<float64> abs_u = abs(u);
    float64 val = max(v);
    val = min(u + v);
@@ -46,8 +46,7 @@ int main()
    bool b = is_positive(v);
    b = is_nonnegative(v);
    b = does_contain_zero(v - 2.);
-   std::cout << u << std::endl;
-   auto vec_it = u.within_range(-1., 3.);
+   auto vec_it = u.within_range(-3., -1.);
    for(auto it : vec_it) std::cout << *it << std::endl;
 
    Array<float64> y(20L);
@@ -62,6 +61,7 @@ int main()
    std::valarray<double> va(1., 10'000'000L);
    std::valarray<double> vb(1., 10'000'000L);
    std::valarray<double> vc(1., 10'000'000L);
+
    TIME(sa += sb + 1.);
    TIME(va += vb + 1.);
    for(auto i = 0L; i < sa.size(); ++i) assert(sa[i] == va[i]);
@@ -69,5 +69,8 @@ int main()
    TIME(sc = 2.*sa + 2.*sb);
    TIME(vc = 2.*va + 2.*vb);
    for(auto i = 0L; i < sa.size(); ++i) assert(sc[i] == vc[i]);
+
+//   for(auto i = 0L; i < sa.size(); ++i) sa[i] = i / 2; // does not compile, rhs produces an integer
+   for(auto i = 0L; i < sa.size(); ++i) sa[i] = i / 2.;  // compiles, rhs is of type double
    return EXIT_SUCCESS;
 }

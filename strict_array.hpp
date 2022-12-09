@@ -50,9 +50,9 @@ static inline std::string trace_err(const char* file, const char* func, int line
    throw std::out_of_range{"OUT OF RANGE! " + trace_err(__FILE__, __func__, __LINE__)};     \
    } while(0)
 
-#define STRICT_ARRAY_THROW_ZERO_DIVISION()                                                   \
-   do {                                                                                      \
-   throw std::out_of_range{"ZERO DIVISION! " + trace_err(__FILE__, __func__, __LINE__)};     \
+#define STRICT_ARRAY_THROW_ZERO_DIVISION()                                                    \
+   do {                                                                                       \
+   throw std::runtime_error{"ZERO DIVISION! " + trace_err(__FILE__, __func__, __LINE__)};     \
    } while(0)
 
 namespace strict_array {
@@ -113,6 +113,74 @@ constexpr inline std::size_t bytes_width() { return 32; }
 constexpr inline std::size_t bytes_width() { return 16; }
 #endif
 
+template<RealType T>
+struct IndexVal
+{
+public:
+   explicit IndexVal(T & x) : x(x){}
+   IndexVal(const IndexVal &) = delete;
+   const IndexVal & operator=(const IndexVal & index_val) { x = index_val.x; return *this; }
+   template<RealType U> const IndexVal & operator=(U val) { static_assert(SameType<T, U>); x = val; return *this; }
+   template<RealType U> operator U () const { return x; }
+
+   const IndexVal & operator++() { ++x; return *this; }
+   const IndexVal & operator--() { --x; return *this; }
+   T operator++(int) { T old = x; ++x; return old; }
+   T operator--(int) { T old = x; --x; return old; }
+   template<RealType U> const IndexVal & operator+=(U val) { static_assert(SameType<T, U>); x += val; return *this; }
+   template<RealType U> const IndexVal & operator-=(U val) { static_assert(SameType<T, U>); x -= val; return *this; }
+   template<RealType U> const IndexVal & operator*=(U val) { static_assert(SameType<T, U>); x *= val; return *this; }
+   template<RealType U> const IndexVal & operator/=(U val) {
+      #ifdef STRICT_ARRAY_DIVISION_ON
+      if(val == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
+      #endif
+      static_assert(SameType<T, U>); x /= val; return *this;
+   }
+   const IndexVal & operator+=(const IndexVal & index_val) { x += index_val.x; return *this; }
+   const IndexVal & operator-=(const IndexVal & index_val) { x -= index_val.x; return *this; }
+   const IndexVal & operator*=(const IndexVal & index_val) { x *= index_val.x; return *this; }
+   const IndexVal & operator/=(const IndexVal & index_val) {
+      #ifdef STRICT_ARRAY_DIVISION_ON
+      if(index_val.x == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
+      #endif
+      x /= index_val.x; return *this;
+   }
+
+   T & x;
+};
+
+template<RealType T, RealType U> auto operator+(const IndexVal<T> & v1, const IndexVal<U> & v2) { return v1.x + v2.x; }
+template<RealType T, RealType U> auto operator-(const IndexVal<T> & v1, const IndexVal<U> & v2) { return v1.x - v2.x; }
+template<RealType T, RealType U> auto operator*(const IndexVal<T> & v1, const IndexVal<U> & v2) { return v1.x * v2.x; }
+template<RealType T, RealType U> auto operator/(const IndexVal<T> & v1, const IndexVal<U> & v2) { return v1.x / v2.x; }
+template<RealType T, RealType U> auto operator+(const IndexVal<T> & v, U val) { return v.x + val; }
+template<RealType T, RealType U> auto operator-(const IndexVal<T> & v, U val) { return v.x - val; }
+template<RealType T, RealType U> auto operator*(const IndexVal<T> & v, U val) { return v.x * val; }
+template<RealType T, RealType U> auto operator/(const IndexVal<T> & v, U val) { return v.x / val; }
+template<RealType T, RealType U> auto operator+(T val, const IndexVal<U> & v) { return val + v.x; }
+template<RealType T, RealType U> auto operator-(T val, const IndexVal<U> & v) { return val - v.x; }
+template<RealType T, RealType U> auto operator*(T val, const IndexVal<U> & v) { return val * v.x; }
+template<RealType T, RealType U> auto operator/(T val, const IndexVal<U> & v) { return val / v.x; }
+
+template<RealType T, RealType U> bool operator==(const IndexVal<T> & v, U val) { return v.x == val; }
+template<RealType T, RealType U> bool operator==(T val, const IndexVal<U> & v) { return v.x == val; }
+template<RealType T, RealType U> bool operator==(const IndexVal<T> v1, const IndexVal<U> & v2) { return v1.x == v2.x; }
+template<RealType T, RealType U> bool operator<(const IndexVal<T> & v, U val) { return v.x < val; }
+template<RealType T, RealType U> bool operator<(T val, const IndexVal<U> & v) { return v.x < val; }
+template<RealType T, RealType U> bool operator<(const IndexVal<T> v1, const IndexVal<U> & v2) { return v1.x < v2.x; }
+template<RealType T, RealType U> bool operator<=(const IndexVal<T> & v, U val) { return v.x <= val; }
+template<RealType T, RealType U> bool operator<=(T val, const IndexVal<U> & v) { return v.x <= val; }
+template<RealType T, RealType U> bool operator<=(const IndexVal<T> v1, const IndexVal<U> & v2) { return v1.x <= v2.x; }
+template<RealType T, RealType U> bool operator>(const IndexVal<T> & v, U val) { return v.x > val; }
+template<RealType T, RealType U> bool operator>(T val, const IndexVal<U> & v) { return v.x > val; }
+template<RealType T, RealType U> bool operator>(const IndexVal<T> v1, const IndexVal<U> & v2) { return v1.x > v2.x; }
+template<RealType T, RealType U> bool operator>=(const IndexVal<T> & v, U val) { return v.x >= val; }
+template<RealType T, RealType U> bool operator>=(T val, const IndexVal<U> & v) { return v.x >= val; }
+template<RealType T, RealType U> bool operator>=(const IndexVal<T> v1, const IndexVal<U> & v2) { return v1.x >= v2.x; }
+template<RealType T, RealType U> bool operator!=(const IndexVal<T> & v, U val) { return v.x != val; }
+template<RealType T, RealType U> bool operator!=(T val, const IndexVal<U> & v) { return v.x != val; }
+template<RealType T, RealType U> bool operator!=(const IndexVal<T> v1, const IndexVal<U> & v2) { return v1.x != v2.x; }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 class Array : private ArrayBase
@@ -142,8 +210,10 @@ public:
    ~Array();
 
    [[nodiscard]] inline size_type size() const;
-   template<IntegerType S> inline T & operator[](S i);
-   template<IntegerType S> inline const T & operator[](S i) const;
+   template<IntegerType S> inline IndexVal<T> operator[](S i);
+   template<IntegerType S> inline const IndexVal<T> operator[](S i) const;
+   template<IntegerType S> inline T & index(S i);
+   template<IntegerType S> inline const T & index(S i) const;
 
    [[nodiscard]] const Array & operator+() const;
    [[nodiscard]] auto operator-() const; // returns expression template
@@ -386,7 +456,29 @@ template<RealType T>
 inline auto Array<T>::size() const ->size_type { return sz; }
 
 template<RealType T> template<IntegerType S>
-inline T & Array<T>::operator[](S i)
+inline IndexVal<T> Array<T>::operator[](S i)
+{
+   static_assert(SameType<size_type, S>);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
+   #ifdef STRICT_ARRAY_DEBUG_ON
+   if(!is_valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
+   #endif
+   return IndexVal{elem[i]};
+}
+
+template<RealType T> template<IntegerType S>
+inline const IndexVal<T> Array<T>::operator[](S i) const
+{
+   static_assert(SameType<size_type, S>);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
+   #ifdef STRICT_ARRAY_DEBUG_ON
+   if(!is_valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
+   #endif
+   return IndexVal{elem[i]};
+}
+
+template<RealType T> template<IntegerType S>
+inline T & Array<T>::index(S i)
 {
    static_assert(SameType<size_type, S>);
    ASSERT_STRICT_ARRAY_DEBUG(!empty());
@@ -397,7 +489,7 @@ inline T & Array<T>::operator[](S i)
 }
 
 template<RealType T> template<IntegerType S>
-inline const T & Array<T>::operator[](S i) const
+inline const T & Array<T>::index(S i) const
 {
    static_assert(SameType<size_type, S>);
    ASSERT_STRICT_ARRAY_DEBUG(!empty());
@@ -447,7 +539,7 @@ template<RealType T> template<RealType U>
 const Array<T> & Array<T>::operator/=(const U val)
 {
    static_assert(SameType<T, U>);
-   #ifdef QUAD_DIVISION_ON
+   #ifdef STRICT_ARRAY_DIVISION_ON
    if(val == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
    apply0([&](size_type i) { elem[i] /= val; } );
@@ -459,7 +551,7 @@ template<RealType T> template<ArrayBaseType ArrayType>
 const Array<T> & Array<T>::operator+=(const ArrayType & A)
 {
    static_assert(SameType<T, typename ArrayType::value_type>);
-   apply1(A, [&](size_type i) { elem[i] += A[i]; });
+   apply1(A, [&](size_type i) { elem[i] += A.index(i); });
    return *this;
 }
 
@@ -467,7 +559,7 @@ template<RealType T> template<ArrayBaseType ArrayType>
 const Array<T> & Array<T>::operator-=(const ArrayType & A)
 {
    static_assert(SameType<T, typename ArrayType::value_type>);
-   apply1(A, [&](size_type i) { elem[i] -= A[i]; });
+   apply1(A, [&](size_type i) { elem[i] -= A.index(i); });
    return *this;
 }
 
@@ -475,7 +567,7 @@ template<RealType T> template<ArrayBaseType ArrayType>
 const Array<T> & Array<T>::operator*=(const ArrayType & A)
 {
    static_assert(SameType<T, typename ArrayType::value_type>);
-   apply1(A, [&](size_type i) { elem[i] *= A[i]; });
+   apply1(A, [&](size_type i) { elem[i] *= A.index(i); });
    return *this;
 }
 
@@ -486,7 +578,7 @@ const Array<T> & Array<T>::operator/=(const ArrayType & A)
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(does_contain_zero(A)) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
-   apply1(A, [&](size_type i) { elem[i] /= A[i]; });
+   apply1(A, [&](size_type i) { elem[i] /= A.index(i); });
    return *this;
 }
 
@@ -504,7 +596,7 @@ Array<T> Array<T>::sub_array(S1 first, S2 last)
 
    Array<T> sub_array(sub_sz);
    for(size_type i = size_type(0); i < sub_sz; ++i)
-      sub_array[i] = elem[first+i];
+      sub_array.index(i) = elem[first+i];
    return sub_array;
 }
 
@@ -628,10 +720,10 @@ std::ostream & operator<<(std::ostream & os, const ArrayType & A)
    if(SameType<T, double>)           num_digits = std::numeric_limits<double>::digits10 + 1;
    else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10 + 1;
    else if(SameType<T, float>)       num_digits = std::numeric_limits<float>::digits10 + 1;
-   else                              num_digits = std::cout.precision();
+   else                              num_digits = (int)std::cout.precision();
 
    for(sz_T i = sz_T(0); i < A.size(); ++i)
-      os << std::setprecision(num_digits) << A[i] << std::endl;
+      os << std::setprecision(num_digits) << A.index(i) << std::endl;
    return os;
 }
 
@@ -646,7 +738,7 @@ auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
    using sz_T = typename ArrayType1::size_type;
    typename ArrayType1::value_type prod{};
    for(sz_T i = sz_T(0); i < A1.size(); ++i)
-      prod += A1[i] * A2[i];
+      prod += A1.index(i) * A2.index(i);
    return prod;
 }
 
@@ -658,9 +750,9 @@ auto norm_inf(const ArrayType & A)
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
    auto real_abs = [](T x) { return x < T(0) ? -x : x; };
 
-   T max_abs = real_abs(A[sz_T(0)]);
+   T max_abs = real_abs(A.index(sz_T(0)));
    for(sz_T i = sz_T(1); i < A.size(); ++i) {
-      T abs_i = real_abs(A[i]);
+      T abs_i = real_abs(A.index(i));
       max_abs = abs_i > max_abs ? abs_i : max_abs;
    }
    return max_abs;
@@ -681,7 +773,7 @@ bool does_contain_zero(const ArrayType & A)
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
    for(sz_T i = sz_T(0); i < A.size(); ++i)
-      if(A[i] == typename ArrayType::value_type(0)) return true;
+      if(A.index(i) == typename ArrayType::value_type(0)) return true;
    return false;
 }
 
@@ -692,7 +784,7 @@ bool is_positive(const ArrayType & A)
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
    for(sz_T i = sz_T(0); i < A.size(); ++i)
-      if(A[i] <= typename ArrayType::value_type(0)) return false;
+      if(A.index(i) <= typename ArrayType::value_type(0)) return false;
    return true;
 }
 
@@ -703,7 +795,7 @@ bool is_nonnegative(const ArrayType & A)
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
    for(sz_T i = sz_T(0); i < A.size(); ++i)
-      if(A[i] < typename ArrayType::value_type(0)) return false;
+      if(A.index(i) < typename ArrayType::value_type(0)) return false;
    return true;
 }
 
@@ -725,7 +817,7 @@ auto sum(const ArrayType & A)
 
    typename ArrayType::value_type s{};
    for(sz_T i = sz_T(0); i < A.size(); ++i)
-      s += A[i];
+      s += A.index(i);
    return s;
 }
 
@@ -736,9 +828,9 @@ auto min(const ArrayType & A)
    using T = typename ArrayType::value_type;
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
-   T m = A[sz_T(0)];
+   T m = A.index(sz_T(0));
    for(sz_T i = sz_T(1); i < A.size(); ++i)
-      if(A[i] < m) m = A[i];
+      if(A.index(i) < m) m = A.index(i);
    return m;
 }
 
@@ -749,9 +841,9 @@ auto max(const ArrayType & A)
    using T = typename ArrayType::value_type;
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
-   T m = A[sz_T(0)];
+   T m = A.index(sz_T(0));
    for(sz_T i = sz_T(1); i < A.size(); ++i)
-      if(A[i] > m) m = A[i];
+      if(A.index(i) > m) m = A.index(i);
    return m;
 }
 
@@ -762,10 +854,10 @@ auto min_index(const ArrayType & A)
    using T = typename ArrayType::value_type;
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
-   std::pair<sz_T, T> min = {sz_T(0), A[sz_T(0)]};
+   std::pair<sz_T, T> min = {sz_T(0), A.index(sz_T(0))};
    for(sz_T i = sz_T(1); i < A.size(); ++i)
-      if(A[i] < min.second)
-         min = {i, A[i]};
+      if(A.index(i) < min.second)
+         min = {i, A.index(i)};
    return min;
 }
 
@@ -776,10 +868,10 @@ auto max_index(const ArrayType & A)
    using T = typename ArrayType::value_type;
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
-   std::pair<sz_T, T> max = {sz_T(0), A[sz_T(0)]};
+   std::pair<sz_T, T> max = {sz_T(0), A.index(sz_T(0))};
    for(sz_T i = sz_T(1); i < A.size(); ++i)
-      if(A[i] > max.second)
-         max = {i, A[i]};
+      if(A.index(i) > max.second)
+         max = {i, A.index(i)};
    return max;
 }
 
@@ -791,7 +883,7 @@ std::ostream & operator<<(std::ostream & os, const ArrayType & A)
    int width = 46;
    char buf[128];
    for(sz_T i = sz_T(0); i < A.size(); ++i) {
-      quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, A[i]);
+      quadmath_snprintf (buf, sizeof(buf), "%+-#*.32Qe", width, A.index(i));
       os << buf << std::endl;
    }
    return os;
@@ -834,7 +926,11 @@ public:
 
    template<IntegerType S> value_type operator[](S i) const {
       static_assert(SameType<size_type, S>);
-      return op(A[i]);
+      return op(A.index(i));
+   }
+   template<IntegerType S> value_type index(S i) const {
+      static_assert(SameType<size_type, S>);
+      return op(A.index(i));
    }
    size_type size() const { return sz; }
    [[nodiscard]] bool empty() const { return sz == size_type(0) ? true : false; }
@@ -862,7 +958,11 @@ public:
 
    template<IntegerType S> value_type operator[](S i) const {
       static_assert(SameType<size_type, S>);
-      return op(A[i], B[i]);
+      return op(A.index(i), B.index(i));
+   }
+   template<IntegerType S> value_type index(S i) const {
+      static_assert(SameType<size_type, S>);
+      return op(A.index(i), B.index(i));
    }
    size_type size() const { return sz; }
    [[nodiscard]] bool empty() const { return sz == size_type(0) ? true : false; }
@@ -890,7 +990,11 @@ public:
 
    template<IntegerType S> value_type operator[](S i) const {
       static_assert(SameType<size_type, S>);
-      return op(val, B[i]);
+      return op(val, B.index(i));
+   }
+   template<IntegerType S> value_type index(S i) const {
+      static_assert(SameType<size_type, S>);
+      return op(val, B.index(i));
    }
    size_type size() const { return sz; }
    [[nodiscard]] bool empty() const { return sz == size_type(0) ? true : false; }
@@ -919,7 +1023,11 @@ public:
 
    template<IntegerType S> value_type operator[](S i) const {
       static_assert(SameType<size_type, S>);
-      return op(A[i], val);
+      return op(A.index(i), val);
+   }
+   template<IntegerType S> value_type index(S i) const {
+      static_assert(SameType<size_type, S>);
+      return op(A.index(i), val);
    }
    size_type size() const { return sz; }
    [[nodiscard]] bool empty() const { return sz == size_type(0) ? true : false; }
