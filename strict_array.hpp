@@ -515,6 +515,7 @@ void Array<T>::fill_random(U1 low, U2 high)
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    ASSERT_STRICT_ARRAY_DEBUG(!empty());
+
    for(auto & x : *this)
       x = low + T(std::rand() % (T(1)+high-low));
 }
@@ -526,6 +527,7 @@ void Array<T>::fill_random(U1 low, U2 high)
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    ASSERT_STRICT_ARRAY_DEBUG(!empty());
+
    for(auto & x : *this)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
 }
@@ -551,6 +553,7 @@ std::vector<T*> Array<T>::within_range(U1 low, U2 high) &
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    ASSERT_STRICT_ARRAY_DEBUG(!empty());
+
    std::vector<T*> x{};
    for(auto it = begin(); it != end(); ++it)
       if(*it >= low && *it <= high)
@@ -565,6 +568,7 @@ std::vector<const T*> Array<T>::within_range(U1 low, U2 high) const &
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    ASSERT_STRICT_ARRAY_DEBUG(!empty());
+
    std::vector<const T*> x{};
    for(auto it = begin(); it != end(); ++it)
       if(*it >= low && *it <= high)
@@ -608,6 +612,7 @@ Array<T1> array_random(S size, T1 low, T2 high)
    static_assert(SameType<T1, T2>);
    ASSERT_STRICT_ARRAY_DEBUG(size > S(0));
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+
    Array<T1> a(size);
    a.fill_random(low, high);
    return a;
@@ -674,6 +679,7 @@ bool does_contain_zero(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
+
    for(sz_T i = sz_T(0); i < A.size(); ++i)
       if(A[i] == typename ArrayType::value_type(0)) return true;
    return false;
@@ -684,6 +690,7 @@ bool is_positive(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
+
    for(sz_T i = sz_T(0); i < A.size(); ++i)
       if(A[i] <= typename ArrayType::value_type(0)) return false;
    return true;
@@ -694,6 +701,7 @@ bool is_nonnegative(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
+
    for(sz_T i = sz_T(0); i < A.size(); ++i)
       if(A[i] < typename ArrayType::value_type(0)) return false;
    return true;
@@ -714,6 +722,7 @@ auto sum(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
+
    typename ArrayType::value_type s{};
    for(sz_T i = sz_T(0); i < A.size(); ++i)
       s += A[i];
