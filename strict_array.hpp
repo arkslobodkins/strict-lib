@@ -166,15 +166,15 @@ public:
    [[nodiscard]] const T* begin() const & { return sz ? elem : nullptr; }
    [[nodiscard]] const T* end() const & { return sz ? elem+sz : nullptr; }
 
-   template<IntegerType S1, IntegerType S2> Array sub_array(S1 first, S2 last);
+   template<IntegerType S1, IntegerType S2> [[nodiscard]] Array sub_array(S1 first, S2 last);
    template<IntegerType U1, IntegerType U2> void fill_random(U1 low, U2 high);
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
 
    void sort_increasing() &;
    void sort_decreasing() &;
 
-   template<RealType U1, RealType U2> std::vector<T*> within_range(U1 low, U2 high) &;
-   template<RealType U1, RealType U2> std::vector<const T*> within_range(U1 low, U2 high) const &;
+   template<RealType U1, RealType U2> [[nodiscard]] std::vector<T*> within_range(U1 low, U2 high) &;
+   template<RealType U1, RealType U2> [[nodiscard]] std::vector<const T*> within_range(U1 low, U2 high) const &;
 
 private:
    size_type sz;
@@ -186,11 +186,11 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<IntegerType S, RealType T1, RealType T2>
-Array<T1> array_random(S size, T1 low, T2 high);
-
 template<NotQuadArrayBaseType ArrayType>
 std::ostream & operator<<(std::ostream & os, const ArrayType & A);
+
+template<IntegerType S, RealType T1, RealType T2>
+[[nodiscard]] Array<T1> array_random(S size, T1 low, T2 high);
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 [[nodiscard]] auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
@@ -496,6 +496,8 @@ Array<T> Array<T>::sub_array(S1 first, S2 last)
 {
    static_assert(SameType<size_type, S1>);
    static_assert(SameType<size_type, S2>);
+   ASSERT_STRICT_ARRAY_DEBUG(is_valid_index(first));
+   ASSERT_STRICT_ARRAY_DEBUG(is_valid_index(last));
    ASSERT_STRICT_ARRAY_DEBUG(last >= first);
    ASSERT_STRICT_ARRAY_DEBUG(!empty());
    size_type sub_sz = last - first + size_type(1);
