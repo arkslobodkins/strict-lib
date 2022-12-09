@@ -30,17 +30,22 @@ int main()
    derivative( A, [](float64 x){ return 2. * x * x;} );
    A *= 2.;
    A.remove_element(0L);
-   A.sort_increasing();
 
    std::cout << A << std::endl;;
    std::cout << norm_inf(A) << std::endl;
    std::cout << norm2(A) << std::endl;
-   std::cout << dot_prod(A, A) << std::endl;
+   std::cout << dot_prod(A, A) << std::endl << std::endl;
 
 // for(auto i = 0L; i < A.size(); ++i) A[i] *= 2;     // does not compile, rhs is not of type double
 // for(auto i = 0; i < A.size(); ++i)  A[i] *= 2.;    // does not compile, i must be of type long int
    for(auto i = 0L; i < A.size(); ++i) A[i] *= 2.;    // compiles, rhs is of type double and i is long int
    for(auto & x : A) x *= 2;                          // compiles even though rhs is int, iterators are raw pointers(for now at least)
+
+   #ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
+   Array<float128> B = array_random(10L, -1.Q, 1.Q);
+   B.sort_increasing();
+   std::cout << B << std::endl;;
+   #endif
 
    return EXIT_SUCCESS;
 }
