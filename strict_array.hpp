@@ -158,6 +158,7 @@ public:
    template<ArrayBaseType ArrayType> const Array & operator*=(const ArrayType & A);
    template<ArrayBaseType ArrayType> const Array & operator/=(const ArrayType & A);
 
+   [[nodiscard]] bool empty() const { return sz == size_type(0) ? true : false; }
    [[nodiscard]] T* data() & { return sz ? elem : nullptr; }
    [[nodiscard]] T* begin() & { return sz ? elem : nullptr; }
    [[nodiscard]] T* end() & { return sz ? elem+sz : nullptr; }
@@ -305,7 +306,7 @@ const Array<T> & Array<T>::operator=(const U val)
 template<RealType T>
 const Array<T> & Array<T>::operator=(const Array<T> & a)
 {
-   if(this != &a) apply1(a, [&](size_type i) { elem[i] = a[i]; });
+   if(this != &a) std::copy(a.begin(), a.end(), begin());
    return *this;
 }
 
@@ -348,6 +349,7 @@ template<RealType T> template<IntegerType S>
 Array<T> & Array<T>::remove_element(S index)
 {
    static_assert(SameType<size_type, S>);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    ASSERT_STRICT_ARRAY_DEBUG(is_valid_index(index));
    for(size_type i = index; i < sz-1; ++i)
       elem[i] = elem[i+1];
@@ -387,6 +389,7 @@ template<RealType T> template<IntegerType S>
 inline T & Array<T>::operator[](S i)
 {
    static_assert(SameType<size_type, S>);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    #ifdef STRICT_ARRAY_DEBUG_ON
    if(!is_valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
@@ -397,6 +400,7 @@ template<RealType T> template<IntegerType S>
 inline const T & Array<T>::operator[](S i) const
 {
    static_assert(SameType<size_type, S>);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    #ifdef STRICT_ARRAY_DEBUG_ON
    if(!is_valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
@@ -404,7 +408,11 @@ inline const T & Array<T>::operator[](S i) const
 }
 
 template<RealType T>
-const Array<T> & Array<T>::operator+() const { return *this; }
+const Array<T> & Array<T>::operator+() const
+{
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
+   return *this;
+}
 
 template<RealType T>
 auto Array<T>::operator-() const
@@ -489,6 +497,7 @@ Array<T> Array<T>::sub_array(S1 first, S2 last)
    static_assert(SameType<size_type, S1>);
    static_assert(SameType<size_type, S2>);
    ASSERT_STRICT_ARRAY_DEBUG(last >= first);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    size_type sub_sz = last - first + size_type(1);
 
    Array<T> sub_array(sub_sz);
@@ -502,8 +511,8 @@ void Array<T>::fill_random(U1 low, U2 high)
 {
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
-   ASSERT_STRICT_ARRAY_DEBUG(sz > size_type(0));
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    for(auto & x : *this)
       x = low + T(std::rand() % (T(1)+high-low));
 }
@@ -513,19 +522,25 @@ void Array<T>::fill_random(U1 low, U2 high)
 {
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
-   ASSERT_STRICT_ARRAY_DEBUG(sz > size_type(0));
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    for(auto & x : *this)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
 }
 
 template<RealType T>
 void Array<T>::sort_increasing() &
-{ std::sort(begin(), end(), [](T a, T b) { return a < b; }); }
+{
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
+   std::sort(begin(), end(), [](T a, T b) { return a < b; });
+}
 
 template<RealType T>
 void Array<T>::sort_decreasing() &
-{ std::sort(begin(), end(), [](T a, T b) { return a > b; }); }
+{
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
+   std::sort(begin(), end(), [](T a, T b) { return a > b; });
+}
 
 template<RealType T> template<RealType U1, RealType U2>
 std::vector<T*> Array<T>::within_range(U1 low, U2 high) &
@@ -533,6 +548,7 @@ std::vector<T*> Array<T>::within_range(U1 low, U2 high) &
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    std::vector<T*> x{};
    for(auto it = begin(); it != end(); ++it)
       if(*it >= low && *it <= high)
@@ -546,6 +562,7 @@ std::vector<const T*> Array<T>::within_range(U1 low, U2 high) const &
    static_assert(SameType<T, U1>);
    static_assert(SameType<U1, U2>);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    std::vector<const T*> x{};
    for(auto it = begin(); it != end(); ++it)
       if(*it >= low && *it <= high)
@@ -557,6 +574,7 @@ std::vector<const T*> Array<T>::within_range(U1 low, U2 high) const &
 template<RealType T>
 inline bool Array<T>::is_valid_index(size_type index) const
 {
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    if(index < size_type(0) || index > sz-size_type(1))
       return false;
    return true;
@@ -565,7 +583,7 @@ inline bool Array<T>::is_valid_index(size_type index) const
 template<RealType T> template<typename F>
 void Array<T>::apply0(F f)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > size_type(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    for(size_type i = size_type(0); i < sz; ++i)
       f(i);
 }
@@ -574,6 +592,7 @@ template<RealType T> template<ArrayBaseType ArrayType, typename F>
 void Array<T>::apply1(const ArrayType & A, F f)
 {
    (void)A;
+   ASSERT_STRICT_ARRAY_DEBUG(!empty());
    ASSERT_STRICT_ARRAY_DEBUG(sz == A.size());
    for(size_type i = size_type(0); i < sz; ++i)
       f(i);
@@ -585,6 +604,7 @@ Array<T1> array_random(S size, T1 low, T2 high)
 {
    static_assert(SameType<typename Array<T1>::size_type, S>);
    static_assert(SameType<T1, T2>);
+   ASSERT_STRICT_ARRAY_DEBUG(size > S(0));
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    Array<T1> a(size);
    a.fill_random(low, high);
@@ -613,6 +633,7 @@ auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
 {
    static_assert(SameType<typename ArrayType1::size_type, typename ArrayType2::size_type>);
    static_assert(SameType<typename ArrayType1::value_type, typename ArrayType2::value_type>);
+   ASSERT_STRICT_ARRAY_DEBUG(!A1.empty());
    ASSERT_STRICT_ARRAY_DEBUG(A1.size() == A2.size());
 
    using sz_T = typename ArrayType1::size_type;
@@ -627,7 +648,7 @@ auto norm_inf(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
    auto real_abs = [](T x) { return x < T(0) ? -x : x; };
 
    T max_abs = real_abs(A[sz_T(0)]);
@@ -642,7 +663,7 @@ template<NotQuadArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
    using sz_T [[maybe_unused]] = typename ArrayType::size_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
    return std::sqrt(dot_prod(A, A));
 }
 
@@ -650,7 +671,7 @@ template<ArrayBaseType ArrayType>
 bool does_contain_zero(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
    for(sz_T i = sz_T(0); i < A.size(); ++i)
       if(A[i] == typename ArrayType::value_type(0)) return true;
    return false;
@@ -660,7 +681,7 @@ template<ArrayBaseType ArrayType>
 bool is_positive(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
    for(sz_T i = sz_T(0); i < A.size(); ++i)
       if(A[i] <= typename ArrayType::value_type(0)) return false;
    return true;
@@ -670,7 +691,7 @@ template<ArrayBaseType ArrayType>
 bool is_nonnegative(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
    for(sz_T i = sz_T(0); i < A.size(); ++i)
       if(A[i] < typename ArrayType::value_type(0)) return false;
    return true;
@@ -682,7 +703,7 @@ auto abs(const ArrayType & A)
 {
    using T = typename ArrayType::value_type;
    using sz_T [[maybe_unused]] = typename ArrayType::size_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
    return UnaryExpr(A, [](T x){return x < T(0) ? -x : x;});
 }
 
@@ -690,7 +711,7 @@ template<ArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
    typename ArrayType::value_type s{};
    for(sz_T i = sz_T(0); i < A.size(); ++i)
       s += A[i];
@@ -702,7 +723,7 @@ auto min(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
    T m = A[sz_T(0)];
    for(sz_T i = sz_T(1); i < A.size(); ++i)
@@ -715,7 +736,7 @@ auto max(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
    T m = A[sz_T(0)];
    for(sz_T i = sz_T(1); i < A.size(); ++i)
@@ -728,7 +749,7 @@ auto min_index(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
    std::pair<sz_T, T> min = {sz_T(0), A[sz_T(0)]};
    for(sz_T i = sz_T(1); i < A.size(); ++i)
@@ -742,7 +763,7 @@ auto max_index(const ArrayType & A)
 {
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
 
    std::pair<sz_T, T> max = {sz_T(0), A[sz_T(0)]};
    for(sz_T i = sz_T(1); i < A.size(); ++i)
@@ -769,7 +790,7 @@ template<QuadArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
    using sz_T [[maybe_unused]] = typename ArrayType::size_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
+   ASSERT_STRICT_ARRAY_DEBUG(!A.empty());
    return sqrtq(dot_prod(A, A));
 }
 #endif
@@ -795,7 +816,8 @@ class UnaryExpr : private ArrayBase, private ArrayExpr
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
-   UnaryExpr(const T1 & a, Op op) : sz(a.size()), A(a), op(op) {}
+   UnaryExpr(const T1 & a, Op op) : sz(a.size()), A(a), op(op)
+   { ASSERT_STRICT_ARRAY_DEBUG(!a.empty()); }
    UnaryExpr(const UnaryExpr &) = delete;
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
@@ -804,6 +826,7 @@ public:
       return op(A[i]);
    }
    size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return sz == size_type(0) ? true : false; }
 
 private:
    const size_type sz;
@@ -821,6 +844,7 @@ public:
    {
       static_assert(SameType<typename T1::value_type, typename T2::value_type>);
       ASSERT_STRICT_ARRAY_DEBUG(a.size() == b.size());
+      ASSERT_STRICT_ARRAY_DEBUG(!a.empty());
    }
    BinExpr(const BinExpr &) = delete;
    BinExpr & operator=(const BinExpr &) = delete;
@@ -830,6 +854,7 @@ public:
       return op(A[i], B[i]);
    }
    size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return sz == size_type(0) ? true : false; }
 
 private:
    const size_type sz;
@@ -845,7 +870,10 @@ public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
    BinExprValLeft(const T1 & b, T2 val, Op op) : sz(b.size()), B(b), val(val), op(op)
-   { static_assert(SameType<typename T1::value_type, T2>); }
+   {
+      static_assert(SameType<typename T1::value_type, T2>);
+      ASSERT_STRICT_ARRAY_DEBUG(!b.empty());
+   }
    BinExprValLeft(const BinExprValLeft &) = delete;
    BinExprValLeft & operator=(const BinExprValLeft &) = delete;
 
@@ -854,6 +882,7 @@ public:
       return op(val, B[i]);
    }
    size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return sz == size_type(0) ? true : false; }
 
 private:
    const size_type sz;
@@ -870,7 +899,10 @@ public:
    using value_type = typename T1::value_type;
 
    BinExprValRight(const T1 & a, T2 val, Op op) : sz(a.size()), A(a), val(val), op(op)
-   { static_assert(SameType<typename T1::value_type, T2>); }
+   {
+      static_assert(SameType<typename T1::value_type, T2>);
+      ASSERT_STRICT_ARRAY_DEBUG(!a.empty());
+   }
    BinExprValRight(const BinExprValRight &) = delete;
    BinExprValRight & operator=(const BinExprValRight &) = delete;
 
@@ -879,6 +911,7 @@ public:
       return op(A[i], val);
    }
    size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return sz == size_type(0) ? true : false; }
 
 private:
    const size_type sz;
