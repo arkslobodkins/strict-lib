@@ -284,7 +284,7 @@ template<RealType T>
 Array<T>::Array(const Array<T> & a)
    : sz{a.size()},
      elem{new (std::align_val_t(bytes_width())) T[a.size()]}
-{ apply1(a, [&](size_type i) { elem[i] = a[i]; } ); }
+{ std::copy(a.begin(), a.end(), begin()); }
 
 template<RealType T>
 Array<T>::Array(Array && a) : sz{a.sz}, elem{a.elem}
@@ -305,8 +305,8 @@ const Array<T> & Array<T>::operator=(const U val)
 template<RealType T>
 const Array<T> & Array<T>::operator=(const Array<T> & a)
 {
-   return *this;
    if(this != &a) apply1(a, [&](size_type i) { elem[i] = a[i]; });
+   return *this;
 }
 
 template<RealType T>
