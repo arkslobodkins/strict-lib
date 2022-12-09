@@ -385,8 +385,8 @@ const Array<T> & Array<T>::operator=(Array<T> && a)
 {
    if(this != &a) {
       ASSERT_STRICT_ARRAY_DEBUG(sz == a.sz);
+      ::operator delete[](elem, std::align_val_t(bytes_width()));
 
-      delete[] elem;
       elem = a.elem;
       a.elem = nullptr;
       a.sz = size_type(0);
@@ -433,7 +433,7 @@ Array<T> & Array<T>::resize(S size)
    static_assert(SameType<size_type, S>);
    if(size == sz) return *this;
 
-   delete[] elem;
+   ::operator delete[](elem, std::align_val_t(bytes_width()));
    ASSERT_STRICT_ARRAY_DEBUG(size > size_type(-1));
    elem = new (std::align_val_t(bytes_width())) T[size]{};
    sz = size;
@@ -449,7 +449,7 @@ void Array<T>::resize_and_assign(const Array<T> & a)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-Array<T>::~Array() { delete[] elem; }
+Array<T>::~Array() { ::operator delete[](elem, std::align_val_t(bytes_width())); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
