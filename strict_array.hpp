@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
+#include <limits>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -127,49 +128,49 @@ public:
    Array(const Array & a);
    Array(Array && a);
 
-   template<RealType U> Array & operator=(U val);
-   Array & operator=(const Array & a);
-   Array & operator=(Array && a);
+   template<RealType U> const Array & operator=(U val);
+   const Array & operator=(const Array & a);
+   const Array & operator=(Array && a);
 
    template<ArrayExprType ArrExpr> Array(const ArrExpr & expr);
-   template<ArrayExprType ArrExpr> Array & operator=(const ArrExpr & expr);
+   template<ArrayExprType ArrExpr> const Array & operator=(const ArrExpr & expr);
 
    template<IntegerType S> Array & remove_element(S index);
    template<IntegerType S> Array & resize(S size);
-   Array & resize_and_assign(const Array & a);
+   void resize_and_assign(const Array & a);
 
    ~Array();
 
-   inline size_type size() const;
+   [[nodiscard]] inline size_type size() const;
    template<IntegerType S> inline T & operator[](S i);
    template<IntegerType S> inline const T & operator[](S i) const;
 
    const Array & operator+() const;
    auto operator-() const;
 
-   template<RealType U> Array & operator+=(U val);
-   template<RealType U> Array & operator-=(U val);
-   template<RealType U> Array & operator*=(U val);
-   template<RealType U> Array & operator/=(U val);
+   template<RealType U> const Array & operator+=(U val);
+   template<RealType U> const Array & operator-=(U val);
+   template<RealType U> const Array & operator*=(U val);
+   template<RealType U> const Array & operator/=(U val);
 
-   template<ArrayBaseType ArrayType> Array & operator+=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> Array & operator-=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> Array & operator*=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> Array & operator/=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> const Array & operator+=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> const Array & operator-=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> const Array & operator*=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> const Array & operator/=(const ArrayType & A);
 
-   T* data() & { return sz ? elem : nullptr; }
-   T* begin() & { return sz ? elem : nullptr; }
-   T* end() & { return sz ? elem+sz : nullptr; }
-   const T* data() const & { return sz ? elem : nullptr; }
-   const T* begin() const & { return sz ? elem : nullptr; }
-   const T* end() const & { return sz ? elem+sz : nullptr; }
+   [[nodiscard]] T* data() & { return sz ? elem : nullptr; }
+   [[nodiscard]] T* begin() & { return sz ? elem : nullptr; }
+   [[nodiscard]] T* end() & { return sz ? elem+sz : nullptr; }
+   [[nodiscard]] const T* data() const & { return sz ? elem : nullptr; }
+   [[nodiscard]] const T* begin() const & { return sz ? elem : nullptr; }
+   [[nodiscard]] const T* end() const & { return sz ? elem+sz : nullptr; }
 
    template<IntegerType S1, IntegerType S2> Array sub_array(S1 first, S2 last);
    template<IntegerType U1, IntegerType U2> void fill_random(U1 low, U2 high);
    template<FloatingType U1, FloatingType U2> void fill_random(U1 low, U2 high);
 
    void sort_increasing() &;
-   void sort_decreasing() & ;
+   void sort_decreasing() &;
 
    template<RealType U1, RealType U2> std::vector<T*> within_range(U1 low, U2 high) &;
    template<RealType U1, RealType U2> std::vector<const T*> within_range(U1 low, U2 high) const &;
@@ -184,51 +185,50 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<IntegerType S, RealType T1, RealType T2> Array<T1>
-array_random(S size, T1 low, T2 high);
+template<IntegerType S, RealType T1, RealType T2>
+Array<T1> array_random(S size, T1 low, T2 high);
 
 template<NotQuadArrayBaseType ArrayType>
 std::ostream & operator<<(std::ostream & os, const ArrayType & A);
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
-auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
+[[nodiscard]] auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
 
 template<ArrayBaseType ArrayType>
-auto norm_inf(const ArrayType & A);
+[[nodiscard]] auto norm_inf(const ArrayType & A);
 
 template<NotQuadArrayBaseType ArrayType>
-auto norm2(const ArrayType & A);
+[[nodiscard]] auto norm2(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
-bool does_contain_zero(const ArrayType & A);
+[[nodiscard]] bool does_contain_zero(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
-bool is_positive(const ArrayType & A);
+[[nodiscard]] bool is_positive(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
-bool is_nonnegative(const ArrayType & A);
-
-// returns expression template
-template<ArrayBaseType ArrayType>
-auto abs(const ArrayType & A);
+[[nodiscard]] bool is_nonnegative(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
-auto sum(const ArrayType & A);
+[[nodiscard]] auto abs(const ArrayType & A);  // returns expression template
 
 template<ArrayBaseType ArrayType>
-auto min(const ArrayType & A);
+[[nodiscard]] auto sum(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
-auto max(const ArrayType & A);
+[[nodiscard]] auto min(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
-auto min_index(const ArrayType & A);
+[[nodiscard]] auto max(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
-auto max_index(const ArrayType & A);
+[[nodiscard]] auto min_index(const ArrayType & A);  // returns std::pair<size_type, value_type>
+
+template<ArrayBaseType ArrayType>
+[[nodiscard]] auto max_index(const ArrayType & A);  // returns std::pair<size_type, value_type>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// All arithmetic operators below return appropriate expression templates
+// All arithmetic operators below return expression templates
 template<ArrayBaseType T1, ArrayBaseType T2> auto operator+(const T1 & A, const T2 & B);
 template<ArrayBaseType T1, ArrayBaseType T2> auto operator-(const T1 & A, const T2 & B);
 template<ArrayBaseType T1, ArrayBaseType T2> auto operator*(const T1 & A, const T2 & B);
@@ -257,11 +257,15 @@ Array<T>::Array() : sz{size_type(0)}, elem{nullptr}
 {}
 
 template<RealType T> template<IntegerType S>
-Array<T>::Array(S size) : sz{size}, elem{new (std::align_val_t(bytes_width())) T[size]{}}
+Array<T>::Array(S size)
+   : sz{size},
+     elem{new (std::align_val_t(bytes_width())) T[size]{}}
 { static_assert(SameType<size_type, S>); }
 
 template<RealType T> template<IntegerType S, RealType U>
-Array<T>::Array(S size, U val) : sz{size}, elem(new (std::align_val_t(bytes_width())) T[size])
+Array<T>::Array(S size, U val)
+   : sz{size},
+     elem(new (std::align_val_t(bytes_width())) T[size])
 {
    static_assert(SameType<size_type, S>);
    static_assert(SameType<T, U>);
@@ -269,14 +273,17 @@ Array<T>::Array(S size, U val) : sz{size}, elem(new (std::align_val_t(bytes_widt
 }
 
 template<RealType T> template<RealType U>
-Array<T>::Array(std::initializer_list<U> list) : Array(static_cast<size_type>(list.size()))
+Array<T>::Array(std::initializer_list<U> list)
+   : Array(static_cast<size_type>(list.size()))
 {
    static_assert(SameType<T, U>);
    std::copy(list.begin(), list.end(), begin());
 }
 
 template<RealType T>
-Array<T>::Array(const Array<T> & a) : sz{a.size()}, elem{new (std::align_val_t(bytes_width())) T[a.size()]}
+Array<T>::Array(const Array<T> & a)
+   : sz{a.size()},
+     elem{new (std::align_val_t(bytes_width())) T[a.size()]}
 { apply1(a, [&](size_type i) { elem[i] = a[i]; } ); }
 
 template<RealType T>
@@ -288,7 +295,7 @@ Array<T>::Array(Array && a) : sz{a.sz}, elem{a.elem}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<RealType U>
-Array<T> & Array<T>::operator=(const U val)
+const Array<T> & Array<T>::operator=(const U val)
 {
    static_assert(SameType<T, U>);
    apply0([&](size_type i) { elem[i] = val; } );
@@ -296,14 +303,14 @@ Array<T> & Array<T>::operator=(const U val)
 }
 
 template<RealType T>
-Array<T> & Array<T>::operator=(const Array<T> & a)
+const Array<T> & Array<T>::operator=(const Array<T> & a)
 {
-   if(this != &a) apply1(a, [&](size_type i) { elem[i] = a[i]; });
    return *this;
+   if(this != &a) apply1(a, [&](size_type i) { elem[i] = a[i]; });
 }
 
 template<RealType T>
-Array<T> & Array<T>::operator=(Array<T> && a)
+const Array<T> & Array<T>::operator=(Array<T> && a)
 {
    if(this != &a) {
       ASSERT_STRICT_ARRAY_DEBUG(sz == a.sz);
@@ -328,7 +335,7 @@ Array<T>::Array(const ArrExpr & expr)
 }
 
 template<RealType T> template<ArrayExprType ArrExpr>
-Array<T> & Array<T>::operator=(const ArrExpr & expr)
+const Array<T> & Array<T>::operator=(const ArrExpr & expr)
 {
    static_assert(SameType<size_type, typename ArrExpr::size_type>);
    static_assert(SameType<T, typename ArrExpr::value_type>);
@@ -362,10 +369,10 @@ Array<T> & Array<T>::resize(S size)
 }
 
 template<RealType T>
-Array<T> & Array<T>::resize_and_assign(const Array<T> & a)
+void Array<T>::resize_and_assign(const Array<T> & a)
 {
    resize(a.size());
-   return *this = a;
+   *this = a;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -374,7 +381,7 @@ Array<T>::~Array() { delete[] elem; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-inline typename Array<T>::size_type Array<T>::size() const { return sz; }
+inline auto Array<T>::size() const ->size_type { return sz; }
 
 template<RealType T> template<IntegerType S>
 inline T & Array<T>::operator[](S i)
@@ -405,28 +412,31 @@ auto Array<T>::operator-() const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<RealType U>
-Array<T> & Array<T>::operator+=(const U val)
+const Array<T> & Array<T>::operator+=(const U val)
 {
    static_assert(SameType<T, U>);
-   apply0([&](size_type i) { elem[i] += val; } ); return *this;
+   apply0([&](size_type i) { elem[i] += val; } );
+   return *this;
 }
 
 template<RealType T> template<RealType U>
-Array<T> & Array<T>::operator-=(const U val)
+const Array<T> & Array<T>::operator-=(const U val)
 {
    static_assert(SameType<T, U>);
-   apply0([&](size_type i) { elem[i] -= val; } ); return *this;
+   apply0([&](size_type i) { elem[i] -= val; } );
+   return *this;
 }
 
 template<RealType T> template<RealType U>
-Array<T> & Array<T>::operator*=(const U val)
+const Array<T> & Array<T>::operator*=(const U val)
 {
    static_assert(SameType<T, U>);
-   apply0([&](size_type i) { elem[i] *= val; } ); return *this;
+   apply0([&](size_type i) { elem[i] *= val; } );
+   return *this;
 }
 
 template<RealType T> template<RealType U>
-Array<T> & Array<T>::operator/=(const U val)
+const Array<T> & Array<T>::operator/=(const U val)
 {
    static_assert(SameType<T, U>);
    #ifdef QUAD_DIVISION_ON
@@ -438,7 +448,7 @@ Array<T> & Array<T>::operator/=(const U val)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<ArrayBaseType ArrayType>
-Array<T> & Array<T>::operator+=(const ArrayType & A)
+const Array<T> & Array<T>::operator+=(const ArrayType & A)
 {
    static_assert(SameType<T, typename ArrayType::value_type>);
    apply1(A, [&](size_type i) { elem[i] += A[i]; });
@@ -446,7 +456,7 @@ Array<T> & Array<T>::operator+=(const ArrayType & A)
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
-Array<T> & Array<T>::operator-=(const ArrayType & A)
+const Array<T> & Array<T>::operator-=(const ArrayType & A)
 {
    static_assert(SameType<T, typename ArrayType::value_type>);
    apply1(A, [&](size_type i) { elem[i] -= A[i]; });
@@ -454,7 +464,7 @@ Array<T> & Array<T>::operator-=(const ArrayType & A)
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
-Array<T> & Array<T>::operator*=(const ArrayType & A)
+const Array<T> & Array<T>::operator*=(const ArrayType & A)
 {
    static_assert(SameType<T, typename ArrayType::value_type>);
    apply1(A, [&](size_type i) { elem[i] *= A[i]; });
@@ -462,7 +472,7 @@ Array<T> & Array<T>::operator*=(const ArrayType & A)
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
-Array<T> & Array<T>::operator/=(const ArrayType & A)
+const Array<T> & Array<T>::operator/=(const ArrayType & A)
 {
    static_assert(SameType<T, typename ArrayType::value_type>);
    #ifdef STRICT_ARRAY_DIVISION_ON
@@ -587,21 +597,14 @@ std::ostream & operator<<(std::ostream & os, const ArrayType & A)
    using T = typename ArrayType::value_type;
    using sz_T = typename ArrayType::size_type;
 
-   if(SameType<T, double> || SameType<T, long double>) {
-      for(sz_T i = sz_T(0); i < A.size(); ++i) {
-         os << std::setprecision(16) << A[i] << std::endl;
-      }
-   }
-   else if(SameType<T, float>) {
-      for(sz_T i = sz_T(0); i < A.size(); ++i) {
-         os << std::setprecision(8) << A[i] << std::endl;
-      }
-   }
-   else {
-      for(sz_T i = sz_T(0); i < A.size(); ++i) {
-         os << A[i] << std::endl;
-      }
-   }
+   int num_digits{};
+   if(SameType<T, double>)           num_digits = std::numeric_limits<double>::digits10 + 1;
+   else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10 + 1;
+   else if(SameType<T, float>)       num_digits = std::numeric_limits<float>::digits10 + 1;
+   else                              num_digits = std::cout.precision();
+
+   for(sz_T i = sz_T(0); i < A.size(); ++i)
+      os << std::setprecision(num_digits) << A[i] << std::endl;
    return os;
 }
 
@@ -638,7 +641,7 @@ auto norm_inf(const ArrayType & A)
 template<NotQuadArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
-   using sz_T = typename ArrayType::size_type;
+   using sz_T [[maybe_unused]] = typename ArrayType::size_type;
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
    return std::sqrt(dot_prod(A, A));
 }
@@ -678,7 +681,7 @@ template<ArrayBaseType ArrayType>
 auto abs(const ArrayType & A)
 {
    using T = typename ArrayType::value_type;
-   using sz_T = typename ArrayType::size_type;
+   using sz_T [[maybe_unused]] = typename ArrayType::size_type;
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
    return UnaryExpr(A, [](T x){return x < T(0) ? -x : x;});
 }
@@ -765,7 +768,7 @@ std::ostream & operator<<(std::ostream & os, const ArrayType & A)
 template<QuadArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
-   using sz_T = typename ArrayType::size_type;
+   using sz_T [[maybe_unused]] = typename ArrayType::size_type;
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > sz_T(0));
    return sqrtq(dot_prod(A, A));
 }
@@ -785,6 +788,7 @@ struct Divide : private Operation
 { template<RealType T> T operator()(const T left, const T right) const { return left / right; } };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// delete assignment operator and also copy constructors for all expression templates, since unnamed RVO is mandatory since C++17
 template<ArrayBaseType T1, typename Op>
 class UnaryExpr : private ArrayBase, private ArrayExpr
 {
@@ -792,8 +796,8 @@ public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
    UnaryExpr(const T1 & a, Op op) : sz(a.size()), A(a), op(op) {}
-   UnaryExpr(const UnaryExpr &) = default;
-   UnaryExpr & operator=(const UnaryExpr &) = default;
+   UnaryExpr(const UnaryExpr &) = delete;
+   UnaryExpr & operator=(const UnaryExpr &) = delete;
 
    template<IntegerType S> value_type operator[](S i) const {
       static_assert(SameType<size_type, S>);
@@ -818,8 +822,8 @@ public:
       static_assert(SameType<typename T1::value_type, typename T2::value_type>);
       ASSERT_STRICT_ARRAY_DEBUG(a.size() == b.size());
    }
-   BinExpr(const BinExpr &) = default;
-   BinExpr & operator=(const BinExpr &) = default;
+   BinExpr(const BinExpr &) = delete;
+   BinExpr & operator=(const BinExpr &) = delete;
 
    template<IntegerType S> value_type operator[](S i) const {
       static_assert(SameType<size_type, S>);
@@ -842,8 +846,8 @@ public:
    using value_type = typename T1::value_type;
    BinExprValLeft(const T1 & b, T2 val, Op op) : sz(b.size()), B(b), val(val), op(op)
    { static_assert(SameType<typename T1::value_type, T2>); }
-   BinExprValLeft(const BinExprValLeft &) = default;
-   BinExprValLeft & operator=(const BinExprValLeft &) = default;
+   BinExprValLeft(const BinExprValLeft &) = delete;
+   BinExprValLeft & operator=(const BinExprValLeft &) = delete;
 
    template<IntegerType S> value_type operator[](S i) const {
       static_assert(SameType<size_type, S>);
@@ -867,8 +871,8 @@ public:
 
    BinExprValRight(const T1 & a, T2 val, Op op) : sz(a.size()), A(a), val(val), op(op)
    { static_assert(SameType<typename T1::value_type, T2>); }
-   BinExprValRight(const BinExprValRight &) = default;
-   BinExprValRight & operator=(const BinExprValRight &) = default;
+   BinExprValRight(const BinExprValRight &) = delete;
+   BinExprValRight & operator=(const BinExprValRight &) = delete;
 
    template<IntegerType S> value_type operator[](S i) const {
       static_assert(SameType<size_type, S>);
