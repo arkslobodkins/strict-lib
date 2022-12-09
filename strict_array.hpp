@@ -145,8 +145,8 @@ public:
    template<IntegerType S> inline T & operator[](S i);
    template<IntegerType S> inline const T & operator[](S i) const;
 
-   const Array & operator+() const;
-   auto operator-() const;
+   [[nodiscard]] const Array & operator+() const;
+   [[nodiscard]] auto operator-() const; // returns expression template
 
    template<RealType U> const Array & operator+=(U val);
    template<RealType U> const Array & operator-=(U val);
