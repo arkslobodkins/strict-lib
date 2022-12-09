@@ -121,10 +121,10 @@ public:
    IndexVal(const IndexVal &) = delete;
    const IndexVal & operator=(const IndexVal & index_val) { x = index_val.x; return *this; }
    template<RealType U> const IndexVal & operator=(U val) { static_assert(SameType<T, U>); x = val; return *this; }
-   template<RealType U> operator U () const { return x; }
+   operator auto () const { return x; }
 
-   const IndexVal & operator++() { ++x; return *this; }
-   const IndexVal & operator--() { --x; return *this; }
+   T operator++() { return ++x; }
+   T operator--() { return --x; }
    T operator++(int) { T old = x; ++x; return old; }
    T operator--(int) { T old = x; --x; return old; }
    template<RealType U> const IndexVal & operator+=(U val) { static_assert(SameType<T, U>); x += val; return *this; }

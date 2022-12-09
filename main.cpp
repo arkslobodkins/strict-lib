@@ -9,6 +9,16 @@
 
 using namespace strict_array;
 
+template<typename F>
+void derivative(Array<float64> & A, F f)
+{
+   float64 ss = A[0L];
+   float64 h = 0.000'000'000'1;
+   float64 denom = 2. * h;
+   for(auto i = 0L; i < A.size(); ++i)
+      A[i] = ( f(A[i] + h) - f(A[i] - h) ) / denom;
+}
+
 int main()
 {
    // some examples
@@ -72,5 +82,9 @@ int main()
 
 // for(auto i = 0L; i < sa.size(); ++i) sa[i] = i / 2; // does not compile, rhs produces an integer
    for(auto i = 0L; i < sa.size(); ++i) sa[i] = i / 2.;  // compiles, rhs is of type double
+
+   Array<float64> A{1., 2., 3., 4., 5.};
+   derivative( A, [](float64 x){ return x * std::exp(x);} );
+
    return EXIT_SUCCESS;
 }
