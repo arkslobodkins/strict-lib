@@ -16,6 +16,7 @@
 #include <vector>
 
 #if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+#define STRICT_ARRAY_QUADRUPLE_PRECISION
 #include <quadmath.h>
 #endif
 
@@ -73,7 +74,7 @@ concept IntegerType = std::is_same<std::remove_cv_t<T>, std::remove_cv_t<short>>
                       std::is_same<std::remove_cv_t<T>, std::remove_cv_t<long long int>>::value;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
 static_assert(sizeof(__float128) == 16);
 using float128 = __float128;
 template<typename T> concept FloatingType = std::is_floating_point<T>::value || SameType<float128, T>;
@@ -95,8 +96,7 @@ template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op> class BinExpr;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 
-#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
-#define STRICT_ARRAY_QUADRUPLE_PRECISION
+#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
 template<typename T> concept QuadArrayBaseType = std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>;
 template<typename T> concept NotQuadArrayBaseType = !std::is_same<float128, typename T::value_type>::value && ArrayBaseType<T>;
 #else
@@ -314,7 +314,7 @@ template<ArrayBaseType T, RealType U> auto operator*(U val, const T & B);
 template<ArrayBaseType T, RealType U> auto operator/(U val, const T & B);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
 template<QuadArrayBaseType ArrayType>
 std::ostream & operator<<(std::ostream & os, const ArrayType & A);
 
@@ -875,7 +875,7 @@ auto max_index(const ArrayType & A)
    return max;
 }
 
-#if defined __GNUC__  && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
+#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
 template<QuadArrayBaseType ArrayType>
 std::ostream & operator<<(std::ostream & os, const ArrayType & A)
 {
