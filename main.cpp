@@ -72,5 +72,7 @@ int main()
 
 //   for(auto i = 0L; i < sa.size(); ++i) sa[i] = i / 2; // does not compile, rhs produces an integer
    for(auto i = 0L; i < sa.size(); ++i) sa[i] = i / 2.;  // compiles, rhs is of type double
+   TIME( for(auto i = 0L; i < sa.size(); ++i) ++sa[i]; );
+   TIME( for(auto i = 0L; i < sa.size(); ++i) ++sa.index(i); );
    return EXIT_SUCCESS;
 }
