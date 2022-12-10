@@ -45,6 +45,7 @@ int main()
    Array<float128> B = array_random(10L, -1.Q, 1.Q);
    B.sort_increasing();
    std::cout << B << std::endl;;
+   B.resize(3L) =  {1.Q, 2.Q, 3.Q};
    #endif
 
    return EXIT_SUCCESS;
