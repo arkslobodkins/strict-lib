@@ -50,11 +50,26 @@ int main()
    B.sort_increasing();
    std::cout << B << std::endl;;
    B.resize(3L) =  {1.Q, 2.Q, 3.Q};
-   B[0L] = (B[1L] + 2.Q) / 3.Q;        // all aguments on the rhs must be of type float128
+   B[0L] = (B[1L] + 2.Q) / 3.Q;        // all arguments on the rhs must be of type float128
+   B[0L] = (2. + 3.Q) / B[1L];         // 2. here compiles because of the order of operations
    float128 var = (B[1L] + 2.Q) / 3.Q; // can only be converted to float128
    bool b = B[0L] > 1.Q;               // must compare to float128
 // b = B[0L] > 1.;                     // won't compile
    #endif
+
+// Consider using StrictVal as illustrated below
+
+   float factor = 8.25;
+   Array<double> X(3L);
+   A[0L] = 1. + factor; // factor should probably be float, won't be noticed
+
+// StrictVal<float> strict_factor{factor};
+// A[0L] = 1. + strict_factor; // would not compile, operations must be performed on identical types
+
+   StrictVal<double> strict_factor{8.25};
+   A[0L] = 1. + strict_factor; // compiles and works fine
+
+   A[0L] = A[1L]/0.; // throws exception in division mode
 
    return EXIT_SUCCESS;
 }

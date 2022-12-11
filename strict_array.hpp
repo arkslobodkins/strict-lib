@@ -56,6 +56,7 @@ static inline std::string trace_err(const char* file, const char* func, int line
    throw std::runtime_error{"ZERO DIVISION! " + trace_err(__FILE__, __func__, __LINE__)};     \
    } while(0)
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace strict_array {
 
 static_assert(sizeof(long int) == 8);
@@ -84,6 +85,7 @@ template<typename T> concept FloatingType = std::is_floating_point<T>::value;
 template<typename T>
 concept RealType = FloatingType<T> || IntegerType<T>;
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ArrayExpr{};
 class ArrayBase{};
 class Operation{};
@@ -103,6 +105,7 @@ template<typename T> concept NotQuadArrayBaseType = !std::is_same<float128, type
 template<typename T> concept NotQuadArrayBaseType = ArrayBaseType<T>;
 #endif
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined __AVX512F__ || defined __AVX512CD__ || defined __AVX512BW__ || defined __AVX512DQ__ || defined __AVX512VL__
 constexpr inline std::size_t bytes_width() { return 64; }
 #elif defined __AVX2__
@@ -113,12 +116,13 @@ constexpr inline std::size_t bytes_width() { return 32; }
 constexpr inline std::size_t bytes_width() { return 16; }
 #endif
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BaseVal{};
 template<typename T> concept BaseValType = std::is_base_of<BaseVal, T>::value;
 
-template<RealType T> class IndexVal; // forward declaration
-template<RealType T> class CopyVal;  // forward declaration
-template<RealType T> class Array;    // forward declaration
+template<RealType T> class IndexVal;   // forward declaration
+template<RealType T> class StrictVal;  // forward declaration
+template<RealType T> class Array;      // forward declaration
 
 template<RealType T>
 struct IndexVal : private BaseVal
@@ -126,204 +130,262 @@ struct IndexVal : private BaseVal
 public:
    using value_type = T;
    IndexVal(const IndexVal &) = delete;
-   const IndexVal & operator=(const CopyVal<T> & copy_val) {
-      x = T(copy_val);
+   constexpr const IndexVal & operator=(const StrictVal<T> & strict_val) {
+      x = T(strict_val);
       return *this;
    }
-   const IndexVal & operator=(const IndexVal & index_val) {
+   constexpr const IndexVal & operator=(const IndexVal & index_val) {
       x = T(index_val);
       return *this;
    }
-   template<RealType U> const IndexVal & operator=(U val) {
+   template<RealType U> constexpr const IndexVal & operator=(U val) {
       static_assert(SameType<T, U>);
       x = val;
       return *this;
    }
-   template<typename U> operator U () const {
+   template<typename U> constexpr operator U () const {
       static_assert(SameType<T, U>);
       return x;
    }
 
-   T operator++() { return ++x; }
-   T operator--() { return --x; }
-   T operator++(int) { T old = x; ++x; return old; }
-   T operator--(int) { T old = x; --x; return old; }
+   constexpr IndexVal & operator++() { ++x; return *this; }
+   constexpr IndexVal & operator--() { --x; return *this; }
+   constexpr StrictVal<T> operator++(int) { StrictVal old(x); ++x; return old; }
+   constexpr StrictVal<T> operator--(int) { StrictVal old(x); --x; return old; }
 
-   template<RealType U> const IndexVal & operator+=(U val) { static_assert(SameType<T, U>); x += val; return *this; }
-   template<RealType U> const IndexVal & operator-=(U val) { static_assert(SameType<T, U>); x -= val; return *this; }
-   template<RealType U> const IndexVal & operator*=(U val) { static_assert(SameType<T, U>); x *= val; return *this; }
-   template<RealType U> const IndexVal & operator/=(U val) { static_assert(SameType<T, U>); x /= val; return *this; }
-   const IndexVal & operator+=(const IndexVal & index_val) { x += T(index_val); return *this; }
-   const IndexVal & operator-=(const IndexVal & index_val) { x -= T(index_val); return *this; }
-   const IndexVal & operator*=(const IndexVal & index_val) { x *= T(index_val); return *this; }
-   const IndexVal & operator/=(const IndexVal & index_val) { x /= T(index_val); return *this; }
-   const IndexVal & operator+=(const CopyVal<T> & copy_val) { x += T(copy_val); return *this; }
-   const IndexVal & operator-=(const CopyVal<T> & copy_val) { x -= T(copy_val); return *this; }
-   const IndexVal & operator*=(const CopyVal<T> & copy_val) { x *= T(copy_val); return *this; }
-   const IndexVal & operator/=(const CopyVal<T> & copy_val) { x /= T(copy_val); return *this; }
+   template<RealType U> constexpr const IndexVal & operator+=(U val) { static_assert(SameType<T, U>); x += val; return *this; }
+   template<RealType U> constexpr const IndexVal & operator-=(U val) { static_assert(SameType<T, U>); x -= val; return *this; }
+   template<RealType U> constexpr const IndexVal & operator*=(U val) { static_assert(SameType<T, U>); x *= val; return *this; }
+   template<RealType U> constexpr const IndexVal & operator/=(U val) {
+      static_assert(SameType<T, U>);
+      #ifdef STRICT_ARRAY_DIVISION_ON
+      if(val == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
+      #endif
+      x /= val;
+      return *this;
+   }
+   template<BaseValType ValType> constexpr const IndexVal & operator+=(const ValType & val_type) { x += T(val_type); return *this; }
+   template<BaseValType ValType> constexpr const IndexVal & operator-=(const ValType & val_type) { x -= T(val_type); return *this; }
+   template<BaseValType ValType> constexpr const IndexVal & operator*=(const ValType & val_type) { x *= T(val_type); return *this; }
+   template<BaseValType ValType> constexpr const IndexVal & operator/=(const ValType & val_type)
+   {
+      #ifdef STRICT_ARRAY_DIVISION_ON
+      if(T(val_type) == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
+      #endif
+      x /= T(val_type);
+      return *this;
+   }
 
 private:
    T & x;
-   explicit IndexVal(T & x) : x(x) {}
+   template<RealType U> explicit IndexVal(U & x) : x(x)
+   { static_assert(SameType<T, U>); }
    friend Array<T>;
 };
 
 template<RealType T>
-struct CopyVal : BaseVal
+struct StrictVal : BaseVal
 {
 public:
    using value_type = T;
-   explicit CopyVal(T x) : x(x) {}
-   CopyVal(const CopyVal &) = delete;
-   CopyVal & operator=(const CopyVal &) = delete;
+   template<RealType U> explicit constexpr StrictVal(U x) : x(x)
+   { static_assert(SameType<T, U>); }
 
-   template<typename U> operator U () const {
+   template<typename U> constexpr operator U () const {
       static_assert(SameType<T, U>);
       return x;
    }
+   constexpr StrictVal & operator++() { ++x; return *this; }
+   constexpr StrictVal & operator--() { --x; return *this; }
+   constexpr StrictVal operator++(int) { StrictVal old(x); ++x; return old; }
+   constexpr StrictVal operator--(int) { StrictVal old(x); --x; return old; }
+
+   template<RealType U> constexpr const StrictVal & operator+=(U val) { static_assert(SameType<T, U>); x += val; return *this; }
+   template<RealType U> constexpr const StrictVal & operator-=(U val) { static_assert(SameType<T, U>); x -= val; return *this; }
+   template<RealType U> constexpr const StrictVal & operator*=(U val) { static_assert(SameType<T, U>); x *= val; return *this; }
+   template<RealType U> constexpr const StrictVal & operator/=(U val) {
+      static_assert(SameType<T, U>);
+      #ifdef STRICT_ARRAY_DIVISION_ON
+      if(val == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
+      #endif
+      x /= val;
+      return *this;
+   }
+   template<BaseValType ValType> constexpr const StrictVal & operator+=(const ValType & val_type) { x += T(val_type); return *this; }
+   template<BaseValType ValType> constexpr const StrictVal & operator-=(const ValType & val_type) { x -= T(val_type); return *this; }
+   template<BaseValType ValType> constexpr const StrictVal & operator*=(const ValType & val_type) { x *= T(val_type); return *this; }
+   template<BaseValType ValType> constexpr const StrictVal & operator/=(const ValType & val_type)
+   {
+      #ifdef STRICT_ARRAY_DIVISION_ON
+      if(T(val_type) == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
+      #endif
+      x /= T(val_type);
+      return *this;
+   }
+
 private:
    T x;
 };
 
-template<BaseValType ValType1, BaseValType ValType2> auto operator+(const ValType1 & v1, const ValType2 & v2) {
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<BaseValType ValType1, BaseValType ValType2> constexpr auto operator+(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
-   return CopyVal(T1(v1) + T2(v2));
+   return StrictVal<T1>(T1(v1) + T2(v2));
 }
-template<BaseValType ValType1, BaseValType ValType2> auto operator-(const ValType1 & v1, const ValType2 & v2) {
+template<BaseValType ValType1, BaseValType ValType2> constexpr auto operator-(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
-   return CopyVal(T1(v1) - T2(v2));
+   return StrictVal<T1>(T1(v1) - T2(v2));
 }
-template<BaseValType ValType1, BaseValType ValType2> auto operator*(const ValType1 & v1, const ValType2 & v2) {
+template<BaseValType ValType1, BaseValType ValType2> constexpr auto operator*(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
-   return CopyVal(T1(v1) * T1(v2));
+   return StrictVal<T1>(T1(v1) * T1(v2));
 }
-template<BaseValType ValType1, BaseValType ValType2> auto operator/(const ValType1 & v1, const ValType2 & v2) {
+template<BaseValType ValType1, BaseValType ValType2> constexpr auto operator/(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
-   return CopyVal(T1(v1) / T1(v2));
+   #ifdef STRICT_ARRAY_DIVISION_ON
+   if(T1(v2) == T1(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
+   #endif
+   return StrictVal<T1>(T1(v1) / T1(v2));
 }
-template<BaseValType ValType, RealType T> auto operator+(const ValType & v, T val) {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<BaseValType ValType, RealType T> constexpr auto operator+(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return CopyVal(T(v) + val);
+   return StrictVal<T>(T(val_type) + val);
 }
-template<BaseValType ValType, RealType T> auto operator-(const ValType & v, T val) {
+template<BaseValType ValType, RealType T> constexpr auto operator-(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return CopyVal(T(v) - val);
+   return StrictVal<T>(T(val_type) - val);
 }
-template<BaseValType ValType, RealType T> auto operator*(const ValType & v, T val) {
+template<BaseValType ValType, RealType T> constexpr auto operator*(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return CopyVal(T(v) * val);
+   return StrictVal<T>(T(val_type) * val);
 }
-template<BaseValType ValType, RealType T> auto operator/(const ValType & v, T val) {
+template<BaseValType ValType, RealType T> constexpr auto operator/(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return CopyVal(T(v) / val);
+   #ifdef STRICT_ARRAY_DIVISION_ON
+   if(val == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
+   #endif
+   return StrictVal<T>(T(val_type) / val);
 }
-template<BaseValType ValType, RealType T> auto operator+(T val, const ValType & v) {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<BaseValType ValType, RealType T> constexpr auto operator+(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return CopyVal(val + T(v));
+   return StrictVal<T>(val + T(val_type));
 }
-template<BaseValType ValType, RealType T> auto operator-(T val, const ValType & v) {
+template<BaseValType ValType, RealType T> constexpr auto operator-(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return CopyVal(val - T(v));
+   return StrictVal<T>(val - T(val_type));
 }
-template<BaseValType ValType, RealType T> auto operator*(T val, const ValType & v) {
+template<BaseValType ValType, RealType T> constexpr auto operator*(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return CopyVal(val * T(v));
+   return StrictVal<T>(val * T(val_type));
 }
-template<BaseValType ValType, RealType T> auto operator/(T val, const ValType & v) {
+template<BaseValType ValType, RealType T> constexpr auto operator/(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return CopyVal(val / T(v));
+   #ifdef STRICT_ARRAY_DIVISION_ON
+   if(T(val_type) == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
+   #endif
+   return StrictVal<T>(val / T(val_type));
 }
-template<BaseValType ValType1, BaseValType ValType2> bool operator==(const ValType1 & v1, const ValType2 & v2) {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<BaseValType ValType1, BaseValType ValType2> constexpr bool operator==(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
    return T1(v1) == T2(v2);
 }
-template<BaseValType ValType1, BaseValType ValType2> bool operator<(const ValType1 & v1, const ValType2 & v2) {
+template<BaseValType ValType1, BaseValType ValType2> constexpr bool operator<(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
    return T1(v1) < T2(v2);
 }
-template<BaseValType ValType1, BaseValType ValType2> bool operator>(const ValType1 & v1, const ValType2 & v2) {
+template<BaseValType ValType1, BaseValType ValType2> constexpr bool operator>(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
    return T1(v1) > T2(v2);
 }
-template<BaseValType ValType1, BaseValType ValType2> bool operator<=(const ValType1 & v1, const ValType2 & v2) {
+template<BaseValType ValType1, BaseValType ValType2> constexpr bool operator<=(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
    return T1(v1) <= T2(v2);
 }
-template<BaseValType ValType1, BaseValType ValType2> bool operator>=(const ValType1 & v1, const ValType2 & v2) {
+template<BaseValType ValType1, BaseValType ValType2> constexpr bool operator>=(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
    return T1(v1) >= T2(v2);
 }
-template<BaseValType ValType1, BaseValType ValType2> bool operator!=(const ValType1 & v1, const ValType2 & v2) {
+template<BaseValType ValType1, BaseValType ValType2> constexpr bool operator!=(const ValType1 & v1, const ValType2 & v2) {
    using T1 = typename ValType1::value_type;
    using T2 = typename ValType2::value_type;
    static_assert(SameType<T1, T2>);
    return T1(v1) != T2(v2);
 }
-template<BaseValType ValType, RealType T> bool operator==(const ValType & v, T val) {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<BaseValType ValType, RealType T> constexpr bool operator==(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return T(v) == val;
+   return T(val_type) == val;
 }
-template<BaseValType ValType, RealType T> bool operator<(const ValType & v, T val) {
+template<BaseValType ValType, RealType T> constexpr bool operator<(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return T(v) < val;
+   return T(val_type) < val;
 }
-template<BaseValType ValType, RealType T> bool operator>(const ValType & v, T val) {
+template<BaseValType ValType, RealType T> constexpr bool operator>(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return T(v) > val;
+   return T(val_type) > val;
 }
-template<BaseValType ValType, RealType T> bool operator<=(const ValType & v, T val) {
+template<BaseValType ValType, RealType T> constexpr bool operator<=(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return T(v) <= val;
+   return T(val_type) <= val;
 }
-template<BaseValType ValType, RealType T> bool operator>=(const ValType & v, T val) {
+template<BaseValType ValType, RealType T> constexpr bool operator>=(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return T(v) >= val;
+   return T(val_type) >= val;
 }
-template<BaseValType ValType, RealType T> bool operator!=(const ValType & v, T val) {
+template<BaseValType ValType, RealType T> constexpr bool operator!=(const ValType & val_type, T val) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return T(v) != val;
+   return T(val_type) != val;
 }
-template<BaseValType ValType, RealType T> bool operator==(T val, const ValType & v) {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<BaseValType ValType, RealType T> constexpr bool operator==(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return val == T(v);
+   return val == T(val_type);
 }
-template<BaseValType ValType, RealType T> bool operator<(T val, const ValType & v) {
+template<BaseValType ValType, RealType T> constexpr bool operator<(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return val < T(v);
+   return val < T(val_type);
 }
-template<BaseValType ValType, RealType T> bool operator>(T val, const ValType & v) {
+template<BaseValType ValType, RealType T> constexpr bool operator>(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return val > T(v);
+   return val > T(val_type);
 }
-template<BaseValType ValType, RealType T> bool operator<=(T val, const ValType & v) {
+template<BaseValType ValType, RealType T> constexpr bool operator<=(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return val <= T(v);
+   return val <= T(val_type);
 }
-template<BaseValType ValType, RealType T> bool operator>=(T val, const ValType & v) {
+template<BaseValType ValType, RealType T> constexpr bool operator>=(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return val >= T(v);
+   return val >= T(val_type);
 }
-template<BaseValType ValType, RealType T> bool operator!=(T val, const ValType & v) {
+template<BaseValType ValType, RealType T> constexpr bool operator!=(T val, const ValType & val_type) {
    static_assert(SameType<typename ValType::value_type, T>);
-   return val != T(v);
+   return val != T(val_type);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -609,7 +671,7 @@ inline IndexVal<T> Array<T>::operator[](S i)
    #ifdef STRICT_ARRAY_DEBUG_ON
    if(!is_valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
-   return IndexVal{elem[i]};
+   return IndexVal<T>{elem[i]};
 }
 
 template<RealType T> template<IntegerType S>
@@ -619,7 +681,7 @@ inline const IndexVal<T> Array<T>::operator[](S i) const
    #ifdef STRICT_ARRAY_DEBUG_ON
    if(!is_valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
    #endif
-   return IndexVal{elem[i]};
+   return IndexVal<T>{elem[i]};
 }
 
 template<RealType T> template<IntegerType S>
