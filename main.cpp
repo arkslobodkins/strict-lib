@@ -6,6 +6,9 @@
 // to use quadruple precision, for example
 // g++-12.2 -std=gnu++2a main.cpp -lquadmath
 
+// to enable debugging and range checking add -DSTRICT_ARRAY_DEBUG_ON
+// to enable division by 0 checking add -DSTRICT_ARRAY_DIVISION_ON
+
 #include <cstdlib>
 #include <iostream>
 
@@ -21,13 +24,14 @@ void derivative(Array<float64> & A, F f)
       A[i] = ( f(A[i] + h) - f(A[i] - h) ) / two_h;
 }
 
+#include <vector>
 int main()
 {
    Array<float64> A{1., 2., 3., 4., 5.};
-   derivative( A, [](float64 x){ return x * std::exp(x);} );
+   derivative( A, [](auto x){ return x * std::exp(float64(x));} );
 
    A = Array<float64>{5., 4., 3., 2., 1.};
-   derivative( A, [](float64 x){ return 2. * x * x;} );
+   derivative( A, [](auto x){ return 2. * x * x;} );
    A *= 2.;
    A.remove_element(0L);
 
@@ -46,6 +50,10 @@ int main()
    B.sort_increasing();
    std::cout << B << std::endl;;
    B.resize(3L) =  {1.Q, 2.Q, 3.Q};
+   B[0L] = (B[1L] + 2.Q) / 3.Q;        // all aguments on the rhs must be of type float128
+   float128 var = (B[1L] + 2.Q) / 3.Q; // can only be converted to float128
+   bool b = B[0L] > 1.Q;               // must compare to float128
+// b = B[0L] > 1.;                     // won't compile
    #endif
 
    return EXIT_SUCCESS;
