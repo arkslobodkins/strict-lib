@@ -24,7 +24,6 @@ void derivative(Array<float64> & A, F f)
       A[i] = ( f(A[i] + h) - f(A[i] - h) ) / two_h;
 }
 
-#include <vector>
 int main()
 {
    Array<float64> A{1., 2., 3., 4., 5.};
