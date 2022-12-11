@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "util.hpp"
 #include "strict_array.hpp"
 using namespace strict_array;
 
@@ -51,10 +52,15 @@ int main()
    B.resize(3L) =  {1.Q, 2.Q, 3.Q};
    B[0L] = (B[1L] + 2.Q) / 3.Q;        // all arguments on the rhs must be of type float128
    B[0L] = (2. + 3.Q) / B[1L];         // 2. here compiles because of the order of operations
+   B.index(0L) = 1;                    // index member function returns built-in type
    float128 var = (B[1L] + 2.Q) / 3.Q; // can only be converted to float128
    bool b = B[0L] > 1.Q;               // must compare to float128
 // b = B[0L] > 1.;                     // won't compile
    #endif
+
+   Array<double> Z = array_random(100'000'000L, -1., 1.);
+   TIME( for(auto i = 0L; i < Z.size(); ++i) ++Z[i]; );       // only marginally slower when -O3 is on then unchecked version below
+   TIME( for(auto i = 0L; i < Z.size(); ++i) ++Z.index(i) );
 
 // Consider using StrictVal as illustrated below
 
@@ -67,8 +73,8 @@ int main()
 
    StrictVal<double> strict_factor{8.25};
    A[0L] = 1. + strict_factor; // compiles and works fine
-
    A[0L] = A[1L]/0.; // throws exception in division mode
+
 
    return EXIT_SUCCESS;
 }
