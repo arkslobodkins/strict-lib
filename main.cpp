@@ -59,7 +59,7 @@ int main()
    #endif
 
    Array<double> Z = array_random(100'000'000L, -1., 1.);
-   TIME( for(auto i = 0L; i < Z.size(); ++i) ++Z[i]; );       // only marginally slower when -O3 is on then unchecked version below
+   TIME( for(auto i = 0L; i < Z.size(); ++i) ++Z[i]; );       // only marginally slower when -O3 is on than unchecked version below
    TIME( for(auto i = 0L; i < Z.size(); ++i) ++Z.index(i) );
 
 // Consider using StrictVal as illustrated below
