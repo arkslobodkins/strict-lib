@@ -26,7 +26,7 @@
 
 namespace strict_array
 {
-   static inline std::string trace_err(const char* file, const char* func, int line)
+   inline std::string trace_err(const char* file, const char* func, int line)
    {
       return "file: " + std::string(file) + ", function: " + std::string(func) + ", line: " + std::to_string(line);
    }

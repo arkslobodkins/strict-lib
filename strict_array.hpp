@@ -1053,7 +1053,7 @@ template<IntegerType T>
 Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
    std::srand(time(0));
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(size > 0);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    Array<T> A(size);
    long int diff_range = (high - low).template convert<long int>() + 1;
@@ -1066,7 +1066,7 @@ template<FloatingType T>
 Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
    std::srand(time(0));
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_ARRAY_DEBUG(size > 0);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
    Array<T> A(size);
    for(auto & x : A)
