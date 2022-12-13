@@ -84,7 +84,8 @@ public:
    constexpr inline StrictVal operator-=(StrictVal strict_val);
    constexpr inline StrictVal operator*=(StrictVal strict_val);
    constexpr inline StrictVal operator/=(StrictVal strict_val);
-   constexpr inline StrictVal operator%=(StrictVal strict_val);
+
+   template<IntegerType U = T> constexpr inline StrictVal operator%=(StrictVal strict_val);
 
 private:
    T x{};
@@ -202,7 +203,7 @@ constexpr inline StrictVal<T> StrictVal<T>::operator/=(StrictVal<T> strict_val)
    return *this;
 }
 
-template<IntegerType T>
+template<RealType T> template<IntegerType U>
 constexpr inline StrictVal<T> StrictVal<T>::operator%=(StrictVal<T> strict_val)
 { x %= T(strict_val); return *this; }
 
@@ -427,7 +428,9 @@ template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 
 template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && FloatingType<typename T::value_type>;
 template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatType<typename T::value_type>;
+#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
 template<typename T> concept QuadFloatingArrayBaseType = ArrayBaseType<T> && QuadType<typename T::value_type>;
+#endif
 template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::value_type>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -555,8 +558,10 @@ template<FloatingArrayBaseType ArrayType>
 template<StandardFloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm2(const ArrayType & A);
 
+#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
 template<QuadFloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm2(const ArrayType & A);
+#endif
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 [[nodiscard]] auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
@@ -1114,7 +1119,7 @@ template<FloatingArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
-   using T = ArrayType::value_type;
+   using T = typename ArrayType::value_type;
 
     T sum{};
     T c{};
@@ -1204,12 +1209,14 @@ template<StandardFloatingArrayBaseType ArrayType>
    return StrictVal<T>{std::sqrt(T(dot_prod(A, A)))};
 }
 
+#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
 template<QuadFloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm2(const ArrayType & A)
 {
    using T = typename ArrayType::value_type;
    return StrictVal<T>{sqrtq(T(dot_prod(A, A)))};
 }
+#endif
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
