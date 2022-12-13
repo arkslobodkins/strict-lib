@@ -47,6 +47,7 @@ int main()
    Array B = array_random<float32>(n, -1.F, 1.F);
    auto half_range = B.within_range(-0.5F, 0.5F);
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
+
    return EXIT_SUCCESS;
 }
 
