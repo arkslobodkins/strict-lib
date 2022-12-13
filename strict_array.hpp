@@ -425,6 +425,8 @@ template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 
 template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && FloatingType<typename T::value_type>;
+template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatType<typename T::value_type>;
+template<typename T> concept QuadFloatingArrayBaseType = ArrayBaseType<T> && QuadType<typename T::value_type>;
 template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::value_type>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -546,8 +548,14 @@ template<ArrayBaseType ArrayType>
 template<ArrayBaseType ArrayType>
 [[nodiscard]] auto max_index(const ArrayType & A);  // returns std::pair<size_type, StrictVal<value_type>>
 
-template<ArrayBaseType ArrayType>
+template<FloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm_inf(const ArrayType & A);
+
+template<StandardFloatingArrayBaseType ArrayType>
+[[nodiscard]] auto norm2(const ArrayType & A);
+
+template<QuadFloatingArrayBaseType ArrayType>
+[[nodiscard]] auto norm2(const ArrayType & A);
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 [[nodiscard]] auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
@@ -1176,7 +1184,7 @@ auto min_index(const ArrayType & A)
    return min;
 }
 
-template<ArrayBaseType ArrayType>
+template<FloatingArrayBaseType ArrayType>
 auto norm_inf(const ArrayType & A)
 {
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
@@ -1187,6 +1195,21 @@ auto norm_inf(const ArrayType & A)
    }
    return max_abs;
 }
+
+template<StandardFloatingArrayBaseType ArrayType>
+[[nodiscard]] auto norm2(const ArrayType & A)
+{
+   using T = typename ArrayType::value_type;
+   return StrictVal<T>{std::sqrt(T(dot_prod(A, A)))};
+}
+
+template<QuadFloatingArrayBaseType ArrayType>
+[[nodiscard]] auto norm2(const ArrayType & A)
+{
+   using T = typename ArrayType::value_type;
+   return StrictVal<T>{sqrtq(T(dot_prod(A, A)))};
+}
+
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
