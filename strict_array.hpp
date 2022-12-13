@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ctime>
 #include <iomanip>
 #include <initializer_list>
 #include <iostream>
@@ -1089,7 +1090,7 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 {
    ASSERT_STRICT_ARRAY_DEBUG(size > 0);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
-   std::srand(time(0));
+   std::srand(unsigned(std::time(0)));
    Array<T> A(size);
    long int diff_range = (high - low).template convert<long int>() + 1;
    for(auto & x : A)
@@ -1102,7 +1103,7 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 {
    ASSERT_STRICT_ARRAY_DEBUG(size > 0);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
-   std::srand(time(0));
+   std::srand(unsigned(std::time(0)));
    Array<T> A(size);
    for(auto & x : A)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
@@ -1209,7 +1210,6 @@ template<QuadFloatingArrayBaseType ArrayType>
    using T = typename ArrayType::value_type;
    return StrictVal<T>{sqrtq(T(dot_prod(A, A)))};
 }
-
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
