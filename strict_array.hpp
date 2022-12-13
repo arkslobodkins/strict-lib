@@ -142,7 +142,7 @@ template<RealType T> [[nodiscard]] constexpr inline auto max(StrictVal<T> strict
 
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
-template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
+   template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
