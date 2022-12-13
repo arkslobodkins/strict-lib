@@ -49,7 +49,6 @@ int main()
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
 
    return EXIT_SUCCESS;
-
 }
 
 #endif

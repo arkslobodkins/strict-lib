@@ -1109,8 +1109,8 @@ auto sum(const ArrayType & A)
 
     T sum{};
     T c{};
-    for(T f : A) {
-        T y = f - c;
+    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
+        T y = A[i] - c;
         T t = sum + y;
         c = (t - sum) - y;
         sum = t;
@@ -1193,13 +1193,7 @@ auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
 {
    ASSERT_STRICT_ARRAY_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_ARRAY_DEBUG(A1.size() > 0);
-   using T = typename ArrayType1::value_type;
-
-   StrictVal<T> prod{};
-   for(decltype(A1.size()) i = 0; i < A1.size(); ++i) {
-      prod += A1[i] * A2[i];
-   }
-   return prod;
+   return sum(A1 * A2);
 }
 
 template<ArrayBaseType ArrayType>
