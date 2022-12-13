@@ -51,8 +51,10 @@ template<typename T> concept RealType = FloatingType<T> || IntegerType<T>;
 #ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
    template<typename T> concept QuadType = SameType<T, float128>;
    template<typename T> concept NotQuadType = RealType<T> && !QuadType<T>;
+   template<typename T> concept StandardFloatType = FloatingType<T> && !QuadType<T>;
 #else
    template<typename T> concept NotQuadType = RealType<T>;
+   template<typename T> concept StandardFloatType = FloatingType<T>;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,9 +142,12 @@ template<RealType T> [[nodiscard]] constexpr inline auto max(T val, StrictVal<T>
 template<RealType T> [[nodiscard]] constexpr inline auto min(StrictVal<T> strict_val, T val);
 template<RealType T> [[nodiscard]] constexpr inline auto max(StrictVal<T> strict_val, T val);
 
+template<StandardFloatType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
+
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
    template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
+   template<QuadType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -223,54 +228,54 @@ template<IntegerType T> constexpr inline auto operator%=(T & val, StrictVal<T> s
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline auto operator+(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>(T(T(v1) + T(v2))); }
+{ return StrictVal<T>{T(T(v1) + T(v2))}; }
 
 template<RealType T> constexpr inline auto operator-(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>(T(T(v1) - T(v2))); }
+{ return StrictVal<T>{T(T(v1) - T(v2))}; }
 
 template<RealType T> constexpr inline auto operator*(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>(T(T(v1) * T(v2))); }
+{ return StrictVal<T>{T(T(v1) * T(v2))}; }
 
 template<RealType T> constexpr inline auto operator/(StrictVal<T> v1, StrictVal<T> v2)
 {
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(T(v2) == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
-   return StrictVal<T>(T(T(v1) / T(v2)));
+   return StrictVal<T>{T(T(v1) / T(v2))};
 }
 template<IntegerType T> constexpr inline auto operator%(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>(T(T(v1) % T(v2))); }
+{ return StrictVal<T>{T(T(v1) % T(v2))}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline auto operator+(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>(T(T(strict_val) + val)); }
+{ return StrictVal<T>{T(T(strict_val) + val)}; }
 
 template<RealType T> constexpr inline auto operator-(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>(T(T(strict_val) - val)); }
+{ return StrictVal<T>{T(T(strict_val) - val)}; }
 
 template<RealType T> constexpr inline auto operator*(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>(T(T(strict_val) * val)); }
+{ return StrictVal<T>{T(T(strict_val) * val)}; }
 
 template<RealType T> constexpr inline auto operator/(StrictVal<T> strict_val, T val)
 {
    #ifdef STRICT_ARRAY_DIVISION_ON
    if(val == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
    #endif
-   return StrictVal<T>(T(T(strict_val) / val));
+   return StrictVal<T>{T(T(strict_val) / val)};
 }
 
 template<IntegerType T> constexpr inline auto operator%(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>(T(T(strict_val) % val)); }
+{ return StrictVal<T>{T(T(strict_val) % val)}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline auto operator+(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>(T(val + T(strict_val))); }
+{ return StrictVal<T>{T(val + T(strict_val))}; }
 
 template<RealType T> constexpr inline auto operator-(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>(T(val - T(strict_val))); }
+{ return StrictVal<T>{T(val - T(strict_val))}; }
 
 template<RealType T> constexpr inline auto operator*(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>(T(val * T(strict_val))); }
+{ return StrictVal<T>{T(val * T(strict_val))}; }
 
 template<RealType T> constexpr inline auto operator/(T val, StrictVal<T> strict_val)
 {
@@ -281,7 +286,7 @@ template<RealType T> constexpr inline auto operator/(T val, StrictVal<T> strict_
 }
 
 template<IntegerType T> constexpr inline auto operator%(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>(T(val % T(strict_val))); }
+{ return StrictVal<T>{T(val % T(strict_val))}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline bool operator==(StrictVal<T> v1, StrictVal<T> v2)
@@ -362,6 +367,22 @@ template<RealType T> constexpr inline auto min(StrictVal<T> strict_val, T val)
 template<RealType T> constexpr inline auto max(StrictVal<T> strict_val, T val)
 { return strict_val > val ? strict_val : StrictVal<T>{val}; }
 
+template<StandardFloatType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
+{
+   auto r = v1 * v2;
+   auto s = std::fma(T(v1), T(v2), T(-r));
+   return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
+}
+
+#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
+template<QuadType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
+{
+   auto r = v1 * v2;
+   auto s = fmaq(T(v1), T(v2), T(-r));
+   return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
@@ -402,6 +423,9 @@ template<ArrayBaseType T1, typename Op> class UnaryExpr;
 template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op> class BinExpr;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
+
+template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && FloatingType<typename T::value_type>;
+template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::value_type>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -504,7 +528,10 @@ template<IntegerType T>
 template<FloatingType T>
 [[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
 
-template<ArrayBaseType ArrayType>
+template<FloatingArrayBaseType ArrayType>
+[[nodiscard]] auto sum(const ArrayType & A);
+
+template<IntegerArrayBaseType ArrayType>
 [[nodiscard]] auto sum(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
@@ -1052,9 +1079,9 @@ template<ArrayBaseType ArrayType> std::ostream & operator<<(std::ostream & os, c
 template<IntegerType T>
 Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
-   std::srand(time(0));
    ASSERT_STRICT_ARRAY_DEBUG(size > 0);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   std::srand(time(0));
    Array<T> A(size);
    long int diff_range = (high - low).template convert<long int>() + 1;
    for(auto & x : A)
@@ -1065,16 +1092,33 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 template<FloatingType T>
 Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
-   std::srand(time(0));
    ASSERT_STRICT_ARRAY_DEBUG(size > 0);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   std::srand(time(0));
    Array<T> A(size);
    for(auto & x : A)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
    return A;
 }
 
-template<ArrayBaseType ArrayType>
+template<FloatingArrayBaseType ArrayType>
+auto sum(const ArrayType & A)
+{
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   using T = ArrayType::value_type;
+
+    T sum{};
+    T c{};
+    for(T f : A) {
+        T y = f - c;
+        T t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    return StrictVal<T>{sum};
+}
+
+template<IntegerArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
@@ -1107,9 +1151,9 @@ auto min(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto max_index(const ArrayType & A)
 {
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
 
    std::pair<sz_T, StrictVal<T>> max = {0, A[0]};
    for(sz_T i = 1; i < A.size(); ++i)
@@ -1121,9 +1165,9 @@ auto max_index(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto min_index(const ArrayType & A)
 {
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
 
    std::pair<sz_T, StrictVal<T>> min = {0, A[0]};
    for(sz_T i = 1; i < A.size(); ++i)
