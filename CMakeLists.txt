@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 project(Example)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -12,7 +15,6 @@ elseif()
 endif()
 
 add_executable(example.x example.cpp)
-target_compile_features(example.x PUBLIC cxx_std_20)
 
 
 
