@@ -413,7 +413,7 @@ template<RealType T> constexpr inline auto min(StrictVal<T> strict_val, T val)
 template<RealType T> constexpr inline auto max(StrictVal<T> strict_val, T val)
 { return strict_val > val ? strict_val : StrictVal<T>{val}; }
 
-template<StandardFloatType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
+template<StandardFloatType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
 {
    auto r = v1 * v2;
    auto s = std::fma(T(v1), T(v2), T(-r));
@@ -421,7 +421,7 @@ template<StandardFloatType T> [[nodiscard]] constexpr inline auto two_prod(Stric
 }
 
 #ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
-template<QuadType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
+template<QuadType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
 {
    auto r = v1 * v2;
    auto s = fmaq(T(v1), T(v2), T(-r));
@@ -1247,16 +1247,18 @@ auto norm_inf(const ArrayType & A)
 }
 
 template<StandardFloatingArrayBaseType ArrayType>
-[[nodiscard]] auto norm2(const ArrayType & A)
+auto norm2(const ArrayType & A)
 {
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
    return StrictVal<T>{std::sqrt(T(dot_prod(A, A)))};
 }
 
 #ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
 template<QuadFloatingArrayBaseType ArrayType>
-[[nodiscard]] auto norm2(const ArrayType & A)
+auto norm2(const ArrayType & A)
 {
+   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
    return StrictVal<T>{sqrtq(T(dot_prod(A, A)))};
 }
@@ -1271,7 +1273,7 @@ auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
 }
 
 template<ArrayBaseType ArrayType>
-[[nodiscard]] bool does_contain_zero(const ArrayType & A)
+bool does_contain_zero(const ArrayType & A)
 {
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
@@ -1281,7 +1283,7 @@ template<ArrayBaseType ArrayType>
 }
 
 template<ArrayBaseType ArrayType>
-[[nodiscard]] bool all_positive(const ArrayType & A)
+bool all_positive(const ArrayType & A)
 {
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
@@ -1291,7 +1293,7 @@ template<ArrayBaseType ArrayType>
 }
 
 template<ArrayBaseType ArrayType>
-[[nodiscard]] bool all_negative(const ArrayType & A)
+bool all_negative(const ArrayType & A)
 {
    ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
