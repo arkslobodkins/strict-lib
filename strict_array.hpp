@@ -7,6 +7,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <limits>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -583,12 +584,12 @@ template<RealType T> Array<T>::Array() :
 
 template<RealType T> Array<T>::Array(size_type size) :
    sz{size},
-   elem{new StrictVal<T>[size]}
+   elem{new StrictVal<T>[static_cast<std::size_t>(size)]}
 {}
 
 template<RealType T> Array<T>::Array(size_type size, StrictVal<T> val) :
    sz{size},
-   elem{new StrictVal<T>[size]}
+   elem{new StrictVal<T>[static_cast<std::size_t>(size)]}
 {
    ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
    std::fill(begin(), end(), val);
@@ -861,7 +862,7 @@ namespace internal {
 
       sz_T max_digits = count_digit(max_ind);
       sz_T ind_digits = count_digit(ind);
-      return std::string(1+max_digits-ind_digits, 32);
+      return std::string(static_cast<std::basic_string<char>::size_type>(1+max_digits-ind_digits), 32);
    }
 }
 
@@ -1095,7 +1096,7 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 {
    ASSERT_STRICT_ARRAY_DEBUG(size > 0);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
-   std::srand(unsigned(std::time(0)));
+   std::srand(static_cast<unsigned>((std::time(0))));
    Array<T> A(size);
    long int diff_range = (high - low).template convert<long int>() + 1;
    for(auto & x : A)
@@ -1108,7 +1109,7 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 {
    ASSERT_STRICT_ARRAY_DEBUG(size > 0);
    ASSERT_STRICT_ARRAY_DEBUG(high >= low);
-   std::srand(unsigned(std::time(0)));
+   std::srand(static_cast<unsigned>((std::time(0))));
    Array<T> A(size);
    for(auto & x : A)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
