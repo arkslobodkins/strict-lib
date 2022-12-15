@@ -48,11 +48,16 @@ int main()
 
    // 2. find all values in [-0.5, 0.5] and map them to
    // [-1, -0.5] and [0.5, 1], depending on the sign.
+   // Note that if any other suffix or no suffix were
+   // used instead of "F", the code would not compile,
+   // because elements of Array are of type StrictVal<float32>,
+   // i.e. StrictVal<float>.
+
    auto n = 100'000LL;
    Array B = array_random<float32>(n, -1.F, 1.F);
    auto half_range = B.within_range(-0.5F, 0.5F);
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
-   for(auto x : B) assert(abs(b) >= 0.5F && abs(x) <= 1.F);
+   for(auto x : B) assert(abs(x) >= 0.5F && abs(x) <= 1.F); // test mapping
 
    return EXIT_SUCCESS;
 }
