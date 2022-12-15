@@ -5,7 +5,6 @@
 #include <ctime>
 #include <iomanip>
 #include <initializer_list>
-#include <iostream>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -156,11 +155,17 @@ template<RealType T> [[nodiscard]] constexpr inline auto min(StrictVal<T> strict
 template<RealType T> [[nodiscard]] constexpr inline auto max(StrictVal<T> strict_val, T val);
 
 template<StandardFloatType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
+template<StandardFloatType T> [[nodiscard]] inline auto exp(StrictVal<T> v);
+template<StandardFloatType T> [[nodiscard]] inline auto sin(StrictVal<T> v);
+template<StandardFloatType T> [[nodiscard]] inline auto cos(StrictVal<T> v);
 
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
-   template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
    template<QuadType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
+   template<QuadType T> [[nodiscard]] inline auto exp(StrictVal<T> v);
+   template<QuadType T> [[nodiscard]] inline auto sin(StrictVal<T> v);
+   template<QuadType T> [[nodiscard]] inline auto cos(StrictVal<T> v);
+   template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -420,14 +425,20 @@ template<StandardFloatType T> constexpr inline auto two_prod(StrictVal<T> v1, St
    return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
 }
 
-#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
-template<QuadType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
+template<StandardFloatType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
 {
-   auto r = v1 * v2;
-   auto s = fmaq(T(v1), T(v2), T(-r));
-   return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
+   return StrictVal<T>(std::exp(T(v)));
 }
-#endif
+
+template<StandardFloatType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
+{
+   return StrictVal<T>(std::sin(T(v)));
+}
+
+template<StandardFloatType T> [[nodiscard]] inline auto cos(StrictVal<T> v)
+{
+   return StrictVal<T>(std::cos(T(v)));
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
@@ -443,6 +454,28 @@ template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T
 }
 
 #ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
+template<QuadType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
+{
+   auto r = v1 * v2;
+   auto s = fmaq(T(v1), T(v2), T(-r));
+   return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
+}
+
+template<QuadType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
+{
+   return StrictVal<T>(expq(T(v)));
+}
+
+template<QuadType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
+{
+   return StrictVal<T>(sinq(T(v)));
+}
+
+template<QuadType T> [[nodiscard]] inline auto cos(StrictVal<T> v)
+{
+   return StrictVal<T>(cosq(T(v)));
+}
+
 template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
    int width = 39;
@@ -452,8 +485,6 @@ template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> s
    return os;
 }
 #endif
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ArrayBase{};

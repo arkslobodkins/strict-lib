@@ -1,10 +1,10 @@
 // for example, compile using recent version of gcc or recent intel compilers from intel-oneAPI
-// g++-12.2 -std=c++2a main.cpp
-// dpcpp -std=c++2a main.cpp
-// icpx -std=c++2a main.cpp
+// g++-12.2 -std=c++20 example.cpp
+// dpcpp -std=c++20 example.cpp
+// dpcpp -std=c++20 example.cpp
 
 // to use quadruple precision, for example
-// g++-12.2 -std=gnu++2a main.cpp -lquadmath
+// g++-12.2 -std=gnu++20 example.cpp -lquadmath
 
 // to enable debugging and range checking add -DSTRICT_ARRAY_DEBUG_ON
 // to enable division by 0 checking add -DSTRICT_ARRAY_DIVISION_ON
@@ -17,7 +17,6 @@
 #include <iostream>
 
 #include "strict_array.hpp"
-using namespace std;
 using namespace strict_array;
 
 template<typename F>
@@ -30,19 +29,24 @@ void derivative(Array<float64> & A, F f)
 }
 
 template<typename T>
-T sign(StrictVal<T> x)
+StrictVal<T> sign(StrictVal<T> x)
 {
    return x > T(0) ? T(1) : T(-1);
 }
 
 int main()
 {
+   using std::cout, std::endl;
+
+   // 1. computed derivative of x * exp(x) and multiply by 2
    Array<float64> A{-1., -2., -3., -4., -5.};
-   auto func = [](float64 x) -> StrictVal<float64> { return x * std::exp(x); };
+   auto func = [](auto x) { return x * exp(x); };
    derivative(A, func);
    cout << 2. * A << endl;
    cout << norm_inf(2. * A) << endl;
 
+   // 2. find all values in [-0.5, 0.5] and map them to
+   // [-1, -0.5] and [0.5, 1], depending on the sign.
    auto n = 100'000LL;
    Array B = array_random<float32>(n, -1.F, 1.F);
    auto half_range = B.within_range(-0.5F, 0.5F);
