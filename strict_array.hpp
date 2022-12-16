@@ -670,6 +670,9 @@ public:
    [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
 
+   [[nodiscard]] const auto & operator+() const { return *this; }
+   [[nodiscard]] auto operator-() const { return BinExprValLeft(*this, value_type(-1), Mult{}); }
+
 private:
    const size_type sz;
    const typename T::expr_type A;
@@ -698,6 +701,9 @@ public:
 
    [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
+
+   [[nodiscard]] const auto & operator+() const { return *this; }
+   [[nodiscard]] auto operator-() const { return UnaryExpr(*this, [](StrictVal<value_type> x) { return -x; }); }
 
 private:
    const size_type sz;
@@ -728,6 +734,9 @@ public:
    [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
 
+   [[nodiscard]] const auto & operator+() const { return *this; }
+   [[nodiscard]] auto operator-() const { return UnaryExpr(*this, [](StrictVal<value_type> x) { return -x; }); }
+
 private:
    const size_type sz;
    const typename T1::expr_type B;
@@ -756,6 +765,9 @@ public:
 
    [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
+
+   [[nodiscard]] const auto & operator+() const { return *this; }
+   [[nodiscard]] auto operator-() const { return UnaryExpr(*this, [](StrictVal<value_type> x) { return -x; }); }
 
 private:
    const size_type sz;
