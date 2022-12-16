@@ -68,7 +68,7 @@ int main()
    // sum every second element of 0, 2, 4, .., i.e.
    // sum of 0, 4, 8 ...
 
-   Array<int> C(10);
+   Array<int> C(9);
    std::iota(C.begin(), C.end(), 0);
    StrictVal<int> sum{};
    auto expr = 2 * C;

@@ -514,15 +514,23 @@ public:
    using size_type = long long int;
 
    const_iterator(const ArrayType & A, size_type pos);
+   auto operator--() -> auto &;
+   auto operator--(int) -> auto &;
    auto operator++() -> auto &;
    auto operator++(int) -> auto &;
    auto operator+=(size_type incr) -> auto &;
    auto operator-=(size_type incr) -> auto &;
+
+   auto operator+(size_type incr) const;
+   auto operator-(size_type incr) const;
+
    decltype(auto) operator*() const;
    bool operator==(const const_iterator & it) const;
    bool operator!=(const const_iterator & it) const;
    bool operator<(const const_iterator & it) const;
    bool operator<=(const const_iterator & it) const;
+   bool operator>(const const_iterator & it) const;
+   bool operator>=(const const_iterator & it) const;
 private:
 
    const ArrayType & A;
@@ -534,6 +542,21 @@ const_iterator<ArrayType>::const_iterator(const ArrayType & A, size_type pos) :
    A{A},
    pos{pos}
 {}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator--() -> auto &
+{
+   --pos;
+   return *this;
+}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator--(int) -> auto &
+{
+   auto old = *this;
+   --*this;
+   return old;
+}
 
 template<ArrayBaseType ArrayType>
 auto const_iterator<ArrayType>::operator++() -> auto &
@@ -562,6 +585,22 @@ auto const_iterator<ArrayType>::operator-=(size_type incr) -> auto &
 {
    pos -= incr;
    return *this;
+}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator+(size_type incr) const
+{
+   auto new_it = *this;
+   new_it += incr;
+   return new_it;
+}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator-(size_type incr) const
+{
+   auto new_it = *this;
+   new_it -= incr;
+   return new_it;
 }
 
 template<ArrayBaseType ArrayType>
@@ -596,6 +635,20 @@ bool const_iterator<ArrayType>::operator<=(const const_iterator<ArrayType> & it)
 {
    ASSERT_STRICT_DEBUG(&A == &it.A);
    return pos <= it.pos;
+}
+
+template<ArrayBaseType ArrayType>
+bool const_iterator<ArrayType>::operator>(const const_iterator<ArrayType> & it) const
+{
+   ASSERT_STRICT_DEBUG(&A == &it.A);
+   return pos > it.pos;
+}
+
+template<ArrayBaseType ArrayType>
+bool const_iterator<ArrayType>::operator>=(const const_iterator<ArrayType> & it) const
+{
+   ASSERT_STRICT_DEBUG(&A == &it.A);
+   return pos >= it.pos;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
