@@ -3,488 +3,20 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
-#include <iomanip>
 #include <initializer_list>
-#include <limits>
 #include <string>
 #include <type_traits>
 #include <vector>
 
 #include "error_handling.hpp"
+#include "value_traits.hpp"
+#include "strict_val.hpp"
 
 #if __cplusplus < 202002L
    #error requires c++20 or higher
 #else
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined __GNUC__ && !defined __clang__ && !defined __INTEL_LLVM_COMPILER && !defined __INTEL_COMPILER
-   #define STRICT_ARRAY_QUADRUPLE_PRECISION
-   #include <quadmath.h>
-#endif
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace strict_array {
-
-static_assert(sizeof(float) == 4);
-static_assert(sizeof(double) == 8);
-using float32 = float;
-using float64 = double;
-
-template<typename T, typename U>
-concept SameType = std::is_same<std::remove_cv_t<T>, std::remove_cv_t<U>>::value;
-
-template<typename T>
-concept IntegerType = std::is_same<std::remove_cv_t<T>, std::remove_cv_t<short>>::value         ||
-                      std::is_same<std::remove_cv_t<T>, std::remove_cv_t<int>>::value           ||
-                      std::is_same<std::remove_cv_t<T>, std::remove_cv_t<long int>>::value      ||
-                      std::is_same<std::remove_cv_t<T>, std::remove_cv_t<long long int>>::value;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
-   static_assert(sizeof(__float128) == 16);
-   using float128 = __float128;
-   template<typename T> concept FloatingType = std::is_floating_point<T>::value || SameType<float128, T>;
-#else
-   template<typename T> concept FloatingType = std::is_floating_point<T>::value;
-#endif
-template<typename T> concept RealType = FloatingType<T> || IntegerType<T>;
-
-#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
-   template<typename T> concept QuadType = SameType<T, float128>;
-   template<typename T> concept NotQuadType = RealType<T> && !QuadType<T>;
-   template<typename T> concept StandardFloatType = FloatingType<T> && !QuadType<T>;
-#else
-   template<typename T> concept NotQuadType = RealType<T>;
-   template<typename T> concept StandardFloatType = FloatingType<T>;
-#endif
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-struct StrictVal
-{
-public:
-   using value_type = T;
-   explicit constexpr StrictVal() = default;
-   constexpr StrictVal(const StrictVal &) = default;
-   constexpr StrictVal & operator=(const StrictVal &) = default;
-
-   template<RealType U> constexpr inline StrictVal(U val);
-   template<RealType U> constexpr inline StrictVal & operator=(U val);
-   template<RealType U> constexpr inline operator U () const; // safe conversion
-   template<RealType U> constexpr inline U convert() const;   // conversion chosen by the user;
-
-   [[nodiscard]] constexpr StrictVal operator+() const { return *this; }
-   [[nodiscard]] constexpr StrictVal operator-() const { return StrictVal{-T(*this)}; }
-   constexpr StrictVal operator++() { ++x; return *this; }
-   constexpr StrictVal operator--() { --x; return *this; }
-   constexpr StrictVal operator++(int) { StrictVal old{x}; ++x; return old; }
-   constexpr StrictVal operator--(int) { StrictVal old{x}; --x; return old; }
-
-   constexpr inline StrictVal operator+=(StrictVal strict_val);
-   constexpr inline StrictVal operator-=(StrictVal strict_val);
-   constexpr inline StrictVal operator*=(StrictVal strict_val);
-   constexpr inline StrictVal operator/=(StrictVal strict_val);
-
-   template<IntegerType U = T> constexpr inline StrictVal operator%=(StrictVal strict_val);
-   template<IntegerType U = T> constexpr inline StrictVal operator<<=(StrictVal strict_val);
-   template<IntegerType U = T> constexpr inline StrictVal operator>>=(StrictVal strict_val);
-
-private:
-   T x{};
-};
-
-template<RealType T> constexpr inline auto operator+=(T & val, StrictVal<T> strict_val);
-template<RealType T> constexpr inline auto operator-=(T & val, StrictVal<T> strict_val);
-template<RealType T> constexpr inline auto operator*=(T & val, StrictVal<T> strict_val);
-template<RealType T> constexpr inline auto operator/=(T & val, StrictVal<T> strict_val);
-template<IntegerType T> constexpr inline auto operator%=(T & val, StrictVal<T> strict_val);
-template<IntegerType T> constexpr inline auto operator<<=(T & val, StrictVal<T> strict_val);
-template<IntegerType T> constexpr inline auto operator>>=(T & val, StrictVal<T> strict_val);
-
-template<RealType T> [[nodiscard]] constexpr inline auto operator+(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline auto operator-(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline auto operator*(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline auto operator/(StrictVal<T> v1, StrictVal<T> v2);
-template<IntegerType T> [[nodiscard]] constexpr inline auto operator%(StrictVal<T> v1, StrictVal<T> v2);
-template<IntegerType T> [[nodiscard]] constexpr inline auto operator<<(StrictVal<T> v1, StrictVal<T> v2);
-template<IntegerType T> [[nodiscard]] constexpr inline auto operator>>(StrictVal<T> v1, StrictVal<T> v2);
-
-template<RealType T> [[nodiscard]] constexpr inline auto operator+(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline auto operator-(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline auto operator*(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline auto operator/(StrictVal<T> strict_val, T val);
-template<IntegerType T> [[nodiscard]] constexpr inline auto operator%(StrictVal<T> strict_val, T val);
-template<IntegerType T> [[nodiscard]] constexpr inline auto operator<<(StrictVal<T> strict_val, T val);
-template<IntegerType T> [[nodiscard]] constexpr inline auto operator>>(StrictVal<T> strict_val, T val);
-
-template<RealType T> [[nodiscard]] constexpr inline auto operator+(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline auto operator-(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline auto operator*(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline auto operator/(T val, StrictVal<T> strict_val);
-template<IntegerType T> [[nodiscard]] constexpr inline auto operator%(T val, StrictVal<T> strict_val);
-template<IntegerType T> [[nodiscard]] constexpr inline auto operator<<(T val, StrictVal<T> strict_val);
-template<IntegerType T> [[nodiscard]] constexpr inline auto operator>>(T val, StrictVal<T> strict_val);
-
-template<RealType T> [[nodiscard]] constexpr inline bool operator==(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<=(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>=(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline bool operator!=(StrictVal<T> v1, StrictVal<T> v2);
-
-template<RealType T> [[nodiscard]] constexpr inline bool operator==(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<=(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>=(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator!=(StrictVal<T> strict_val, T val);
-
-template<RealType T> [[nodiscard]] constexpr inline bool operator==(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<=(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>=(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator!=(T val, StrictVal<T> strict_val);
-
-template<RealType T> [[nodiscard]] constexpr inline auto abs(StrictVal<T> v);
-template<RealType T> [[nodiscard]] constexpr inline auto min(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline auto max(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline auto min(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline auto max(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline auto min(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline auto max(StrictVal<T> strict_val, T val);
-
-template<StandardFloatType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
-template<StandardFloatType T> [[nodiscard]] inline auto exp(StrictVal<T> v);
-template<StandardFloatType T> [[nodiscard]] inline auto sin(StrictVal<T> v);
-template<StandardFloatType T> [[nodiscard]] inline auto cos(StrictVal<T> v);
-
-template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
-#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
-   template<QuadType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
-   template<QuadType T> [[nodiscard]] inline auto exp(StrictVal<T> v);
-   template<QuadType T> [[nodiscard]] inline auto sin(StrictVal<T> v);
-   template<QuadType T> [[nodiscard]] inline auto cos(StrictVal<T> v);
-   template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
-#endif
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> template<RealType U>
-constexpr inline StrictVal<T>::StrictVal(U val) : x(val)
-{
-   static_assert(SameType<T, U>);
-}
-
-template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator=(U val)
-{
-   static_assert(SameType<T, U>);
-   x = val;
-   return *this;
-}
-
-template<RealType T> template<RealType U>
-constexpr inline StrictVal<T>::operator U () const
-{
-   static_assert(SameType<T, U>);
-   return x;
-}
-
-template<RealType T> template<RealType U>
-constexpr inline U StrictVal<T>::convert() const
-{
-   return U(x);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-constexpr inline StrictVal<T> StrictVal<T>::operator+=(StrictVal<T> strict_val)
-{ x += T(strict_val); return *this; }
-
-template<RealType T>
-constexpr inline StrictVal<T> StrictVal<T>::operator-=(StrictVal<T> strict_val)
-{ x -= T(strict_val); return *this; }
-
-template<RealType T>
-constexpr inline StrictVal<T> StrictVal<T>::operator*=(StrictVal<T> strict_val)
-{ x *= T(strict_val); return *this; }
-
-template<RealType T>
-constexpr inline StrictVal<T> StrictVal<T>::operator/=(StrictVal<T> strict_val)
-{
-   #ifdef STRICT_ARRAY_DIVISION_ON
-   if(T(strict_val) == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
-   #endif
-   x /= T(strict_val);
-   return *this;
-}
-
-template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator%=(StrictVal<T> strict_val)
-{ x %= T(strict_val); return *this; }
-
-template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator<<=(StrictVal<T> strict_val)
-{ x <<= T(strict_val); return *this; }
-
-template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator>>=(StrictVal<T> strict_val)
-{ x >>= T(strict_val); return *this; }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> constexpr inline auto operator+=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val += T(strict_val)}; }
-
-template<RealType T> constexpr inline auto operator-=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val -= T(strict_val)}; }
-
-template<RealType T> constexpr inline auto operator*=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val *= T(strict_val)}; }
-
-template<RealType T> constexpr inline auto operator/=(T & val, StrictVal<T> strict_val)
-{
-   #ifdef STRICT_ARRAY_DIVISION_ON
-   if(T(strict_val) == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
-   #endif
-   return StrictVal<T>{val /= T(strict_val)};
-}
-
-template<IntegerType T> constexpr inline auto operator%=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val %= T(strict_val)}; }
-
-template<IntegerType T> constexpr inline auto operator<<=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val <<= T(strict_val)}; }
-
-template<IntegerType T> constexpr inline auto operator>>=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val >>= T(strict_val)}; }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> constexpr inline auto operator+(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) + T(v2))}; }
-
-template<RealType T> constexpr inline auto operator-(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) - T(v2))}; }
-
-template<RealType T> constexpr inline auto operator*(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) * T(v2))}; }
-
-template<RealType T> constexpr inline auto operator/(StrictVal<T> v1, StrictVal<T> v2)
-{
-   #ifdef STRICT_ARRAY_DIVISION_ON
-   if(T(v2) == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
-   #endif
-   return StrictVal<T>{T(T(v1) / T(v2))};
-}
-
-template<IntegerType T> constexpr inline auto operator%(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) % T(v2))}; }
-
-template<IntegerType T> constexpr inline auto operator<<(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) << T(v2))}; }
-
-template<IntegerType T> constexpr inline auto operator>>(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) >> T(v2))}; }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> constexpr inline auto operator+(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) + val)}; }
-
-template<RealType T> constexpr inline auto operator-(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) - val)}; }
-
-template<RealType T> constexpr inline auto operator*(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) * val)}; }
-
-template<RealType T> constexpr inline auto operator/(StrictVal<T> strict_val, T val)
-{
-   #ifdef STRICT_ARRAY_DIVISION_ON
-   if(val == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
-   #endif
-   return StrictVal<T>{T(T(strict_val) / val)};
-}
-
-template<IntegerType T> constexpr inline auto operator%(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) % val)}; }
-
-template<IntegerType T> constexpr inline auto operator<<(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) << val)}; }
-
-template<IntegerType T> constexpr inline auto operator>>(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) >> val)}; }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> constexpr inline auto operator+(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val + T(strict_val))}; }
-
-template<RealType T> constexpr inline auto operator-(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val - T(strict_val))}; }
-
-template<RealType T> constexpr inline auto operator*(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val * T(strict_val))}; }
-
-template<RealType T> constexpr inline auto operator/(T val, StrictVal<T> strict_val)
-{
-   #ifdef STRICT_ARRAY_DIVISION_ON
-   if(T(strict_val) == T(0)) STRICT_ARRAY_THROW_ZERO_DIVISION();
-   #endif
-   return StrictVal<T>(T(val / T(strict_val)));
-}
-
-template<IntegerType T> constexpr inline auto operator%(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val % T(strict_val))}; }
-
-template<IntegerType T> constexpr inline auto operator<<(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val << T(strict_val))}; }
-
-template<IntegerType T> constexpr inline auto operator>>(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val >> T(strict_val))}; }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> constexpr inline bool operator==(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) == T(v2); }
-
-template<RealType T> constexpr inline bool operator<(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) < T(v2); }
-
-template<RealType T> constexpr inline bool operator>(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) > T(v2); }
-
-template<RealType T> constexpr inline bool operator<=(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) <= T(v2); }
-
-template<RealType T> constexpr inline bool operator>=(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) >= T(v2); }
-
-template<RealType T> constexpr inline bool operator!=(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) != T(v2); }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> constexpr inline bool operator==(StrictVal<T> strict_val, T val)
-{ return T(strict_val) == val; }
-
-template<RealType T> constexpr inline bool operator<(StrictVal<T> strict_val, T val)
-{ return T(strict_val) < val; }
-
-template<RealType T> constexpr inline bool operator>(StrictVal<T> strict_val, T val)
-{ return T(strict_val) > val; }
-
-template<RealType T> constexpr inline bool operator<=(StrictVal<T> strict_val, T val)
-{ return T(strict_val) <= val; }
-
-template<RealType T> constexpr inline bool operator>=(StrictVal<T> strict_val, T val)
-{ return T(strict_val) >= val; }
-
-template<RealType T> constexpr inline bool operator!=(StrictVal<T> strict_val, T val)
-{ return T(strict_val) != val; }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> constexpr inline bool operator==(T val, StrictVal<T> strict_val)
-{ return val == T(strict_val); }
-
-template<RealType T> constexpr inline bool operator<(T val, StrictVal<T> strict_val)
-{ return val < T(strict_val); }
-
-template<RealType T> constexpr inline bool operator>(T val, StrictVal<T> strict_val)
-{ return val > T(strict_val); }
-
-template<RealType T> constexpr inline bool operator<=(T val, StrictVal<T> strict_val)
-{ return val <= T(strict_val); }
-
-template<RealType T> constexpr inline bool operator>=(T val, StrictVal<T> strict_val)
-{ return val >= T(strict_val); }
-
-template<RealType T> constexpr inline bool operator!=(T val, StrictVal<T> strict_val)
-{ return val != T(strict_val); }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> constexpr inline auto abs(StrictVal<T> v)
-{ return T(v) > T(0) ? v : -v; }
-
-template<RealType T> constexpr inline auto min(StrictVal<T> v1, StrictVal<T> v2)
-{ return v1 < v2 ? v1 : v2; }
-
-template<RealType T> constexpr inline auto max(StrictVal<T> v1, StrictVal<T> v2)
-{ return v1 > v2 ? v1 : v2; }
-
-template<RealType T> constexpr inline auto min(T val, StrictVal<T> strict_val)
-{ return val < strict_val ? StrictVal<T>{val} : strict_val; }
-
-template<RealType T> constexpr inline auto max(T val, StrictVal<T> strict_val)
-{ return val > strict_val ? StrictVal<T>{val} : strict_val; }
-
-template<RealType T> constexpr inline auto min(StrictVal<T> strict_val, T val)
-{ return strict_val < val ? strict_val : StrictVal<T>{val}; }
-
-template<RealType T> constexpr inline auto max(StrictVal<T> strict_val, T val)
-{ return strict_val > val ? strict_val : StrictVal<T>{val}; }
-
-template<StandardFloatType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
-{
-   auto r = v1 * v2;
-   auto s = std::fma(T(v1), T(v2), T(-r));
-   return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
-}
-
-template<StandardFloatType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
-{
-   return StrictVal<T>(std::exp(T(v)));
-}
-
-template<StandardFloatType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
-{
-   return StrictVal<T>(std::sin(T(v)));
-}
-
-template<StandardFloatType T> [[nodiscard]] inline auto cos(StrictVal<T> v)
-{
-   return StrictVal<T>(std::cos(T(v)));
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
-{
-   int num_digits{};
-   if(SameType<T, float>)            num_digits = std::numeric_limits<float>::digits10 + 1;
-   else if(SameType<T, double>)      num_digits = std::numeric_limits<double>::digits10 + 1;
-   else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10 + 1;
-   else                              num_digits = int(std::cout.precision());
-
-   os << std::setprecision(num_digits) << T(strict_val);
-   return os;
-}
-
-#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
-template<QuadType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
-{
-   auto r = v1 * v2;
-   auto s = fmaq(T(v1), T(v2), T(-r));
-   return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
-}
-
-template<QuadType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
-{
-   return StrictVal<T>(expq(T(v)));
-}
-
-template<QuadType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
-{
-   return StrictVal<T>(sinq(T(v)));
-}
-
-template<QuadType T> [[nodiscard]] inline auto cos(StrictVal<T> v)
-{
-   return StrictVal<T>(cosq(T(v)));
-}
-
-template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
-{
-   int width = 39;
-   char buf[128];
-   quadmath_snprintf(buf, sizeof(buf), "%+-#*.32Qe", width, T(strict_val));
-   os << buf;
-   return os;
-}
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ArrayBase{};
@@ -503,7 +35,7 @@ template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 
 template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && FloatingType<typename T::value_type>;
 template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatType<typename T::value_type>;
-#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
+#ifdef STRICT_QUADRUPLE_PRECISION
 template<typename T> concept QuadFloatingArrayBaseType = ArrayBaseType<T> && QuadType<typename T::value_type>;
 #endif
 template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::value_type>;
@@ -515,6 +47,7 @@ class Array : private ArrayBase
 public:
    using size_type = long long int;
    using value_type = T;
+   using expr_type = const Array<T> &;
 
    explicit Array();
    explicit Array(size_type size);
@@ -549,8 +82,8 @@ public:
    void resize(size_type size);
    void resize_and_assign(const Array & A);
 
-   [[nodiscard]] StrictVal<T> & operator[](size_type i);
-   [[nodiscard]] const StrictVal<T> & operator[](size_type i) const;
+   [[nodiscard]] inline StrictVal<T> & operator[](size_type i);
+   [[nodiscard]] inline const StrictVal<T> & operator[](size_type i) const;
 
    [[nodiscard]] StrictVal<T>* begin() & { return sz > 0 ? &elem[0] : nullptr; }
    [[nodiscard]] const StrictVal<T>* begin() const & { return sz > 0 ? &elem[0] : nullptr; }
@@ -633,7 +166,7 @@ template<FloatingArrayBaseType ArrayType>
 template<StandardFloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm2(const ArrayType & A);
 
-#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
+#ifdef STRICT_QUADRUPLE_PRECISION
 template<QuadFloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm2(const ArrayType & A);
 #endif
@@ -665,7 +198,7 @@ template<RealType T> Array<T>::Array(size_type size, StrictVal<T> val) :
    sz{size},
    elem{new StrictVal<T>[static_cast<std::size_t>(size)]}
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_DEBUG(sz > 0);
    std::fill(begin(), end(), val);
 }
 
@@ -692,21 +225,21 @@ template<RealType T> Array<T>::Array(Array<T> && A) noexcept :
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> Array<T> & Array<T>::operator=(StrictVal<T> val)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_DEBUG(sz > 0);
    std::fill(begin(), end(), val);
    return *this;
 }
 
 template<RealType T> Array<T> & Array<T>::operator=(const Array<T> & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz == A.sz);
+   ASSERT_STRICT_DEBUG(sz == A.sz);
    std::copy(A.begin(), A.end(), begin());
    return *this;
 }
 
 template<RealType T> Array<T> & Array<T>::operator=(Array<T> && A) noexcept
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz == A.sz);
+   ASSERT_STRICT_DEBUG(sz == A.sz);
    delete[] elem;
    elem = A.elem;
 
@@ -728,7 +261,7 @@ template<ArrayExprType ArrExpr> Array<T>::Array(const ArrExpr & expr)
 template<RealType T>
 template<ArrayExprType ArrExpr> const Array<T> & Array<T>::operator=(const ArrExpr & expr)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz == expr.size());
+   ASSERT_STRICT_DEBUG(sz == expr.size());
    for(size_type i = 0; i < sz; ++i)
       elem[i] = expr[i];
    return *this;
@@ -743,7 +276,7 @@ template<RealType T> const Array<T> & Array<T>::operator+() const
 { return *this; }
 
 template<RealType T> auto Array<T>::operator-() const
-{ return UnaryExpr(*this, [](T x){return -x;}); }
+{ return UnaryExpr(*this, [](StrictVal<T> x){return -x;}); }
 
 template<RealType T>
 const Array<T> & Array<T>::operator+=(StrictVal<T> val)
@@ -831,19 +364,19 @@ template<RealType T> void Array<T>::resize_and_assign(const Array<T> & A)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-StrictVal<T> & Array<T>::operator[](size_type i)
+inline StrictVal<T> & Array<T>::operator[](size_type i)
 {
-   #ifdef STRICT_ARRAY_DEBUG_ON
-   if(!valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
+   #ifdef STRICT_DEBUG_ON
+   if(!valid_index(i)) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return elem[i];
 }
 
 template<RealType T>
-const StrictVal<T> & Array<T>::operator[](size_type i) const
+inline const StrictVal<T> & Array<T>::operator[](size_type i) const
 {
-   #ifdef STRICT_ARRAY_DEBUG_ON
-   if(!valid_index(i)) STRICT_ARRAY_THROW_OUT_OF_RANGE();
+   #ifdef STRICT_DEBUG_ON
+   if(!valid_index(i)) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return elem[i];
 }
@@ -852,8 +385,8 @@ const StrictVal<T> & Array<T>::operator[](size_type i) const
 template<RealType T>
 std::vector<StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T> high) &
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   ASSERT_STRICT_DEBUG(sz > 0);
+   ASSERT_STRICT_DEBUG(high >= low);
    std::vector<StrictVal<T>*> v;
    for(size_type i = 0; i < sz; ++i)
       if(elem[i] >= low && elem[i] <= high)
@@ -864,8 +397,8 @@ std::vector<StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T>
 template<RealType T>
 std::vector<const StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T> high) const &
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
-   ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   ASSERT_STRICT_DEBUG(sz > 0);
+   ASSERT_STRICT_DEBUG(high >= low);
    std::vector<const StrictVal<T>*> v;
    for(size_type i = 0; i < sz; ++i)
       if(elem[i] >= low && elem[i] <= high)
@@ -875,22 +408,22 @@ std::vector<const StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, Strict
 
 template<RealType T> void Array<T>::sort_decreasing()
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_DEBUG(sz > 0);
    std::sort(begin(), end(), [](auto a, auto b) { return a > b; });
 }
 
 template<RealType T> void Array<T>::sort_increasing()
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_DEBUG(sz > 0);
    std::sort(begin(), end(), [](auto a, auto b) { return a < b; });
 }
 
 template<RealType T>
 Array<T> Array<T>::sub_array(size_type first, size_type last)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(valid_index(first));
-   ASSERT_STRICT_ARRAY_DEBUG(valid_index(last));
-   ASSERT_STRICT_ARRAY_DEBUG(last >= first);
+   ASSERT_STRICT_DEBUG(valid_index(first));
+   ASSERT_STRICT_DEBUG(valid_index(last));
+   ASSERT_STRICT_DEBUG(last >= first);
    Array s(last-first+1);
    for(size_type i = 0; i < s.size(); ++i)
       s.elem[i] = elem[first+i];
@@ -909,7 +442,7 @@ bool Array<T>::valid_index(size_type index) const
 template<RealType T> template<typename F>
 void Array<T>::apply0(F f)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_DEBUG(sz > 0);
    for(size_type i = 0; i < sz; ++i)
       f(i);
 }
@@ -918,8 +451,8 @@ template<RealType T> template<ArrayBaseType ArrayType, typename F>
 void Array<T>::apply1(const ArrayType & A, F f)
 {
    (void)A;
-   ASSERT_STRICT_ARRAY_DEBUG(sz == A.sz);
-   ASSERT_STRICT_ARRAY_DEBUG(sz > 0);
+   ASSERT_STRICT_DEBUG(sz == A.sz);
+   ASSERT_STRICT_DEBUG(sz > 0);
    for(size_type i = 0; i < sz; ++i)
       f(i);
 }
@@ -974,23 +507,119 @@ struct Divide : private Operation
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<ArrayBaseType ArrayType>
+class const_iterator
+{
+public:
+   using size_type = long long int;
+
+   const_iterator(const ArrayType & A, size_type pos);
+   auto operator++() -> auto &;
+   auto operator++(int) -> auto &;
+   auto operator+=(size_type incr) -> auto &;
+   auto operator-=(size_type incr) -> auto &;
+   decltype(auto) operator*() const;
+   bool operator==(const const_iterator & it) const;
+   bool operator!=(const const_iterator & it) const;
+   bool operator<(const const_iterator & it) const;
+   bool operator<=(const const_iterator & it) const;
+private:
+
+   const ArrayType & A;
+   size_type pos;
+};
+
+template<ArrayBaseType ArrayType>
+const_iterator<ArrayType>::const_iterator(const ArrayType & A, size_type pos) :
+   A{A},
+   pos{pos}
+{}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator++() -> auto &
+{
+   ++pos;
+   return *this;
+}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator++(int) -> auto &
+{
+   auto old = *this;
+   ++*this;
+   return old;
+}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator+=(size_type incr) -> auto &
+{
+   pos += incr;
+   return *this;
+}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator-=(size_type incr) -> auto &
+{
+   pos -= incr;
+   return *this;
+}
+
+template<ArrayBaseType ArrayType>
+decltype(auto) const_iterator<ArrayType>::operator*() const
+{
+   return A[pos];
+}
+
+template<ArrayBaseType ArrayType>
+bool const_iterator<ArrayType>::operator==(const const_iterator<ArrayType> & it) const
+{
+   ASSERT_STRICT_DEBUG(&A == &it.A);
+   return pos == it.pos;
+}
+
+template<ArrayBaseType ArrayType>
+bool const_iterator<ArrayType>::operator!=(const const_iterator<ArrayType> & it) const
+{
+   ASSERT_STRICT_DEBUG(&A == &it.A);
+   return pos != it.pos;
+}
+
+template<ArrayBaseType ArrayType>
+bool const_iterator<ArrayType>::operator<(const const_iterator<ArrayType> & it) const
+{
+   ASSERT_STRICT_DEBUG(&A == &it.A);
+   return pos < it.pos;
+}
+
+template<ArrayBaseType ArrayType>
+bool const_iterator<ArrayType>::operator<=(const const_iterator<ArrayType> & it) const
+{
+   ASSERT_STRICT_DEBUG(&A == &it.A);
+   return pos <= it.pos;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, typename Op>
 class UnaryExpr : private ArrayBase, private ArrayExpr
 {
 public:
    using size_type = typename T::size_type;
    using value_type = typename T::value_type;
+   using expr_type = UnaryExpr<T, Op>;
 
-   UnaryExpr(const T & A, Op op) : sz(A.size()), A(A), op(op) { ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0); }
-   UnaryExpr(const UnaryExpr &) = delete;
+   UnaryExpr(const T & A, Op op) : sz(A.size()), A(A), op(op) { ASSERT_STRICT_DEBUG(A.size() > 0); }
+   UnaryExpr(const UnaryExpr &) = default;
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
-   [[nodiscard]] decltype(auto) operator[](size_type i) const { return op(A[i]); }
+   [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] size_type size() const { return sz; }
+
+   [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
+   [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
 
 private:
    const size_type sz;
-   const T & A;
+   const typename T::expr_type A;
    Op op;
 };
 
@@ -1001,22 +630,26 @@ class BinExpr : private ArrayBase, private ArrayExpr
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
+   using expr_type = BinExpr<T1, T2, Op>;
 
    BinExpr(const T1 & A, const T2 & B, Op op) : sz(A.size()), A(A), B(B), op(op) {
       static_assert(SameType<typename T1::value_type, typename T2::value_type>);
-      ASSERT_STRICT_ARRAY_DEBUG(A.size() == B.size());
-      ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+      ASSERT_STRICT_DEBUG(A.size() == B.size());
+      ASSERT_STRICT_DEBUG(A.size() > 0);
    }
-   BinExpr(const BinExpr &) = delete;
+   BinExpr(const BinExpr &) = default;
    BinExpr & operator=(const BinExpr &) = delete;
 
-   [[nodiscard]] decltype(auto) operator[](size_type i) const { return op(A[i], B[i]); }
+   [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
+
+   [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
+   [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
 
 private:
    const size_type sz;
-   const T1 & A;
-   const T2 & B;
+   const typename T1::expr_type A;
+   const typename T2::expr_type B;
    Op op;
 };
 
@@ -1027,20 +660,24 @@ class BinExprValLeft : private ArrayBase, private ArrayExpr
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
+   using expr_type = BinExprValLeft<T1, T2, Op>;
 
    BinExprValLeft(const T1 & B, T2 val, Op op) : sz(B.size()), B(B), val(val), op(op) {
       static_assert(SameType<typename T1::value_type, T2>);
-      ASSERT_STRICT_ARRAY_DEBUG(B.size() > 0);
+      ASSERT_STRICT_DEBUG(B.size() > 0);
    }
-   BinExprValLeft(const BinExprValLeft &) = delete;
+   BinExprValLeft(const BinExprValLeft &) = default;
    BinExprValLeft & operator=(const BinExprValLeft &) = delete;
 
-   [[nodiscard]] decltype(auto) operator[](size_type i) const { return op(val, B[i]); }
+   [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
+
+   [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
+   [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
 
 private:
    const size_type sz;
-   const T1 & B;
+   const typename T1::expr_type B;
    const StrictVal<T2> val;
    Op op;
 };
@@ -1052,20 +689,24 @@ class BinExprValRight : private ArrayBase, private ArrayExpr
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
+   using expr_type = BinExprValRight<T1, T2, Op>;
 
    BinExprValRight(const T1 & A, T2 val, Op op) : sz(A.size()), A(A), val(val), op(op) {
       static_assert(SameType<typename T1::value_type, T2>);
-      ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+      ASSERT_STRICT_DEBUG(A.size() > 0);
    }
-   BinExprValRight(const BinExprValRight &) = delete;
+   BinExprValRight(const BinExprValRight &) = default;
    BinExprValRight & operator=(const BinExprValRight &) = delete;
 
-   [[nodiscard]] decltype(auto) operator[](size_type i) const { return op(A[i], val); }
+   [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] size_type size() const { return sz; }
+
+   [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
+   [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
 
 private:
    const size_type sz;
-   const T1 & A;
+   const typename T1::expr_type A;
    const StrictVal<T2> val;
    Op op;
 };
@@ -1168,8 +809,8 @@ template<ArrayBaseType ArrayType> std::ostream & operator<<(std::ostream & os, c
 template<IntegerType T>
 Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(size > 0);
-   ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   ASSERT_STRICT_DEBUG(size > 0);
+   ASSERT_STRICT_DEBUG(high >= low);
    std::srand(static_cast<unsigned>((std::time(0))));
    Array<T> A(size);
    long int diff_range = (high - low).template convert<long int>() + 1;
@@ -1181,8 +822,8 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 template<FloatingType T>
 Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(size > 0);
-   ASSERT_STRICT_ARRAY_DEBUG(high >= low);
+   ASSERT_STRICT_DEBUG(size > 0);
+   ASSERT_STRICT_DEBUG(high >= low);
    std::srand(static_cast<unsigned>((std::time(0))));
    Array<T> A(size);
    for(auto & x : A)
@@ -1193,7 +834,7 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 template<FloatingArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
 
     T sum{};
@@ -1210,7 +851,7 @@ auto sum(const ArrayType & A)
 template<IntegerArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    auto sum = A[0];
    for(decltype(A.size()) i = 1; i < A.size(); ++i)
       sum += A[i];
@@ -1220,7 +861,7 @@ auto sum(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto max(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    auto max_elem = A[0];
    for(decltype(A.size()) i = 1; i < A.size(); ++i)
       max_elem = max(A[i], max_elem);
@@ -1230,7 +871,7 @@ auto max(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto min(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    auto min_elem = A[0];
    for(decltype(A.size()) i = 1; i < A.size(); ++i)
       min_elem = min(A[i], min_elem);
@@ -1240,7 +881,7 @@ auto min(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto max_index(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
 
@@ -1254,7 +895,7 @@ auto max_index(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto min_index(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
    using T = typename ArrayType::value_type;
 
@@ -1268,7 +909,7 @@ auto min_index(const ArrayType & A)
 template<FloatingArrayBaseType ArrayType>
 auto norm_inf(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    auto max_abs = abs(A[0]);
    for(decltype(A.size()) i = 1; i < A.size(); ++i) {
       auto abs_i = abs(A[i]);
@@ -1280,16 +921,16 @@ auto norm_inf(const ArrayType & A)
 template<StandardFloatingArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
    return StrictVal<T>{std::sqrt(T(dot_prod(A, A)))};
 }
 
-#ifdef STRICT_ARRAY_QUADRUPLE_PRECISION
+#ifdef STRICT_QUADRUPLE_PRECISION
 template<QuadFloatingArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
    return StrictVal<T>{sqrtq(T(dot_prod(A, A)))};
 }
@@ -1298,15 +939,15 @@ auto norm2(const ArrayType & A)
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A1.size() == A2.size());
-   ASSERT_STRICT_ARRAY_DEBUG(A1.size() > 0);
+   ASSERT_STRICT_DEBUG(A1.size() == A2.size());
+   ASSERT_STRICT_DEBUG(A1.size() > 0);
    return sum(A1 * A2);
 }
 
 template<ArrayBaseType ArrayType>
 bool does_contain_zero(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
    for(auto x : A)
       if(x == T(0)) return true;
@@ -1316,7 +957,7 @@ bool does_contain_zero(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 bool all_positive(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
    for(auto x : A)
      if(x <= T(0)) return false;
@@ -1326,7 +967,7 @@ bool all_positive(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 bool all_negative(const ArrayType & A)
 {
-   ASSERT_STRICT_ARRAY_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
    for(auto x : A)
      if(x >= T(0)) return false;

@@ -8,20 +8,20 @@
 #include <stdexcept>
 #include <string>
 
-#define STRICT_ARRAY_THROW_OUT_OF_RANGE()                                                   \
+#define STRICT_THROW_OUT_OF_RANGE()                                                         \
    do {                                                                                     \
    throw std::out_of_range{"OUT OF RANGE! " + trace_err(__FILE__, __func__, __LINE__)};     \
    } while(0)
 
-#define STRICT_ARRAY_THROW_ZERO_DIVISION()                                                    \
-   do {                                                                                       \
-   throw std::runtime_error{"ZERO DIVISION! " + trace_err(__FILE__, __func__, __LINE__)};     \
+#define STRICT_THROW_ZERO_DIVISION()                                                         \
+   do {                                                                                      \
+   throw std::runtime_error{"ZERO DIVISION! " + trace_err(__FILE__, __func__, __LINE__)};    \
    } while(0)
 
-#ifdef STRICT_ARRAY_DEBUG_ON
-#define ASSERT_STRICT_ARRAY_DEBUG(condition) assert(condition)
+#ifdef STRICT_DEBUG_ON
+#define ASSERT_STRICT_DEBUG(condition) assert(condition)
 #else
-#define ASSERT_STRICT_ARRAY_DEBUG(condition) ((void)0)
+#define ASSERT_STRICT_DEBUG(condition) ((void)0)
 #endif
 
 namespace strict_array

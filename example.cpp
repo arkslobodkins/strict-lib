@@ -6,9 +6,10 @@
 // to use quadruple precision, for example
 // g++-12.2 -std=gnu++20 example.cpp -lquadmath
 
-// to enable debugging and range checking add -DSTRICT_ARRAY_DEBUG_ON
-// to enable division by 0 checking add -DSTRICT_ARRAY_DIVISION_ON
+// to enable debugging and range checking add -DSTRICT__DEBUG_ON
+// to enable division by 0 checking add -DSTRICT__DIVISION_ON
 
+#include <valarray>
 #if __cplusplus < 202002L
 #error requires c++20 or higher
 #else
@@ -16,6 +17,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <numeric>
 
 #include "strict_array.hpp"
 using namespace strict_array;
@@ -40,11 +42,12 @@ int main()
    using std::cout, std::endl;
 
    // 1. computed derivative of x * exp(x) and multiply by 2
+
    Array<float64> A{-1., -2., -3., -4., -5.};
    auto func = [](auto x) { return x * exp(x); };
    derivative(A, func);
-   cout << 2. * A << endl;
-   cout << norm_inf(2. * A) << endl;
+   cout << 2. * A;
+   cout << "infinity norm = " << norm_inf(2. * A) << endl << endl;
 
    // 2. find all values in [-0.5, 0.5] and map them to
    // [-1, -0.5] and [0.5, 1], depending on the sign.
@@ -58,6 +61,20 @@ int main()
    auto half_range = B.within_range(-0.5F, 0.5F);
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
    for(auto x : B) assert(abs(x) >= 0.5F && abs(x) <= 1.F); // test mapping
+
+   // 3. fill C with 0, 1, 2, ..., then multiply C by 2
+   // (which gives expression template) and
+   // then use constant iterator of expression template to
+   // sum every second element of 0, 2, 4, .., i.e.
+   // sum of 0, 4, 8 ...
+
+   Array<int> C(10);
+   std::iota(C.begin(), C.end(), 0);
+   StrictVal<int> sum{};
+   auto expr = 2 * C;
+   for(auto it = expr.begin(); it < expr.end(); it += 2)
+      sum += *it;
+   cout << "sum = " << sum << endl;
 
    return EXIT_SUCCESS;
 }
