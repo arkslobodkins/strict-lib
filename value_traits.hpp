@@ -24,30 +24,28 @@ template<typename T, typename U>
 concept SameType = std::is_same<std::remove_cv_t<T>, std::remove_cv_t<U>>::value;
 
 template<typename T>
-concept IntegerType = std::is_same<std::remove_cv_t<T>, std::remove_cv_t<short>>::value         ||
-                      std::is_same<std::remove_cv_t<T>, std::remove_cv_t<int>>::value           ||
-                      std::is_same<std::remove_cv_t<T>, std::remove_cv_t<long int>>::value      ||
-                      std::is_same<std::remove_cv_t<T>, std::remove_cv_t<long long int>>::value;
+concept IntegerType = SameType<short, T> || SameType<T, int> ||
+                      SameType<T, long int> || SameType<T, long long int>;
+
+template<typename T>
+concept StandardFloatingType = std::is_floating_point<T>::value;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(sizeof(__float128) == 16);
    using float128 = __float128;
-   template<typename T> concept FloatingType = std::is_floating_point<T>::value || SameType<float128, T>;
+   template<typename T> concept QuadType = SameType<T, float128>;
+   template<typename T> concept FloatingType = StandardFloatingType<T> || QuadType<T>;
 #else
-   template<typename T> concept FloatingType = std::is_floating_point<T>::value;
+   template<typename T> concept FloatingType = StandardFloatingType<T>;
 #endif
 template<typename T> concept RealType = FloatingType<T> || IntegerType<T>;
 
 #ifdef STRICT_QUADRUPLE_PRECISION
-   template<typename T> concept QuadType = SameType<T, float128>;
    template<typename T> concept NotQuadType = RealType<T> && !QuadType<T>;
-   template<typename T> concept StandardFloatType = FloatingType<T> && !QuadType<T>;
 #else
    template<typename T> concept NotQuadType = RealType<T>;
-   template<typename T> concept StandardFloatType = FloatingType<T>;
 #endif
-
 }
 
 #endif

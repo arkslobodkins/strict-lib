@@ -33,12 +33,12 @@ template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op> class BinExpr;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
 
+template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::value_type>;
+template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatingType<typename T::value_type>;
 template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && FloatingType<typename T::value_type>;
-template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatType<typename T::value_type>;
 #ifdef STRICT_QUADRUPLE_PRECISION
 template<typename T> concept QuadFloatingArrayBaseType = ArrayBaseType<T> && QuadType<typename T::value_type>;
 #endif
-template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::value_type>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -142,10 +142,10 @@ template<IntegerType T>
 template<FloatingType T>
 [[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
 
-template<FloatingArrayBaseType ArrayType>
+template<IntegerArrayBaseType ArrayType>
 [[nodiscard]] auto sum(const ArrayType & A);
 
-template<IntegerArrayBaseType ArrayType>
+template<FloatingArrayBaseType ArrayType>
 [[nodiscard]] auto sum(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
@@ -514,10 +514,10 @@ public:
    using size_type = long long int;
 
    const_iterator(const ArrayType & A, size_type pos);
-   auto operator--() -> auto &;
-   auto operator--(int) -> auto &;
    auto operator++() -> auto &;
-   auto operator++(int) -> auto &;
+   auto operator--() -> auto &;
+   auto operator++(int) -> auto;
+   auto operator--(int) -> auto;
    auto operator+=(size_type incr) -> auto &;
    auto operator-=(size_type incr) -> auto &;
 
@@ -544,21 +544,6 @@ const_iterator<ArrayType>::const_iterator(const ArrayType & A, size_type pos) :
 {}
 
 template<ArrayBaseType ArrayType>
-auto const_iterator<ArrayType>::operator--() -> auto &
-{
-   --pos;
-   return *this;
-}
-
-template<ArrayBaseType ArrayType>
-auto const_iterator<ArrayType>::operator--(int) -> auto &
-{
-   auto old = *this;
-   --*this;
-   return old;
-}
-
-template<ArrayBaseType ArrayType>
 auto const_iterator<ArrayType>::operator++() -> auto &
 {
    ++pos;
@@ -566,10 +551,25 @@ auto const_iterator<ArrayType>::operator++() -> auto &
 }
 
 template<ArrayBaseType ArrayType>
-auto const_iterator<ArrayType>::operator++(int) -> auto &
+auto const_iterator<ArrayType>::operator--() -> auto &
+{
+   --pos;
+   return *this;
+}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator++(int) -> auto
 {
    auto old = *this;
    ++*this;
+   return old;
+}
+
+template<ArrayBaseType ArrayType>
+auto const_iterator<ArrayType>::operator--(int) -> auto
+{
+   auto old = *this;
+   --*this;
    return old;
 }
 

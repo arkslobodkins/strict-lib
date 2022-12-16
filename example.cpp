@@ -9,6 +9,7 @@
 // to enable debugging and range checking add -DSTRICT_DEBUG_ON
 // to enable division by 0 checking add -DSTRICT_DIVISION_ON
 
+#include <type_traits>
 #include <valarray>
 #if __cplusplus < 202002L
 #error requires c++20 or higher

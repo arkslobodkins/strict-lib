@@ -108,10 +108,10 @@ template<RealType T> [[nodiscard]] constexpr inline auto max(T val, StrictVal<T>
 template<RealType T> [[nodiscard]] constexpr inline auto min(StrictVal<T> strict_val, T val);
 template<RealType T> [[nodiscard]] constexpr inline auto max(StrictVal<T> strict_val, T val);
 
-template<StandardFloatType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
-template<StandardFloatType T> [[nodiscard]] inline auto exp(StrictVal<T> v);
-template<StandardFloatType T> [[nodiscard]] inline auto sin(StrictVal<T> v);
-template<StandardFloatType T> [[nodiscard]] inline auto cos(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
+template<StandardFloatingType T> [[nodiscard]] inline auto exp(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline auto sin(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline auto cos(StrictVal<T> v);
 
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #ifdef STRICT_QUADRUPLE_PRECISION
@@ -119,6 +119,7 @@ template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T
    template<QuadType T> [[nodiscard]] inline auto exp(StrictVal<T> v);
    template<QuadType T> [[nodiscard]] inline auto sin(StrictVal<T> v);
    template<QuadType T> [[nodiscard]] inline auto cos(StrictVal<T> v);
+
    template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #endif
 
@@ -281,7 +282,7 @@ template<RealType T> constexpr inline auto operator/(T val, StrictVal<T> strict_
    #ifdef STRICT_DIVISION_ON
    if(T(strict_val) == T(0)) STRICT_THROW_ZERO_DIVISION();
    #endif
-   return StrictVal<T>(T(val / T(strict_val)));
+   return StrictVal<T>{T(val / T(strict_val))};
 }
 
 template<IntegerType T> constexpr inline auto operator%(T val, StrictVal<T> strict_val)
@@ -372,27 +373,21 @@ template<RealType T> constexpr inline auto min(StrictVal<T> strict_val, T val)
 template<RealType T> constexpr inline auto max(StrictVal<T> strict_val, T val)
 { return strict_val > val ? strict_val : StrictVal<T>{val}; }
 
-template<StandardFloatType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
+template<StandardFloatingType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
 {
    auto r = v1 * v2;
    auto s = std::fma(T(v1), T(v2), T(-r));
    return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
 }
 
-template<StandardFloatType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
-{
-   return StrictVal<T>(std::exp(T(v)));
-}
+template<StandardFloatingType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
+{ return StrictVal<T>{std::exp(T(v))}; }
 
-template<StandardFloatType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
-{
-   return StrictVal<T>(std::sin(T(v)));
-}
+template<StandardFloatingType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
+{ return StrictVal<T>{std::sin(T(v))}; }
 
-template<StandardFloatType T> [[nodiscard]] inline auto cos(StrictVal<T> v)
-{
-   return StrictVal<T>(std::cos(T(v)));
-}
+template<StandardFloatingType T> [[nodiscard]] inline auto cos(StrictVal<T> v)
+{ return StrictVal<T>{std::cos(T(v))}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
@@ -416,19 +411,13 @@ template<QuadType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T
 }
 
 template<QuadType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
-{
-   return StrictVal<T>(expq(T(v)));
-}
+{ return StrictVal<T>{expq(T(v))}; }
 
 template<QuadType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
-{
-   return StrictVal<T>(sinq(T(v)));
-}
+{ return StrictVal<T>{sinq(T(v))}; }
 
 template<QuadType T> [[nodiscard]] inline auto cos(StrictVal<T> v)
-{
-   return StrictVal<T>(cosq(T(v)));
-}
+{ return StrictVal<T>{cosq(T(v))}; }
 
 template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
