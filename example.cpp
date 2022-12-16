@@ -1,13 +1,13 @@
 // for example, compile using recent version of gcc or recent intel compilers from intel-oneAPI
 // g++-12.2 -std=c++20 example.cpp
 // dpcpp -std=c++20 example.cpp
-// dpcpp -std=c++20 example.cpp
+// icpx -std=c++20 example.cpp
 
 // to use quadruple precision, for example
 // g++-12.2 -std=gnu++20 example.cpp -lquadmath
 
-// to enable debugging and range checking add -DSTRICT__DEBUG_ON
-// to enable division by 0 checking add -DSTRICT__DIVISION_ON
+// to enable debugging and range checking add -DSTRICT_DEBUG_ON
+// to enable division by 0 checking add -DSTRICT_DIVISION_ON
 
 #include <valarray>
 #if __cplusplus < 202002L
@@ -41,7 +41,9 @@ int main()
 {
    using std::cout, std::endl;
 
-   // 1. computed derivative of x * exp(x) and multiply by 2
+   // 1. Compute derivative of x * exp(x) and multiply by 2.
+   // Expression 2. * A is evaluated on the fly twice(once when
+   // printing and once when computing infinity norm).
 
    Array<float64> A{-1., -2., -3., -4., -5.};
    auto func = [](auto x) { return x * exp(x); };
@@ -74,7 +76,7 @@ int main()
    auto expr = 2 * C;
    for(auto it = expr.begin(); it < expr.end(); it += 2)
       sum += *it;
-   cout << "sum = " << sum << endl;
+   cout << "sum = " << sum << endl; // 0 + 4 + 8 + 12 + 16 is hopefully 40
 
    return EXIT_SUCCESS;
 }
