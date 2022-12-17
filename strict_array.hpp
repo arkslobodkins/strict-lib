@@ -21,13 +21,13 @@ namespace strict_array {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ArrayBase{};
 class ArrayExpr{};
-class Operation{};
 class UnaryOperation{};
+class BinaryOperation{};
 
 template<typename T> concept ArrayBaseType = std::is_base_of<ArrayBase, T>::value;
 template<typename T> concept ArrayExprType = std::is_base_of<ArrayExpr, T>::value;
 template<typename T> concept UnaryOperationType = std::is_base_of<UnaryOperation, T>::value;
-template<typename T> concept BinaryOperationType = std::is_base_of<Operation, T>::value;
+template<typename T> concept BinaryOperationType = std::is_base_of<BinaryOperation, T>::value;
 
 // Forward declarations(expression templates)
 template<ArrayBaseType T1, UnaryOperationType Op> class UnaryExpr;
@@ -623,7 +623,7 @@ struct UnaryMinus : private UnaryOperation
    }
 };
 
-struct Plus : private Operation
+struct Plus : private BinaryOperation
 {
    template<RealType T>
    auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
@@ -631,7 +631,7 @@ struct Plus : private Operation
    }
 };
 
-struct Minus : private Operation
+struct Minus : private BinaryOperation
 {
    template<RealType T>
    auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
@@ -639,7 +639,7 @@ struct Minus : private Operation
    }
 };
 
-struct Mult : private Operation
+struct Mult : private BinaryOperation
 {
    template<RealType T>
    auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
@@ -647,7 +647,7 @@ struct Mult : private Operation
    }
 };
 
-struct Divide : private Operation
+struct Divide : private BinaryOperation
 {
    template<RealType T>
    auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
@@ -671,8 +671,8 @@ public:
    [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
-   [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
+   [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
+   [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
 
 private:
    const size_type sz;
@@ -700,8 +700,8 @@ public:
    [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
-   [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
+   [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
+   [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
 
 private:
    const size_type sz;
@@ -729,8 +729,8 @@ public:
    [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
-   [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
+   [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
+   [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
 
 private:
    const size_type sz;
@@ -758,8 +758,8 @@ public:
    [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
-   [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
+   [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
+   [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
 
 private:
    const size_type sz;
@@ -823,7 +823,7 @@ auto operator/(const T & A, StrictVal<U> val)
 template<ArrayBaseType T> const auto & operator+(const T & A)
 { return A; }
 
-template<ArrayBaseType T> [[nodiscard]] auto operator-(const T & A)
+template<ArrayBaseType T> auto operator-(const T & A)
 { return UnaryExpr(A, UnaryMinus{}); }
 
 template<ArrayBaseType T, RealType U>
