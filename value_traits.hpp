@@ -1,10 +1,10 @@
 #pragma once
 
-#include <type_traits>
-
 #if __cplusplus < 202002L
    #error requires c++20 or higher
 #else
+
+#include <type_traits>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined (__GNUC__) && !defined (__clang__) && !defined (__INTEL_LLVM_COMPILER) && !defined (__INTEL_COMPILER)

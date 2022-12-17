@@ -1,16 +1,14 @@
-// for example, compile using recent version of gcc or recent intel compilers from intel-oneAPI
+// For example, compile using a fairly recent version of gcc, clang or recent intel compilers from intel-oneAPI
 // g++-12.2 -std=c++20 example.cpp
 // dpcpp -std=c++20 example.cpp
 // icpx -std=c++20 example.cpp
 
-// to use quadruple precision, for example
+// To use quadruple precision, for example:
 // g++-12.2 -std=gnu++20 example.cpp -lquadmath
 
-// to enable debugging and range checking add -DSTRICT_DEBUG_ON
-// to enable division by 0 checking add -DSTRICT_DIVISION_ON
+// To enable debugging and range checking add -DSTRICT_DEBUG_ON
+// To enable division by 0 checking add -DSTRICT_DIVISION_ON
 
-#include <type_traits>
-#include <valarray>
 #if __cplusplus < 202002L
 #error requires c++20 or higher
 #else
@@ -52,7 +50,7 @@ int main()
    cout << 2. * A;
    cout << "infinity norm = " << norm_inf(2. * A) << endl << endl;
 
-   // 2. find all values in [-0.5, 0.5] and map them to
+   // 2. Find all values in [-0.5, 0.5] and map them to
    // [-1, -0.5] and [0.5, 1], depending on the sign.
    // Note that if any other suffix or no suffix were
    // used instead of "F", the code would not compile,
@@ -65,7 +63,7 @@ int main()
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
    for(auto x : B) assert(abs(x) >= 0.5F && abs(x) <= 1.F); // test mapping
 
-   // 3. fill C with 0, 1, 2, ..., then multiply C by 2
+   // 3. Fill C with 0, 1, 2, ..., then multiply C by 2
    // (which gives expression template) and
    // then use constant iterator of expression template to
    // sum every second element of 0, 2, 4, .., i.e.

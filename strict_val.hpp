@@ -1,5 +1,9 @@
 #pragma once
 
+#if __cplusplus < 202002L
+   #error requires c++20 or higher
+#else
+
 #include <cmath>
 #include <iomanip>
 #include <limits>
@@ -7,9 +11,6 @@
 #include "error_handling.hpp"
 #include "value_traits.hpp"
 
-#if __cplusplus < 202002L
-   #error requires c++20 or higher
-#else
 namespace strict_array {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
