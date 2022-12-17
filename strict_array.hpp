@@ -22,13 +22,15 @@ namespace strict_array {
 class ArrayBase{};
 class ArrayExpr{};
 class Operation{};
+class UnaryOperation{};
 
 template<typename T> concept ArrayBaseType = std::is_base_of<ArrayBase, T>::value;
 template<typename T> concept ArrayExprType = std::is_base_of<ArrayExpr, T>::value;
+template<typename T> concept UnaryOperationType = std::is_base_of<UnaryOperation, T>::value;
 template<typename T> concept OperationType = std::is_base_of<Operation, T>::value;
 
 // Forward declarations(expression templates)
-template<ArrayBaseType T1, typename Op> class UnaryExpr;
+template<ArrayBaseType T1, UnaryOperationType Op> class UnaryExpr;
 template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op> class BinExpr;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
 template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
@@ -64,9 +66,6 @@ public:
    template<ArrayExprType ArrExpr> const Array & operator=(const ArrExpr & expr);
 
    ~Array();
-
-   [[nodiscard]] const Array & operator+() const;
-   [[nodiscard]] auto operator-() const; // returns expression template
 
    const Array & operator+=(StrictVal<T> val);
    const Array & operator-=(StrictVal<T> val);
@@ -131,6 +130,9 @@ template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator+(const T & A, 
 template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A, U val);
 template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
 template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
+
+template<ArrayBaseType T> [[nodiscard]] const auto & operator+(const T & A);
+template<ArrayBaseType T> [[nodiscard]] auto operator-(const T & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType ArrayType>
@@ -272,12 +274,6 @@ template<RealType T> Array<T>::~Array()
 { delete[] elem; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> const Array<T> & Array<T>::operator+() const
-{ return *this; }
-
-template<RealType T> auto Array<T>::operator-() const
-{ return UnaryExpr(*this, [](StrictVal<T> x){return -x;}); }
-
 template<RealType T>
 const Array<T> & Array<T>::operator+=(StrictVal<T> val)
 {
@@ -474,39 +470,6 @@ namespace internal {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct Plus : private Operation
-{
-   template<RealType T>
-   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
-      return left + right;
-   }
-};
-
-struct Minus : private Operation
-{
-   template<RealType T>
-   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
-      return left - right;
-   }
-};
-
-struct Mult : private Operation
-{
-   template<RealType T>
-   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
-      return left * right;
-   }
-};
-
-struct Divide : private Operation
-{
-   template<RealType T>
-   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
-      return left / right;
-   }
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType ArrayType>
 class const_iterator
 {
@@ -651,8 +614,49 @@ bool const_iterator<ArrayType>::operator>=(const const_iterator<ArrayType> & it)
    return pos >= it.pos;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct UnaryMinus : private UnaryOperation
+{
+   template<RealType T>
+   auto operator()(const StrictVal<T> strict_val) const {
+      return -strict_val;
+   }
+};
+
+struct Plus : private Operation
+{
+   template<RealType T>
+   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+      return left + right;
+   }
+};
+
+struct Minus : private Operation
+{
+   template<RealType T>
+   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+      return left - right;
+   }
+};
+
+struct Mult : private Operation
+{
+   template<RealType T>
+   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+      return left * right;
+   }
+};
+
+struct Divide : private Operation
+{
+   template<RealType T>
+   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+      return left / right;
+   }
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType T, typename Op>
+template<ArrayBaseType T, UnaryOperationType Op>
 class UnaryExpr : private ArrayBase, private ArrayExpr
 {
 public:
@@ -669,9 +673,6 @@ public:
 
    [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
-
-   [[nodiscard]] const auto & operator+() const { return *this; }
-   [[nodiscard]] auto operator-() const { return BinExprValLeft(*this, value_type(-1), Mult{}); }
 
 private:
    const size_type sz;
@@ -702,9 +703,6 @@ public:
    [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
 
-   [[nodiscard]] const auto & operator+() const { return *this; }
-   [[nodiscard]] auto operator-() const { return UnaryExpr(*this, [](StrictVal<value_type> x) { return -x; }); }
-
 private:
    const size_type sz;
    const typename T1::expr_type A;
@@ -734,9 +732,6 @@ public:
    [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
 
-   [[nodiscard]] const auto & operator+() const { return *this; }
-   [[nodiscard]] auto operator-() const { return UnaryExpr(*this, [](StrictVal<value_type> x) { return -x; }); }
-
 private:
    const size_type sz;
    const typename T1::expr_type B;
@@ -765,9 +760,6 @@ public:
 
    [[nodiscard]] auto begin() const { return const_iterator<expr_type>(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator<expr_type>(*this, size()); }
-
-   [[nodiscard]] const auto & operator+() const { return *this; }
-   [[nodiscard]] auto operator-() const { return UnaryExpr(*this, [](StrictVal<value_type> x) { return -x; }); }
 
 private:
    const size_type sz;
@@ -828,6 +820,12 @@ auto operator/(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U(val), Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<ArrayBaseType T> const auto & operator+(const T & A)
+{ return A; }
+
+template<ArrayBaseType T> [[nodiscard]] auto operator-(const T & A)
+{ return UnaryExpr(A, UnaryMinus{}); }
+
 template<ArrayBaseType T, RealType U>
 auto operator+(U val, const T & B)
 { return BinExprValLeft(B, val, Plus{}); }
@@ -902,15 +900,15 @@ auto sum(const ArrayType & A)
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
 
-    T sum{};
-    T c{};
-    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
-        T y = A[i] - c;
-        T t = sum + y;
-        c = (t - sum) - y;
-        sum = t;
-    }
-    return StrictVal<T>{sum};
+   T sum{};
+   T c{};
+   for(decltype(A.size()) i = 0; i < A.size(); ++i) {
+      T y = A[i] - c;
+      T t = sum + y;
+      c = (t - sum) - y;
+      sum = t;
+   }
+   return StrictVal<T>{sum};
 }
 
 template<IntegerArrayBaseType ArrayType>
@@ -1004,6 +1002,7 @@ auto norm2(const ArrayType & A)
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
 {
+   static_assert(SameType<typename ArrayType1::value_type, typename ArrayType2::value_type>);
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_DEBUG(A1.size() > 0);
    return sum(A1 * A2);
@@ -1025,7 +1024,7 @@ bool all_positive(const ArrayType & A)
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
    for(auto x : A)
-     if(x <= T(0)) return false;
+      if(x <= T(0)) return false;
    return true;
 }
 
@@ -1035,7 +1034,7 @@ bool all_negative(const ArrayType & A)
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::value_type;
    for(auto x : A)
-     if(x >= T(0)) return false;
+      if(x >= T(0)) return false;
    return true;
 }
 
