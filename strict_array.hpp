@@ -27,13 +27,13 @@ class UnaryOperation{};
 template<typename T> concept ArrayBaseType = std::is_base_of<ArrayBase, T>::value;
 template<typename T> concept ArrayExprType = std::is_base_of<ArrayExpr, T>::value;
 template<typename T> concept UnaryOperationType = std::is_base_of<UnaryOperation, T>::value;
-template<typename T> concept OperationType = std::is_base_of<Operation, T>::value;
+template<typename T> concept BinaryOperationType = std::is_base_of<Operation, T>::value;
 
 // Forward declarations(expression templates)
 template<ArrayBaseType T1, UnaryOperationType Op> class UnaryExpr;
-template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op> class BinExpr;
-template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValLeft;
-template<ArrayBaseType T1, RealType T2, OperationType Op> class BinExprValRight;
+template<ArrayBaseType T1, ArrayBaseType T2, BinaryOperationType Op> class BinExpr;
+template<ArrayBaseType T1, RealType T2, BinaryOperationType Op> class BinExprValLeft;
+template<ArrayBaseType T1, RealType T2, BinaryOperationType Op> class BinExprValRight;
 
 template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::value_type>;
 template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatingType<typename T::value_type>;
@@ -681,7 +681,7 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType T1, ArrayBaseType T2, OperationType Op>
+template<ArrayBaseType T1, ArrayBaseType T2, BinaryOperationType Op>
 class BinExpr : private ArrayBase, private ArrayExpr
 {
 public:
@@ -711,7 +711,7 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType T1, RealType T2, OperationType Op>
+template<ArrayBaseType T1, RealType T2, BinaryOperationType Op>
 class BinExprValLeft : private ArrayBase, private ArrayExpr
 {
 public:
@@ -740,7 +740,7 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType T1, RealType T2, OperationType Op>
+template<ArrayBaseType T1, RealType T2, BinaryOperationType Op>
 class BinExprValRight : private ArrayBase, private ArrayExpr
 {
 public:
