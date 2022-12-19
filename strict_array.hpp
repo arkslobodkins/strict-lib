@@ -35,11 +35,11 @@ template<ArrayBaseType T1, ArrayBaseType T2, BinaryOperationType Op> class BinEx
 template<ArrayBaseType T1, RealType T2, BinaryOperationType Op> class BinExprValLeft;
 template<ArrayBaseType T1, RealType T2, BinaryOperationType Op> class BinExprValRight;
 
-template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::value_type>;
-template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatingType<typename T::value_type>;
-template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && FloatingType<typename T::value_type>;
+template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::real_type>;
+template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatingType<typename T::real_type>;
+template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && FloatingType<typename T::real_type>;
 #ifdef STRICT_QUADRUPLE_PRECISION
-template<typename T> concept QuadFloatingArrayBaseType = ArrayBaseType<T> && QuadType<typename T::value_type>;
+template<typename T> concept QuadFloatingArrayBaseType = ArrayBaseType<T> && QuadType<typename T::real_type>;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,8 @@ class Array : private ArrayBase
 {
 public:
    using size_type = long long int;
-   using value_type = T;
+   using value_type = StrictVal<T>;
+   using real_type = T;
    using expr_type = const Array<T> &;
 
    explicit Array();
@@ -157,10 +158,10 @@ template<ArrayBaseType ArrayType>
 [[nodiscard]] auto min(const ArrayType & A);
 
 template<ArrayBaseType ArrayType>
-[[nodiscard]] auto min_index(const ArrayType & A);  // returns std::pair<size_type, StrictVal<value_type>>
+[[nodiscard]] auto min_index(const ArrayType & A);  // returns std::pair<size_type, StrictVal<real_type>>
 
 template<ArrayBaseType ArrayType>
-[[nodiscard]] auto max_index(const ArrayType & A);  // returns std::pair<size_type, StrictVal<value_type>>
+[[nodiscard]] auto max_index(const ArrayType & A);  // returns std::pair<size_type, StrictVal<real_type>>
 
 template<FloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm_inf(const ArrayType & A);
@@ -453,22 +454,6 @@ void Array<T>::apply1(const ArrayType & A, F f)
       f(i);
 }
 
-namespace internal {
-   template<RealType T>
-   std::string smart_spaces(typename Array<T>::size_type max_ind, typename Array<T>::size_type ind)
-   {
-      using sz_T = typename Array<T>::size_type;
-      auto count_digit = [](sz_T number) -> sz_T {
-         if(!number) return 1;
-         return (sz_T)std::log10(number) + 1;
-      };
-
-      sz_T max_digits = count_digit(max_ind);
-      sz_T ind_digits = count_digit(ind);
-      return std::string(static_cast<std::basic_string<char>::size_type>(1+max_digits-ind_digits), 32);
-   }
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType ArrayType>
 class const_iterator
@@ -662,13 +647,14 @@ class UnaryExpr : private ArrayBase, private ArrayExpr
 public:
    using size_type = typename T::size_type;
    using value_type = typename T::value_type;
+   using real_type = typename T::real_type;
    using expr_type = UnaryExpr<T, Op>;
 
    UnaryExpr(const T & A, Op op) : sz(A.size()), A(A), op(op) { ASSERT_STRICT_DEBUG(A.size() > 0); }
    UnaryExpr(const UnaryExpr &) = default;
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
-   [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(A[i]); }
+   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
    [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
@@ -687,17 +673,18 @@ class BinExpr : private ArrayBase, private ArrayExpr
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
+   using real_type = typename T1::real_type;
    using expr_type = BinExpr<T1, T2, Op>;
 
    BinExpr(const T1 & A, const T2 & B, Op op) : sz(A.size()), A(A), B(B), op(op) {
-      static_assert(SameType<typename T1::value_type, typename T2::value_type>);
+      static_assert(SameType<typename T1::real_type, typename T2::real_type>);
       ASSERT_STRICT_DEBUG(A.size() == B.size());
       ASSERT_STRICT_DEBUG(A.size() > 0);
    }
    BinExpr(const BinExpr &) = default;
    BinExpr & operator=(const BinExpr &) = delete;
 
-   [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(A[i], B[i]); }
+   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
    [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
@@ -717,16 +704,17 @@ class BinExprValLeft : private ArrayBase, private ArrayExpr
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
+   using real_type = typename T1::real_type;
    using expr_type = BinExprValLeft<T1, T2, Op>;
 
    BinExprValLeft(const T1 & B, T2 val, Op op) : sz(B.size()), B(B), val(val), op(op) {
-      static_assert(SameType<typename T1::value_type, T2>);
+      static_assert(SameType<typename T1::real_type, T2>);
       ASSERT_STRICT_DEBUG(B.size() > 0);
    }
    BinExprValLeft(const BinExprValLeft &) = default;
    BinExprValLeft & operator=(const BinExprValLeft &) = delete;
 
-   [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(val, B[i]); }
+   [[nodiscard]] value_type operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
    [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
@@ -746,16 +734,17 @@ class BinExprValRight : private ArrayBase, private ArrayExpr
 public:
    using size_type = typename T1::size_type;
    using value_type = typename T1::value_type;
+   using real_type = typename T1::real_type;
    using expr_type = BinExprValRight<T1, T2, Op>;
 
    BinExprValRight(const T1 & A, T2 val, Op op) : sz(A.size()), A(A), val(val), op(op) {
-      static_assert(SameType<typename T1::value_type, T2>);
+      static_assert(SameType<typename T1::real_type, T2>);
       ASSERT_STRICT_DEBUG(A.size() > 0);
    }
    BinExprValRight(const BinExprValRight &) = default;
    BinExprValRight & operator=(const BinExprValRight &) = delete;
 
-   [[nodiscard]] StrictVal<value_type> operator[](size_type i) const { return op(A[i], val); }
+   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] size_type size() const { return sz; }
 
    [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
@@ -860,9 +849,25 @@ auto operator/(const T & A, U val)
 { return BinExprValRight(A, val, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace internal {
+   template<RealType T>
+   std::string smart_spaces(typename Array<T>::size_type max_ind, typename Array<T>::size_type ind)
+   {
+      using sz_T = typename Array<T>::size_type;
+      auto count_digit = [](sz_T number) -> sz_T {
+         if(!number) return 1;
+         return (sz_T)std::log10(number) + 1;
+      };
+
+      sz_T max_digits = count_digit(max_ind);
+      sz_T ind_digits = count_digit(ind);
+      return std::string(static_cast<std::basic_string<char>::size_type>(1+max_digits-ind_digits), 32);
+   }
+}
+
 template<ArrayBaseType ArrayType> std::ostream & operator<<(std::ostream & os, const ArrayType & A)
 {
-   using T = typename ArrayType::value_type;
+   using T = typename ArrayType::real_type;
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
       os << "Array[" << i << "] =" << internal::smart_spaces<T>(A.size(), i) << A[i] << std::endl;
    }
@@ -898,7 +903,7 @@ template<FloatingArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   using T = typename ArrayType::value_type;
+   using T = typename ArrayType::real_type;
 
    T sum{};
    T c{};
@@ -946,7 +951,7 @@ auto max_index(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
-   using T = typename ArrayType::value_type;
+   using T = typename ArrayType::real_type;
 
    std::pair<sz_T, StrictVal<T>> max = {0, A[0]};
    for(sz_T i = 1; i < A.size(); ++i)
@@ -960,7 +965,7 @@ auto min_index(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
-   using T = typename ArrayType::value_type;
+   using T = typename ArrayType::real_type;
 
    std::pair<sz_T, StrictVal<T>> min = {0, A[0]};
    for(sz_T i = 1; i < A.size(); ++i)
@@ -985,7 +990,7 @@ template<StandardFloatingArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   using T = typename ArrayType::value_type;
+   using T = typename ArrayType::real_type;
    return StrictVal<T>{std::sqrt(T(dot_prod(A, A)))};
 }
 
@@ -994,7 +999,7 @@ template<QuadFloatingArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   using T = typename ArrayType::value_type;
+   using T = typename ArrayType::real_type;
    return StrictVal<T>{sqrtq(T(dot_prod(A, A)))};
 }
 #endif
@@ -1002,7 +1007,7 @@ auto norm2(const ArrayType & A)
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
 {
-   static_assert(SameType<typename ArrayType1::value_type, typename ArrayType2::value_type>);
+   static_assert(SameType<typename ArrayType1::real_type, typename ArrayType2::real_type>);
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_DEBUG(A1.size() > 0);
    return sum(A1 * A2);
@@ -1012,7 +1017,7 @@ template<ArrayBaseType ArrayType>
 bool does_contain_zero(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   using T = typename ArrayType::value_type;
+   using T = typename ArrayType::real_type;
    for(auto x : A)
       if(x == T(0)) return true;
    return false;
@@ -1022,7 +1027,7 @@ template<ArrayBaseType ArrayType>
 bool all_positive(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   using T = typename ArrayType::value_type;
+   using T = typename ArrayType::real_type;
    for(auto x : A)
       if(x <= T(0)) return false;
    return true;
@@ -1032,7 +1037,7 @@ template<ArrayBaseType ArrayType>
 bool all_negative(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   using T = typename ArrayType::value_type;
+   using T = typename ArrayType::real_type;
    for(auto x : A)
       if(x >= T(0)) return false;
    return true;
