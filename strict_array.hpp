@@ -162,18 +162,18 @@ inline auto iterator<ArrayType>::operator-(const iterator & it) const -> differe
 template<ArrayBaseType ArrayType>
 inline auto iterator<ArrayType>::operator[](difference_type n) const -> reference
 {
-#ifdef STRICT_DEBUG_ON
+   #ifdef STRICT_DEBUG_ON
    if(pos + n < 0 || pos + n > A.size()-1) STRICT_THROW_OUT_OF_RANGE();
-#endif
+   #endif
    return A[pos + n];
 }
 
 template<ArrayBaseType ArrayType>
 inline auto iterator<ArrayType>::operator*() const -> reference
 {
-#ifdef STRICT_DEBUG_ON
+   #ifdef STRICT_DEBUG_ON
    if(pos < 0 || pos > A.size()-1) STRICT_THROW_OUT_OF_RANGE();
-#endif
+   #endif
    return A[pos];
 }
 
@@ -337,18 +337,18 @@ inline auto const_iterator<ArrayType>::operator-(const const_iterator & it) cons
 template<ArrayBaseType ArrayType>
 inline decltype(auto) const_iterator<ArrayType>::operator[](difference_type n) const
 {
-#ifdef STRICT_DEBUG_ON
+   #ifdef STRICT_DEBUG_ON
    if(pos + n < 0 || pos + n > A.size()-1) STRICT_THROW_OUT_OF_RANGE();
-#endif
+   #endif
    return A[pos + n];
 }
 
 template<ArrayBaseType ArrayType>
 inline decltype(auto) const_iterator<ArrayType>::operator*() const
 {
-#ifdef STRICT_DEBUG_ON
+   #ifdef STRICT_DEBUG_ON
    if(pos < 0 || pos > A.size()-1) STRICT_THROW_OUT_OF_RANGE();
-#endif
+   #endif
    return A[pos];
 }
 
@@ -437,12 +437,24 @@ public:
    [[nodiscard]] inline StrictVal<T> & operator[](size_type i);
    [[nodiscard]] inline const StrictVal<T> & operator[](size_type i) const;
 
+   [[nodiscard]] StrictVal<T> & front() { return elem[0]; }
+   [[nodiscard]] StrictVal<T> & back() { return elem[sz-1]; }
+   [[nodiscard]] const StrictVal<T> & front() const { return elem[0]; }
+   [[nodiscard]] const StrictVal<T> & back() const { return elem[sz-1]; }
+
    [[nodiscard]] auto begin() & { return iterator(*this, 0); }
    [[nodiscard]] auto end() & { return iterator(*this, size()); }
    [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
    [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
    [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
    [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
+
+   [[nodiscard]] auto rbegin() & { return std::reverse_iterator{end()}; }
+   [[nodiscard]] auto rend() & { return std::reverse_iterator{begin()}; }
+   [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
    [[nodiscard]] size_type size() const { return sz; }
    [[nodiscard]] StrictVal<T>* data() & { return sz > 0 ? &elem[0] : nullptr; }
@@ -861,11 +873,18 @@ public:
    UnaryExpr(const UnaryExpr &) = default;
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
-   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i]); }
+   [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
    [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
+   [[nodiscard]] auto cbegin() const { return const_iterator(*this, 0); }
+   [[nodiscard]] auto cend() const { return const_iterator(*this, size()); }
+
+   [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
 private:
    const size_type sz;
@@ -891,11 +910,18 @@ public:
    BinExpr(const BinExpr &) = default;
    BinExpr & operator=(const BinExpr &) = delete;
 
-   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], B[i]); }
+   [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
    [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
+   [[nodiscard]] auto cbegin() const { return const_iterator(*this, 0); }
+   [[nodiscard]] auto cend() const { return const_iterator(*this, size()); }
+
+   [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
 private:
    const size_type sz;
@@ -921,11 +947,18 @@ public:
    BinExprValLeft(const BinExprValLeft &) = default;
    BinExprValLeft & operator=(const BinExprValLeft &) = delete;
 
-   [[nodiscard]] value_type operator[](size_type i) const { return op(val, B[i]); }
+   [[nodiscard]] const value_type operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
    [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
+   [[nodiscard]] auto cbegin() const { return const_iterator(*this, 0); }
+   [[nodiscard]] auto cend() const { return const_iterator(*this, size()); }
+
+   [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
 private:
    const size_type sz;
@@ -951,11 +984,18 @@ public:
    BinExprValRight(const BinExprValRight &) = default;
    BinExprValRight & operator=(const BinExprValRight &) = delete;
 
-   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], val); }
+   [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] size_type size() const { return sz; }
 
    [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
    [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
+   [[nodiscard]] auto cbegin() const { return const_iterator(*this, 0); }
+   [[nodiscard]] auto cend() const { return const_iterator(*this, size()); }
+
+   [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
 private:
    const size_type sz;
@@ -1110,17 +1150,17 @@ template<FloatingArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   using T = typename ArrayType::real_type;
+   using sv_T = typename ArrayType::value_type;
 
-   T sum{};
-   T c{};
+   sv_T sum{};
+   sv_T c{};
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
-      T y = A[i] - c;
-      T t = sum + y;
+      sv_T y = A[i] - c;
+      sv_T t = sum + y;
       c = (t - sum) - y;
       sum = t;
    }
-   return StrictVal<T>{sum};
+   return sum;
 }
 
 template<IntegerArrayBaseType ArrayType>
@@ -1158,9 +1198,9 @@ auto max_index(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
-   using T = typename ArrayType::real_type;
+   using sv_T = typename ArrayType::value_type;
 
-   std::pair<sz_T, StrictVal<T>> max = {0, A[0]};
+   std::pair<sz_T, sv_T> max = {0, A[0]};
    for(sz_T i = 1; i < A.size(); ++i)
       if(A[i] > max.second)
          max = {i, A[i]};
@@ -1172,9 +1212,9 @@ auto min_index(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using sz_T = typename ArrayType::size_type;
-   using T = typename ArrayType::real_type;
+   using sv_T = typename ArrayType::value_type;
 
-   std::pair<sz_T, StrictVal<T>> min = {0, A[0]};
+   std::pair<sz_T, sv_T> min = {0, A[0]};
    for(sz_T i = 1; i < A.size(); ++i)
       if(A[i] < min.second)
          min = {i, A[i]};
