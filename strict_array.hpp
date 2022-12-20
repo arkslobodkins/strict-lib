@@ -56,21 +56,21 @@ public:
    using iterator_category = std::random_access_iterator_tag;
 
    inline iterator(ArrayType & A, size_type pos);
-   inline auto operator++() -> auto &;
-   inline auto operator--() -> auto &;
-   inline auto operator++(int) -> auto;
-   inline auto operator--(int) -> auto;
+   inline iterator & operator++();
+   inline iterator & operator--();
+   inline iterator operator++(int);
+   inline iterator operator--(int);
 
-   inline auto operator+=(size_type incr) -> auto &;
-   inline auto operator-=(size_type incr) -> auto &;
+   inline iterator & operator+=(difference_type incr);
+   inline iterator & operator-=(difference_type incr);
 
-   [[nodiscard]] inline auto operator+(size_type incr) const;
-   [[nodiscard]] inline auto operator-(size_type incr) const;
+   [[nodiscard]] inline iterator operator+(difference_type incr) const;
+   [[nodiscard]] inline iterator operator-(difference_type incr) const;
 
-   [[nodiscard]] inline auto operator-(const iterator & it) const -> difference_type;
+   [[nodiscard]] inline difference_type operator-(const iterator & it) const;
 
-   [[nodiscard]] inline decltype(auto) operator[](difference_type n) const;
-   [[nodiscard]] inline decltype(auto) operator*() const;
+   [[nodiscard]] inline reference operator[](difference_type n) const;
+   [[nodiscard]] inline reference operator*() const;
 
    [[nodiscard]] inline bool operator==(const iterator & it) const;
    [[nodiscard]] inline bool operator!=(const iterator & it) const;
@@ -93,21 +93,21 @@ inline iterator<ArrayType>::iterator(ArrayType & A, size_type pos) :
 }
 
 template<ArrayBaseType ArrayType>
-inline auto iterator<ArrayType>::operator++() -> auto &
+inline iterator<ArrayType> & iterator<ArrayType>::operator++()
 {
    ++pos;
    return *this;
 }
 
 template<ArrayBaseType ArrayType>
-inline auto iterator<ArrayType>::operator--() -> auto &
+inline iterator<ArrayType> & iterator<ArrayType>::operator--()
 {
    --pos;
    return *this;
 }
 
 template<ArrayBaseType ArrayType>
-inline auto iterator<ArrayType>::operator++(int) -> auto
+inline iterator<ArrayType> iterator<ArrayType>::operator++(int)
 {
    auto old = *this;
    ++*this;
@@ -115,7 +115,7 @@ inline auto iterator<ArrayType>::operator++(int) -> auto
 }
 
 template<ArrayBaseType ArrayType>
-inline auto iterator<ArrayType>::operator--(int) -> auto
+inline iterator<ArrayType> iterator<ArrayType>::operator--(int)
 {
    auto old = *this;
    --*this;
@@ -123,21 +123,21 @@ inline auto iterator<ArrayType>::operator--(int) -> auto
 }
 
 template<ArrayBaseType ArrayType>
-inline auto iterator<ArrayType>::operator+=(size_type incr) -> auto &
+inline iterator<ArrayType> & iterator<ArrayType>::operator+=(difference_type incr)
 {
    pos += incr;
    return *this;
 }
 
 template<ArrayBaseType ArrayType>
-inline auto iterator<ArrayType>::operator-=(size_type incr) -> auto &
+inline iterator<ArrayType> & iterator<ArrayType>::operator-=(difference_type incr)
 {
    pos -= incr;
    return *this;
 }
 
 template<ArrayBaseType ArrayType>
-inline auto iterator<ArrayType>::operator+(size_type incr) const
+inline iterator<ArrayType> iterator<ArrayType>::operator+(difference_type incr) const
 {
    auto new_it = *this;
    new_it += incr;
@@ -145,7 +145,7 @@ inline auto iterator<ArrayType>::operator+(size_type incr) const
 }
 
 template<ArrayBaseType ArrayType>
-inline auto iterator<ArrayType>::operator-(size_type incr) const
+inline iterator<ArrayType> iterator<ArrayType>::operator-(difference_type incr) const
 {
    auto new_it = *this;
    new_it -= incr;
@@ -160,16 +160,20 @@ inline auto iterator<ArrayType>::operator-(const iterator & it) const -> differe
 }
 
 template<ArrayBaseType ArrayType>
-inline decltype(auto) iterator<ArrayType>::operator[](difference_type n) const
+inline auto iterator<ArrayType>::operator[](difference_type n) const -> reference
 {
-   ASSERT_STRICT_DEBUG(pos + n > -1 && pos + n < A.size());
+#ifdef STRICT_DEBUG_ON
+   if(pos + n < 0 || pos + n > A.size()-1) STRICT_THROW_OUT_OF_RANGE();
+#endif
    return A[pos + n];
 }
 
 template<ArrayBaseType ArrayType>
-inline decltype(auto) iterator<ArrayType>::operator*() const
+inline auto iterator<ArrayType>::operator*() const -> reference
 {
-   ASSERT_STRICT_DEBUG(pos > -1 && pos < A.size());
+#ifdef STRICT_DEBUG_ON
+   if(pos < 0 || pos > A.size()-1) STRICT_THROW_OUT_OF_RANGE();
+#endif
    return A[pos];
 }
 
@@ -228,17 +232,17 @@ public:
    using iterator_category = std::random_access_iterator_tag;
 
    inline const_iterator(const ArrayType & A, size_type pos);
-   inline auto operator++() -> auto &;
-   inline auto operator--() -> auto &;
-   inline auto operator++(int) -> auto;
-   inline auto operator--(int) -> auto;
+   inline const_iterator & operator++();
+   inline const_iterator & operator--();
+   inline const_iterator operator++(int);
+   inline const_iterator operator--(int);
 
-   inline auto operator+=(size_type incr) -> auto &;
-   inline auto operator-=(size_type incr) -> auto &;
+   inline const_iterator & operator+=(difference_type incr);
+   inline const_iterator & operator-=(difference_type incr);
 
-   [[nodiscard]] inline auto operator+(size_type incr) const;
-   [[nodiscard]] inline auto operator-(size_type incr) const;
-   [[nodiscard]] inline auto operator-(const const_iterator & it) const -> difference_type;
+   [[nodiscard]] inline const_iterator operator+(difference_type incr) const;
+   [[nodiscard]] inline const_iterator operator-(difference_type incr) const;
+   [[nodiscard]] inline difference_type operator-(const const_iterator & it) const;
 
    [[nodiscard]] inline decltype(auto) operator[](difference_type n) const;
    [[nodiscard]] inline decltype(auto) operator*() const;
@@ -264,21 +268,21 @@ inline const_iterator<ArrayType>::const_iterator(const ArrayType & A, size_type 
 }
 
 template<ArrayBaseType ArrayType>
-inline auto const_iterator<ArrayType>::operator++() -> auto &
+inline const_iterator<ArrayType> & const_iterator<ArrayType>::operator++()
 {
    ++pos;
    return *this;
 }
 
 template<ArrayBaseType ArrayType>
-inline auto const_iterator<ArrayType>::operator--() -> auto &
+inline const_iterator<ArrayType> & const_iterator<ArrayType>::operator--()
 {
    --pos;
    return *this;
 }
 
 template<ArrayBaseType ArrayType>
-inline auto const_iterator<ArrayType>::operator++(int) -> auto
+inline const_iterator<ArrayType> const_iterator<ArrayType>::operator++(int)
 {
    auto old = *this;
    ++*this;
@@ -286,7 +290,7 @@ inline auto const_iterator<ArrayType>::operator++(int) -> auto
 }
 
 template<ArrayBaseType ArrayType>
-inline auto const_iterator<ArrayType>::operator--(int) -> auto
+inline const_iterator<ArrayType> const_iterator<ArrayType>::operator--(int)
 {
    auto old = *this;
    --*this;
@@ -294,21 +298,21 @@ inline auto const_iterator<ArrayType>::operator--(int) -> auto
 }
 
 template<ArrayBaseType ArrayType>
-inline auto const_iterator<ArrayType>::operator+=(size_type incr) -> auto &
+inline const_iterator<ArrayType> & const_iterator<ArrayType>::operator+=(difference_type incr)
 {
    pos += incr;
    return *this;
 }
 
 template<ArrayBaseType ArrayType>
-inline auto const_iterator<ArrayType>::operator-=(size_type incr) -> auto &
+inline const_iterator<ArrayType> & const_iterator<ArrayType>::operator-=(difference_type incr)
 {
    pos -= incr;
    return *this;
 }
 
 template<ArrayBaseType ArrayType>
-inline auto const_iterator<ArrayType>::operator+(size_type incr) const
+inline const_iterator<ArrayType> const_iterator<ArrayType>::operator+(difference_type incr) const
 {
    auto new_it = *this;
    new_it += incr;
@@ -316,7 +320,7 @@ inline auto const_iterator<ArrayType>::operator+(size_type incr) const
 }
 
 template<ArrayBaseType ArrayType>
-inline auto const_iterator<ArrayType>::operator-(size_type incr) const
+inline const_iterator<ArrayType> const_iterator<ArrayType>::operator-(difference_type incr) const
 {
    auto new_it = *this;
    new_it -= incr;
@@ -333,14 +337,18 @@ inline auto const_iterator<ArrayType>::operator-(const const_iterator & it) cons
 template<ArrayBaseType ArrayType>
 inline decltype(auto) const_iterator<ArrayType>::operator[](difference_type n) const
 {
-   ASSERT_STRICT_DEBUG(pos + n > -1 && pos + n < A.size());
+#ifdef STRICT_DEBUG_ON
+   if(pos + n < 0 || pos + n > A.size()-1) STRICT_THROW_OUT_OF_RANGE();
+#endif
    return A[pos + n];
 }
 
 template<ArrayBaseType ArrayType>
 inline decltype(auto) const_iterator<ArrayType>::operator*() const
 {
-   ASSERT_STRICT_DEBUG(pos > -1 && pos < A.size());
+#ifdef STRICT_DEBUG_ON
+   if(pos < 0 || pos > A.size()-1) STRICT_THROW_OUT_OF_RANGE();
+#endif
    return A[pos];
 }
 
