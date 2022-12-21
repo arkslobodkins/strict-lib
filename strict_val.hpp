@@ -8,8 +8,8 @@
 #include <iomanip>
 #include <limits>
 
-#include "error_handling.hpp"
-#include "value_traits.hpp"
+#include "strict_concepts.hpp"
+#include "strict_error.hpp"
 
 namespace strict_array {
 
