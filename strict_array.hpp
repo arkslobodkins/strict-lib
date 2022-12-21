@@ -71,6 +71,7 @@ public:
 
    [[nodiscard]] inline reference operator[](difference_type n) const;
    [[nodiscard]] inline reference operator*() const;
+   [[nodiscard]] inline pointer operator->() const;
 
    [[nodiscard]] inline bool operator==(const iterator & it) const;
    [[nodiscard]] inline bool operator!=(const iterator & it) const;
@@ -178,6 +179,12 @@ inline auto iterator<ArrayType>::operator*() const -> reference
 }
 
 template<ArrayBaseType ArrayType>
+[[nodiscard]] inline auto iterator<ArrayType>::operator->() const -> pointer
+{
+   return &A[pos];
+}
+
+template<ArrayBaseType ArrayType>
 inline bool iterator<ArrayType>::operator==(const iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(&A == &it.A);
@@ -246,6 +253,7 @@ public:
 
    [[nodiscard]] inline decltype(auto) operator[](difference_type n) const;
    [[nodiscard]] inline decltype(auto) operator*() const;
+   [[nodiscard]] inline pointer operator->() const;
 
    [[nodiscard]] inline bool operator==(const const_iterator & it) const;
    [[nodiscard]] inline bool operator!=(const const_iterator & it) const;
@@ -350,6 +358,12 @@ inline decltype(auto) const_iterator<ArrayType>::operator*() const
    if(pos < 0 || pos > A.size()-1) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return A[pos];
+}
+
+template<ArrayBaseType ArrayType>
+[[nodiscard]] inline auto const_iterator<ArrayType>::operator->() const -> pointer
+{
+   return &A[pos];
 }
 
 template<ArrayBaseType ArrayType>
@@ -500,6 +514,7 @@ template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, 
 
 template<ArrayBaseType T> [[nodiscard]] const auto & operator+(const T & A);
 template<ArrayBaseType T> [[nodiscard]] auto operator-(const T & A);
+template<ArrayBaseType T> [[nodiscard]] auto abs(const T & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType ArrayType>
@@ -827,6 +842,14 @@ struct UnaryMinus : private UnaryOperation
    }
 };
 
+struct UnaryAbs : private UnaryOperation
+{
+   template<RealType T>
+   auto operator()(const StrictVal<T> strict_val) const {
+      return abs(strict_val);
+   }
+};
+
 struct Plus : private BinaryOperation
 {
    template<RealType T>
@@ -1056,12 +1079,6 @@ auto operator/(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U(val), Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType T> const auto & operator+(const T & A)
-{ return A; }
-
-template<ArrayBaseType T> auto operator-(const T & A)
-{ return UnaryExpr(A, UnaryMinus{}); }
-
 template<ArrayBaseType T, RealType U>
 auto operator+(U val, const T & B)
 { return BinExprValLeft(B, val, Plus{}); }
@@ -1094,6 +1111,16 @@ auto operator*(const T & A, U val)
 template<ArrayBaseType T, RealType U>
 auto operator/(const T & A, U val)
 { return BinExprValRight(A, val, Divide{}); }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<ArrayBaseType T> const auto & operator+(const T & A)
+{ return A; }
+
+template<ArrayBaseType T> auto operator-(const T & A)
+{ return UnaryExpr(A, UnaryMinus{}); }
+
+template<ArrayBaseType T> auto abs(const T & A)
+{ return UnaryExpr(A, UnaryAbs{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {

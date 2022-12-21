@@ -71,11 +71,23 @@ int main()
 
    Array<int> C(9);
    std::iota(C.begin(), C.end(), 0);
-   StrictVal<int> sum{};
+   StrictVal<int> s{};
    auto expr = 2 * C;
    for(auto it = expr.begin(); it < expr.end(); it += 2)
-      sum += *it;
-   cout << "sum = " << sum << endl; // 0 + 4 + 8 + 12 + 16 is hopefully 40
+      s += *it;
+   cout << "sum = " << s << endl;                       // 0 + 4 + 8 + 12 + 16 is hopefully 40
+   cout << "total sum = " << sum(expr) << endl << endl; // 0 + 2 + 4 ... is hopefully 72
+
+   // 4. If for any reason there is a need to convert value to a different  type,
+   // convert() function can be used. Conversion is needed because both prod
+   // and sqt in the example below are not float32.
+
+   Array<float32> D{1.F, 2.F, 3.F, 4.F, 5.F};
+   double prod = dot_prod(D, D).convert<double>();
+   for(auto it = D.begin(); it != D.end(); ++it) {
+      double sqt = std::sqrt(it->convert<double>());
+      cout << "square root of "  << *it << " = " << sqt << endl;
+   }
 
    return EXIT_SUCCESS;
 }
