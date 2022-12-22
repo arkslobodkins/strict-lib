@@ -26,8 +26,8 @@ void derivative(Array<float64> & A, F f)
 {
    constexpr StrictVal<float64> h = 0.000'001;
    constexpr StrictVal<float64> two_h = 2. * h;
-   for(decltype(A.size()) i = 0; i < A.size(); ++i)
-      A[i] = ( f(A[i] + h) - f(A[i] - h) ) / two_h;
+   for(auto & x : A)
+      x = ( f(x+h) - f(x-h) ) / two_h;
 }
 
 template<RealType T>
@@ -78,7 +78,7 @@ int main()
    cout << "sum = " << s << endl;                       // 0 + 4 + 8 + 12 + 16 is hopefully 40
    cout << "total sum = " << sum(expr) << endl << endl; // 0 + 2 + 4 ... is hopefully 72
 
-   // 4. If for any reason there is a need to convert value to a different  type,
+   // 4. If for any reason there is a need to convert value to a different type,
    // convert() function can be used. Conversion is needed because both prod
    // and sqt in the example below are not float32.
 
@@ -87,13 +87,13 @@ int main()
    double prod = dot_prod(D, D).convert<double>();
    for(auto it = D.begin(); it != D.end(); ++it) {
       double sqt = sqrt(it->convert<double>());
-      cout << "square root of "  << *it << " = " << sqt << endl;
+      cout << "square root of " << *it << " = " << sqt << endl;
    }
 
    // 5. Get raw array of zeros and ones. The type of the elements
    // of the raw array is float32, rather than Strictval<float32>.
 
-   Array<float32> E(5000);
+   const Array<float32> E(5000);
    std::unique_ptr<float32[]> E1_ptr = unique_blas_array(E);
    std::unique_ptr<float32[]> E2_ptr = unique_blas_array(E+1.F);
    float32* e1 = E1_ptr.get();
