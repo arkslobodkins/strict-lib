@@ -111,6 +111,7 @@ template<RealType T> [[nodiscard]] constexpr inline auto max(StrictVal<T> strict
 
 template<StandardFloatingType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
 template<StandardFloatingType T> [[nodiscard]] inline auto exp(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline auto sqrt(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline auto sin(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline auto cos(StrictVal<T> v);
 
@@ -118,6 +119,7 @@ template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T
 #ifdef STRICT_QUADRUPLE_PRECISION
    template<QuadType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
    template<QuadType T> [[nodiscard]] inline auto exp(StrictVal<T> v);
+   template<QuadType T> [[nodiscard]] inline auto sqrt(StrictVal<T> v);
    template<QuadType T> [[nodiscard]] inline auto sin(StrictVal<T> v);
    template<QuadType T> [[nodiscard]] inline auto cos(StrictVal<T> v);
 
@@ -384,6 +386,9 @@ template<StandardFloatingType T> constexpr inline auto two_prod(StrictVal<T> v1,
 template<StandardFloatingType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
 { return StrictVal<T>{std::exp(T(v))}; }
 
+template<StandardFloatingType T> [[nodiscard]] inline auto sqrt(StrictVal<T> v)
+{ return StrictVal<T>{std::sqrt(T(v))}; }
+
 template<StandardFloatingType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
 { return StrictVal<T>{std::sin(T(v))}; }
 
@@ -413,6 +418,9 @@ template<QuadType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T
 
 template<QuadType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
 { return StrictVal<T>{expq(T(v))}; }
+
+template<QuadType T> [[nodiscard]] inline auto sqrt(StrictVal<T> v)
+{ return StrictVal<T>{sqrtq(T(v))}; }
 
 template<QuadType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
 { return StrictVal<T>{sinq(T(v))}; }

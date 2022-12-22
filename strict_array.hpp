@@ -94,6 +94,8 @@ public:
    void sort_increasing();
    void sort_decreasing();
 
+   template<typename F> void apply(F f);
+
 private:
    size_type sz;
    StrictVal<T>* elem;
@@ -427,6 +429,15 @@ bool Array<T>::valid_index(size_type index) const
    if(index < 0 || index > sz-1)
       return false;
    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<RealType T> template<typename F>
+void Array<T>::apply(F f)
+{
+   ASSERT_STRICT_DEBUG(sz > 0);
+   for(size_type i = 0; i < sz; ++i)
+      f(elem[i]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////

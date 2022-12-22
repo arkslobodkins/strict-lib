@@ -83,13 +83,15 @@ int main()
    // and sqt in the example below are not float32.
 
    Array<float32> D{1.F, 2.F, 3.F, 4.F, 5.F};
+   D.apply([](auto & x) {x = x*x;});
    double prod = dot_prod(D, D).convert<double>();
    for(auto it = D.begin(); it != D.end(); ++it) {
-      double sqt = std::sqrt(it->convert<double>());
+      double sqt = sqrt(it->convert<double>());
       cout << "square root of "  << *it << " = " << sqt << endl;
    }
 
-   // 5. Get raw array of zeros and ones.
+   // 5. Get raw array of zeros and ones. The type of the elements
+   // of the raw array is float32, rather than Strictval<float32>.
 
    Array<float32> E(5000);
    std::unique_ptr<float32[]> E1_ptr = unique_blas_array(E);
