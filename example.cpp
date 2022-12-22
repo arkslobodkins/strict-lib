@@ -30,7 +30,7 @@ void derivative(Array<float64> & A, F f)
       A[i] = ( f(A[i] + h) - f(A[i] - h) ) / two_h;
 }
 
-template<typename T>
+template<RealType T>
 StrictVal<T> sign(StrictVal<T> x)
 {
    return x > T(0) ? T(1) : T(-1);
