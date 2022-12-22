@@ -89,11 +89,13 @@ int main()
       cout << "square root of "  << *it << " = " << sqt << endl;
    }
 
-   // 5.
-   std::unique_ptr<float32[]> D1_ptr = unique_blas_array(D);
-   std::unique_ptr<float32[]> D2_ptr = unique_blas_array(D*2.F);
-   float32* d1 = D1_ptr.get();
-   float32* d2 = D2_ptr.get();
+   // 5. Get raw array of zeros and ones.
+
+   Array<float32> E(5000);
+   std::unique_ptr<float32[]> E1_ptr = unique_blas_array(E);
+   std::unique_ptr<float32[]> E2_ptr = unique_blas_array(E+1.F);
+   float32* e1 = E1_ptr.get();
+   float32* e2 = E2_ptr.get();
 
    return EXIT_SUCCESS;
 }
