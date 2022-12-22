@@ -89,6 +89,12 @@ int main()
       cout << "square root of "  << *it << " = " << sqt << endl;
    }
 
+   // 5.
+   std::unique_ptr<float32[]> D1_ptr = unique_blas_array(D);
+   std::unique_ptr<float32[]> D2_ptr = unique_blas_array(D*2.F);
+   float32* d1 = D1_ptr.get();
+   float32* d2 = D2_ptr.get();
+
    return EXIT_SUCCESS;
 }
 

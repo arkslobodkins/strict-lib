@@ -9,6 +9,7 @@
 #include <ctime>
 #include <initializer_list>
 #include <iterator>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -127,6 +128,8 @@ template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, 
 template<ArrayBaseType T> [[nodiscard]] const auto & operator+(const T & A);
 template<ArrayBaseType T> [[nodiscard]] auto operator-(const T & A);
 template<ArrayBaseType T> [[nodiscard]] auto abs(const T & A);
+
+template<ArrayBaseType T> [[nodiscard]] auto unique_blas_array(const T & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType ArrayType>
@@ -733,6 +736,15 @@ template<ArrayBaseType T> auto operator-(const T & A)
 
 template<ArrayBaseType T> auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
+
+template<ArrayBaseType T> [[nodiscard]] auto unique_blas_array(const T & A)
+{
+   using real_type = typename T::real_type;
+   auto blas_array = std::make_unique<real_type[]>(static_cast<std::size_t>(A.size()));
+   for(decltype(A.size()) i = 0; i < A.size(); ++i)
+      blas_array[i] = A[i];
+   return blas_array;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
