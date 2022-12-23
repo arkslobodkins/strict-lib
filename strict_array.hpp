@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "strict_concepts.hpp"
@@ -186,8 +187,8 @@ template<ArrayBaseType ArrayType>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> Array<T>::Array() :
-   sz{0},
-   elem{nullptr}
+   sz{},
+   elem{}
 {}
 
 template<RealType T> Array<T>::Array(size_type size) :
@@ -195,9 +196,8 @@ template<RealType T> Array<T>::Array(size_type size) :
    elem{new StrictVal<T>[static_cast<std::size_t>(size)]}
 {}
 
-template<RealType T> Array<T>::Array(size_type size, StrictVal<T> val) :
-   sz{size},
-   elem{new StrictVal<T>[static_cast<std::size_t>(size)]}
+template<RealType T> Array<T>::Array(size_type size, StrictVal<T> val)
+   : Array(size)
 {
    ASSERT_STRICT_DEBUG(sz > 0);
    std::fill(begin(), end(), val);
@@ -216,12 +216,9 @@ template<RealType T> Array<T>::Array(const Array<T> & A) :
 }
 
 template<RealType T> Array<T>::Array(Array<T> && A) noexcept :
-   sz{A.sz},
-   elem{A.elem}
-{
-   A.elem = 0;
-   A.sz = 0;
-}
+   sz{std::exchange(A.sz, {})},
+   elem{std::exchange(A.elem, {})}
+{}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> Array<T> & Array<T>::operator=(StrictVal<T> val)
@@ -234,18 +231,22 @@ template<RealType T> Array<T> & Array<T>::operator=(StrictVal<T> val)
 template<RealType T> Array<T> & Array<T>::operator=(const Array<T> & A)
 {
    ASSERT_STRICT_DEBUG(sz == A.sz);
-   std::copy(A.begin(), A.end(), begin());
+   if(this != &A) {
+      std::copy(A.begin(), A.end(), begin());
+   }
    return *this;
 }
 
 template<RealType T> Array<T> & Array<T>::operator=(Array<T> && A) noexcept
 {
-   ASSERT_STRICT_DEBUG(sz == A.sz);
-   delete[] elem;
-   elem = A.elem;
+   if(this != &A) {
+      ASSERT_STRICT_DEBUG(sz == A.sz);
+      delete[] elem;
+      elem = A.elem;
 
-   A.elem = nullptr;
-   A.sz = 0;
+      A.elem = {};
+      A.sz = {};
+   }
 
    return *this;
 }
@@ -331,21 +332,14 @@ const Array<T> & Array<T>::operator/=(const ArrayType & A)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> void Array<T>::swap(Array<T> & A) noexcept
 {
-   StrictVal<T>* temp_elem = A.elem;
-   size_type temp_sz = A.sz;
-
-   A.elem = elem;
-   A.sz = sz;
-
-   elem = temp_elem;
-   sz = temp_sz;
+   std::swap(elem, A.elem);
+   std::swap(sz, A.sz);
 }
 
 template<RealType T> void Array<T>::resize(size_type size)
 {
    Array<T> temp(size);
-   for(size_type i = 0; i < std::min(sz, size); ++i)
-      temp.elem[i] = elem[i];
+   std::copy(begin(), begin() + std::min(sz, size), temp.begin());
    swap(temp);
 }
 
@@ -381,9 +375,9 @@ std::vector<StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T>
    ASSERT_STRICT_DEBUG(sz > 0);
    ASSERT_STRICT_DEBUG(high >= low);
    std::vector<StrictVal<T>*> v;
-   for(size_type i = 0; i < sz; ++i)
-      if(elem[i] >= low && elem[i] <= high)
-         v.push_back(&elem[i]);
+   for(auto & x : *this)
+      if(x >= low && x <= high)
+         v.push_back(&x);
    return v;
 }
 
@@ -393,9 +387,9 @@ std::vector<const StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, Strict
    ASSERT_STRICT_DEBUG(sz > 0);
    ASSERT_STRICT_DEBUG(high >= low);
    std::vector<const StrictVal<T>*> v;
-   for(size_type i = 0; i < sz; ++i)
-      if(elem[i] >= low && elem[i] <= high)
-         v.push_back(&elem[i]);
+   for(auto & x : *this)
+      if(x >= low && x <= high)
+         v.push_back(&x);
    return v;
 }
 
@@ -525,10 +519,10 @@ public:
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
-   [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
-   [[nodiscard]] auto cbegin() const { return const_iterator(*this, 0); }
-   [[nodiscard]] auto cend() const { return const_iterator(*this, size()); }
+   [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
+   [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
+   [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
+   [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
@@ -562,10 +556,10 @@ public:
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
-   [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
-   [[nodiscard]] auto cbegin() const { return const_iterator(*this, 0); }
-   [[nodiscard]] auto cend() const { return const_iterator(*this, size()); }
+   [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
+   [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
+   [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
+   [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
@@ -599,10 +593,10 @@ public:
    [[nodiscard]] const value_type operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
-   [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
-   [[nodiscard]] auto cbegin() const { return const_iterator(*this, 0); }
-   [[nodiscard]] auto cend() const { return const_iterator(*this, size()); }
+   [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
+   [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
+   [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
+   [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
@@ -636,10 +630,10 @@ public:
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const { return const_iterator(*this, 0); }
-   [[nodiscard]] auto end() const { return const_iterator(*this, size()); }
-   [[nodiscard]] auto cbegin() const { return const_iterator(*this, 0); }
-   [[nodiscard]] auto cend() const { return const_iterator(*this, size()); }
+   [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
+   [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
+   [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
+   [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
