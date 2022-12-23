@@ -374,7 +374,7 @@ std::vector<StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T>
 {
    ASSERT_STRICT_DEBUG(sz > 0);
    ASSERT_STRICT_DEBUG(high >= low);
-   std::vector<StrictVal<T>*> v;
+   std::vector<StrictVal<T>*> v{};
    for(auto & x : *this)
       if(x >= low && x <= high)
          v.push_back(&x);
@@ -386,7 +386,7 @@ std::vector<const StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, Strict
 {
    ASSERT_STRICT_DEBUG(sz > 0);
    ASSERT_STRICT_DEBUG(high >= low);
-   std::vector<const StrictVal<T>*> v;
+   std::vector<const StrictVal<T>*> v{};
    for(auto & x : *this)
       if(x >= low && x <= high)
          v.push_back(&x);
@@ -667,36 +667,36 @@ auto operator/(const T1 & A, const T2 & B)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
 auto operator+(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U(val), Plus{}); }
+{ return BinExprValLeft(B, U{val}, Plus{}); }
 
 template<ArrayBaseType T, RealType U>
 auto operator-(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U(val), Minus{}); }
+{ return BinExprValLeft(B, U{val}, Minus{}); }
 
 template<ArrayBaseType T, RealType U>
 auto operator*(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U(val), Mult{}); }
+{ return BinExprValLeft(B, U{val}, Mult{}); }
 
 template<ArrayBaseType T, RealType U>
 auto operator/(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U(val), Divide{}); }
+{ return BinExprValLeft(B, U{val}, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
 auto operator+(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U(val), Plus{}); }
+{ return BinExprValRight(A, U{val}, Plus{}); }
 
 template<ArrayBaseType T, RealType U>
 auto operator-(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U(val), Minus{}); }
+{ return BinExprValRight(A, U{val}, Minus{}); }
 
 template<ArrayBaseType T, RealType U>
 auto operator*(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U(val), Mult{}); }
+{ return BinExprValRight(A, U{val}, Mult{}); }
 
 template<ArrayBaseType T, RealType U>
 auto operator/(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U(val), Divide{}); }
+{ return BinExprValRight(A, U{val}, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
@@ -746,8 +746,7 @@ template<ArrayBaseType T> [[nodiscard]] auto unique_blas_array(const T & A)
 {
    using real_type = typename T::real_type;
    auto blas_array = std::make_unique<real_type[]>(static_cast<std::size_t>(A.size()));
-   for(decltype(A.size()) i = 0; i < A.size(); ++i)
-      blas_array[i] = A[i];
+   std::copy(A.begin(), A.end(), blas_array.get());
    return blas_array;
 }
 
@@ -759,7 +758,7 @@ namespace internal {
       using sz_T = typename Array<T>::size_type;
       auto count_digit = [](sz_T number) -> sz_T {
          if(!number) return 1;
-         return (sz_T)std::log10(number) + 1;
+         return static_cast<sz_T>(std::log10(number)) + 1;
       };
 
       sz_T max_digits = count_digit(max_ind);
@@ -894,7 +893,7 @@ auto norm2(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::real_type;
-   return StrictVal<T>{std::sqrt(T(dot_prod(A, A)))};
+   return StrictVal<T>{std::sqrt(T{dot_prod(A, A)})};
 }
 
 #ifdef STRICT_QUADRUPLE_PRECISION
@@ -903,7 +902,7 @@ auto norm2(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::real_type;
-   return StrictVal<T>{sqrtq(T(dot_prod(A, A)))};
+   return StrictVal<T>{sqrtq(T{dot_prod(A, A)})};
 }
 #endif
 
@@ -922,7 +921,7 @@ bool does_contain_zero(const ArrayType & A)
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::real_type;
    for(auto x : A)
-      if(x == T(0)) return true;
+      if(x == T{0}) return true;
    return false;
 }
 
@@ -932,7 +931,7 @@ bool all_positive(const ArrayType & A)
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::real_type;
    for(auto x : A)
-      if(x <= T(0)) return false;
+      if(x <= T{0}) return false;
    return true;
 }
 
@@ -942,7 +941,7 @@ bool all_negative(const ArrayType & A)
    ASSERT_STRICT_DEBUG(A.size() > 0);
    using T = typename ArrayType::real_type;
    for(auto x : A)
-      if(x >= T(0)) return false;
+      if(x >= T{0}) return false;
    return true;
 }
 

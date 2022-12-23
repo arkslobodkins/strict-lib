@@ -29,7 +29,7 @@ public:
    template<RealType U> constexpr inline U convert() const;   // conversion chosen by the user;
 
    [[nodiscard]] constexpr StrictVal operator+() const { return *this; }
-   [[nodiscard]] constexpr StrictVal operator-() const { return StrictVal{-T(*this)}; }
+   [[nodiscard]] constexpr StrictVal operator-() const { return StrictVal{-T{*this}}; }
    constexpr StrictVal operator++() { ++x; return *this; }
    constexpr StrictVal operator--() { --x; return *this; }
    constexpr StrictVal operator++(int) { StrictVal old{x}; ++x; return old; }
@@ -157,206 +157,206 @@ constexpr inline U StrictVal<T>::convert() const
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 constexpr inline StrictVal<T> StrictVal<T>::operator+=(StrictVal<T> strict_val)
-{ x += T(strict_val); return *this; }
+{ x += T{strict_val}; return *this; }
 
 template<RealType T>
 constexpr inline StrictVal<T> StrictVal<T>::operator-=(StrictVal<T> strict_val)
-{ x -= T(strict_val); return *this; }
+{ x -= T{strict_val}; return *this; }
 
 template<RealType T>
 constexpr inline StrictVal<T> StrictVal<T>::operator*=(StrictVal<T> strict_val)
-{ x *= T(strict_val); return *this; }
+{ x *= T{strict_val}; return *this; }
 
 template<RealType T>
 constexpr inline StrictVal<T> StrictVal<T>::operator/=(StrictVal<T> strict_val)
 {
    #ifdef STRICT_DIVISION_ON
-   if(T(strict_val) == T(0)) STRICT_THROW_ZERO_DIVISION();
+   if(T{strict_val} == T{0}) STRICT_THROW_ZERO_DIVISION();
    #endif
-   x /= T(strict_val);
+   x /= T{strict_val};
    return *this;
 }
 
 template<RealType T> template<IntegerType U>
 constexpr inline StrictVal<T> StrictVal<T>::operator%=(StrictVal<T> strict_val)
-{ x %= T(strict_val); return *this; }
+{ x %= T{strict_val}; return *this; }
 
 template<RealType T> template<IntegerType U>
 constexpr inline StrictVal<T> StrictVal<T>::operator<<=(StrictVal<T> strict_val)
-{ x <<= T(strict_val); return *this; }
+{ x <<= T{strict_val}; return *this; }
 
 template<RealType T> template<IntegerType U>
 constexpr inline StrictVal<T> StrictVal<T>::operator>>=(StrictVal<T> strict_val)
-{ x >>= T(strict_val); return *this; }
+{ x >>= T{strict_val}; return *this; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline auto operator+=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val += T(strict_val)}; }
+{ return StrictVal<T>{val += T{strict_val}}; }
 
 template<RealType T> constexpr inline auto operator-=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val -= T(strict_val)}; }
+{ return StrictVal<T>{val -= T{strict_val}}; }
 
 template<RealType T> constexpr inline auto operator*=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val *= T(strict_val)}; }
+{ return StrictVal<T>{val *= T{strict_val}}; }
 
 template<RealType T> constexpr inline auto operator/=(T & val, StrictVal<T> strict_val)
 {
    #ifdef STRICT_DIVISION_ON
-   if(T(strict_val) == T(0)) STRICT_THROW_ZERO_DIVISION();
+   if(T{strict_val} == T{0}) STRICT_THROW_ZERO_DIVISION();
    #endif
-   return StrictVal<T>{val /= T(strict_val)};
+   return StrictVal<T>{val /= T{strict_val}};
 }
 
 template<IntegerType T> constexpr inline auto operator%=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val %= T(strict_val)}; }
+{ return StrictVal<T>{val %= T{strict_val}}; }
 
 template<IntegerType T> constexpr inline auto operator<<=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val <<= T(strict_val)}; }
+{ return StrictVal<T>{val <<= T{strict_val}}; }
 
 template<IntegerType T> constexpr inline auto operator>>=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val >>= T(strict_val)}; }
+{ return StrictVal<T>{val >>= T{strict_val}}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline auto operator+(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) + T(v2))}; }
+{ return StrictVal<T>{T{T{v1} + T{v2}}}; }
 
 template<RealType T> constexpr inline auto operator-(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) - T(v2))}; }
+{ return StrictVal<T>{T{T{v1} - T{v2}}}; }
 
 template<RealType T> constexpr inline auto operator*(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) * T(v2))}; }
+{ return StrictVal<T>{T{T{v1} * T{v2}}}; }
 
 template<RealType T> constexpr inline auto operator/(StrictVal<T> v1, StrictVal<T> v2)
 {
    #ifdef STRICT_DIVISION_ON
-   if(T(v2) == T(0)) STRICT_THROW_ZERO_DIVISION();
+   if(T{v2} == T{0}) STRICT_THROW_ZERO_DIVISION();
    #endif
-   return StrictVal<T>{T(T(v1) / T(v2))};
+   return StrictVal<T>{T{T{v1} / T{v2}}};
 }
 
 template<IntegerType T> constexpr inline auto operator%(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) % T(v2))}; }
+{ return StrictVal<T>{T{T{v1} % T{v2}}}; }
 
 template<IntegerType T> constexpr inline auto operator<<(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) << T(v2))}; }
+{ return StrictVal<T>{T{T(v1) << T{v2}}}; }
 
 template<IntegerType T> constexpr inline auto operator>>(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T(T(v1) >> T(v2))}; }
+{ return StrictVal<T>{T{T{v1} >> T{v2}}}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline auto operator+(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) + val)}; }
+{ return StrictVal<T>{T{T{strict_val} + val}}; }
 
 template<RealType T> constexpr inline auto operator-(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) - val)}; }
+{ return StrictVal<T>{T{T{strict_val} - val}}; }
 
 template<RealType T> constexpr inline auto operator*(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) * val)}; }
+{ return StrictVal<T>{T{T{strict_val} * val}}; }
 
 template<RealType T> constexpr inline auto operator/(StrictVal<T> strict_val, T val)
 {
    #ifdef STRICT_DIVISION_ON
-   if(val == T(0)) STRICT_THROW_ZERO_DIVISION();
+   if(val == T{0}) STRICT_THROW_ZERO_DIVISION();
    #endif
-   return StrictVal<T>{T(T(strict_val) / val)};
+   return StrictVal<T>{T{T{strict_val} / val}};
 }
 
 template<IntegerType T> constexpr inline auto operator%(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) % val)}; }
+{ return StrictVal<T>{T{T{strict_val} % val}}; }
 
 template<IntegerType T> constexpr inline auto operator<<(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) << val)}; }
+{ return StrictVal<T>{T{T{strict_val} << val}}; }
 
 template<IntegerType T> constexpr inline auto operator>>(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T(T(strict_val) >> val)}; }
+{ return StrictVal<T>{T{T{strict_val} >> val}}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline auto operator+(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val + T(strict_val))}; }
+{ return StrictVal<T>{T{val + T{strict_val}}}; }
 
 template<RealType T> constexpr inline auto operator-(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val - T(strict_val))}; }
+{ return StrictVal<T>{T{val - T{strict_val}}}; }
 
 template<RealType T> constexpr inline auto operator*(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val * T(strict_val))}; }
+{ return StrictVal<T>{T{val * T{strict_val}}}; }
 
 template<RealType T> constexpr inline auto operator/(T val, StrictVal<T> strict_val)
 {
    #ifdef STRICT_DIVISION_ON
-   if(T(strict_val) == T(0)) STRICT_THROW_ZERO_DIVISION();
+   if(T{strict_val} == T{0}) STRICT_THROW_ZERO_DIVISION();
    #endif
-   return StrictVal<T>{T(val / T(strict_val))};
+   return StrictVal<T>{T{val / T{strict_val}}};
 }
 
 template<IntegerType T> constexpr inline auto operator%(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val % T(strict_val))}; }
+{ return StrictVal<T>{T{val % T{strict_val}}}; }
 
 template<IntegerType T> constexpr inline auto operator<<(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val << T(strict_val))}; }
+{ return StrictVal<T>{T{val << T{strict_val}}}; }
 
 template<IntegerType T> constexpr inline auto operator>>(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T(val >> T(strict_val))}; }
+{ return StrictVal<T>{T{val >> T{strict_val}}}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline bool operator==(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) == T(v2); }
+{ return T{v1} == T{v2}; }
 
 template<RealType T> constexpr inline bool operator<(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) < T(v2); }
+{ return T{v1} < T{v2}; }
 
 template<RealType T> constexpr inline bool operator>(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) > T(v2); }
+{ return T{v1} > T{v2}; }
 
 template<RealType T> constexpr inline bool operator<=(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) <= T(v2); }
+{ return T{v1} <= T{v2}; }
 
 template<RealType T> constexpr inline bool operator>=(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) >= T(v2); }
+{ return T{v1} >= T{v2}; }
 
 template<RealType T> constexpr inline bool operator!=(StrictVal<T> v1, StrictVal<T> v2)
-{ return T(v1) != T(v2); }
+{ return T{v1} != T{v2}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline bool operator==(StrictVal<T> strict_val, T val)
-{ return T(strict_val) == val; }
+{ return T{strict_val} == val; }
 
 template<RealType T> constexpr inline bool operator<(StrictVal<T> strict_val, T val)
-{ return T(strict_val) < val; }
+{ return T{strict_val} < val; }
 
 template<RealType T> constexpr inline bool operator>(StrictVal<T> strict_val, T val)
-{ return T(strict_val) > val; }
+{ return T{strict_val} > val; }
 
 template<RealType T> constexpr inline bool operator<=(StrictVal<T> strict_val, T val)
-{ return T(strict_val) <= val; }
+{ return T{strict_val} <= val; }
 
 template<RealType T> constexpr inline bool operator>=(StrictVal<T> strict_val, T val)
-{ return T(strict_val) >= val; }
+{ return T{strict_val} >= val; }
 
 template<RealType T> constexpr inline bool operator!=(StrictVal<T> strict_val, T val)
-{ return T(strict_val) != val; }
+{ return T{strict_val} != val; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline bool operator==(T val, StrictVal<T> strict_val)
-{ return val == T(strict_val); }
+{ return val == T{strict_val}; }
 
 template<RealType T> constexpr inline bool operator<(T val, StrictVal<T> strict_val)
-{ return val < T(strict_val); }
+{ return val < T{strict_val}; }
 
 template<RealType T> constexpr inline bool operator>(T val, StrictVal<T> strict_val)
-{ return val > T(strict_val); }
+{ return val > T{strict_val}; }
 
 template<RealType T> constexpr inline bool operator<=(T val, StrictVal<T> strict_val)
-{ return val <= T(strict_val); }
+{ return val <= T{strict_val}; }
 
 template<RealType T> constexpr inline bool operator>=(T val, StrictVal<T> strict_val)
-{ return val >= T(strict_val); }
+{ return val >= T{strict_val}; }
 
 template<RealType T> constexpr inline bool operator!=(T val, StrictVal<T> strict_val)
-{ return val != T(strict_val); }
+{ return val != T{strict_val}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> constexpr inline auto abs(StrictVal<T> v)
-{ return T(v) > T(0) ? v : -v; }
+{ return T{v} > T{0} ? v : -v; }
 
 template<RealType T> constexpr inline auto min(StrictVal<T> v1, StrictVal<T> v2)
 { return v1 < v2 ? v1 : v2; }
@@ -379,21 +379,21 @@ template<RealType T> constexpr inline auto max(StrictVal<T> strict_val, T val)
 template<StandardFloatingType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
 {
    auto r = v1 * v2;
-   auto s = std::fma(T(v1), T(v2), T(-r));
+   auto s = std::fma(T{v1}, T{v2}, T{-r});
    return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
 }
 
 template<StandardFloatingType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
-{ return StrictVal<T>{std::exp(T(v))}; }
+{ return StrictVal<T>{std::exp(T{v})}; }
 
 template<StandardFloatingType T> [[nodiscard]] inline auto sqrt(StrictVal<T> v)
-{ return StrictVal<T>{std::sqrt(T(v))}; }
+{ return StrictVal<T>{std::sqrt(T{v})}; }
 
 template<StandardFloatingType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
-{ return StrictVal<T>{std::sin(T(v))}; }
+{ return StrictVal<T>{std::sin(T{v})}; }
 
 template<StandardFloatingType T> [[nodiscard]] inline auto cos(StrictVal<T> v)
-{ return StrictVal<T>{std::cos(T(v))}; }
+{ return StrictVal<T>{std::cos(T{v})}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
@@ -404,7 +404,7 @@ template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T
    else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10 + 1;
    else                              num_digits = int(std::cout.precision());
 
-   os << std::setprecision(num_digits) << T(strict_val);
+   os << std::setprecision(num_digits) << T{strict_val};
    return os;
 }
 
@@ -412,27 +412,27 @@ template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T
 template<QuadType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2)
 {
    auto r = v1 * v2;
-   auto s = fmaq(T(v1), T(v2), T(-r));
+   auto s = fmaq(T{v1}, T{v2}, T{-r});
    return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
 }
 
 template<QuadType T> [[nodiscard]] inline auto exp(StrictVal<T> v)
-{ return StrictVal<T>{expq(T(v))}; }
+{ return StrictVal<T>{expq(T{v})}; }
 
 template<QuadType T> [[nodiscard]] inline auto sqrt(StrictVal<T> v)
-{ return StrictVal<T>{sqrtq(T(v))}; }
+{ return StrictVal<T>{sqrtq(T{v})}; }
 
 template<QuadType T> [[nodiscard]] inline auto sin(StrictVal<T> v)
-{ return StrictVal<T>{sinq(T(v))}; }
+{ return StrictVal<T>{sinq(T{v})}; }
 
 template<QuadType T> [[nodiscard]] inline auto cos(StrictVal<T> v)
-{ return StrictVal<T>{cosq(T(v))}; }
+{ return StrictVal<T>{cosq(T{v})}; }
 
 template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
    int width = 39;
    char buf[128];
-   quadmath_snprintf(buf, sizeof(buf), "%+-#*.32Qe", width, T(strict_val));
+   quadmath_snprintf(buf, sizeof(buf), "%+-#*.32Qe", width, T{strict_val});
    os << buf;
    return os;
 }
