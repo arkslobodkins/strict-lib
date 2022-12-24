@@ -45,8 +45,8 @@ public:
    [[nodiscard]] inline bool operator<=(const iterator & it) const;
    [[nodiscard]] inline bool operator>(const iterator & it) const;
    [[nodiscard]] inline bool operator>=(const iterator & it) const;
-private:
 
+private:
    ArrayType & A;
    size_type pos;
 };
