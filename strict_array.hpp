@@ -48,15 +48,15 @@ public:
 
    ~Array();
 
-   const Array & operator+=(StrictVal<T> val);
-   const Array & operator-=(StrictVal<T> val);
-   const Array & operator*=(StrictVal<T> val);
-   const Array & operator/=(StrictVal<T> val);
+   Array & operator+=(StrictVal<T> val);
+   Array & operator-=(StrictVal<T> val);
+   Array & operator*=(StrictVal<T> val);
+   Array & operator/=(StrictVal<T> val);
 
-   template<ArrayBaseType ArrayType> const Array & operator+=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> const Array & operator-=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> const Array & operator*=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> const Array & operator/=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> Array & operator+=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> Array & operator-=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> Array & operator*=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> Array & operator/=(const ArrayType & A);
 
    void swap(Array & A) noexcept;
    void resize(size_type size);
@@ -273,28 +273,28 @@ template<RealType T> Array<T>::~Array()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-const Array<T> & Array<T>::operator+=(StrictVal<T> val)
+Array<T> & Array<T>::operator+=(StrictVal<T> val)
 {
    apply0([&](size_type i) { elem[i] += val; } );
    return *this;
 }
 
 template<RealType T>
-const Array<T> & Array<T>::operator-=(StrictVal<T> val)
+Array<T> & Array<T>::operator-=(StrictVal<T> val)
 {
    apply0([&](size_type i) { elem[i] -= val; } );
    return *this;
 }
 
 template<RealType T>
-const Array<T> & Array<T>::operator*=(StrictVal<T> val)
+Array<T> & Array<T>::operator*=(StrictVal<T> val)
 {
    apply0([&](size_type i) { elem[i] *= val; } );
    return *this;
 }
 
 template<RealType T>
-const Array<T> & Array<T>::operator/=(StrictVal<T> val)
+Array<T> & Array<T>::operator/=(StrictVal<T> val)
 {
    apply0([&](size_type i) { elem[i] /= val; } );
    return *this;
@@ -302,28 +302,28 @@ const Array<T> & Array<T>::operator/=(StrictVal<T> val)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<ArrayBaseType ArrayType>
-const Array<T> & Array<T>::operator+=(const ArrayType & A)
+Array<T> & Array<T>::operator+=(const ArrayType & A)
 {
    apply1(A, [&](size_type i) { elem[i] += A[i]; });
    return *this;
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
-const Array<T> & Array<T>::operator-=(const ArrayType & A)
+Array<T> & Array<T>::operator-=(const ArrayType & A)
 {
    apply1(A, [&](size_type i) { elem[i] -= A[i]; });
    return *this;
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
-const Array<T> & Array<T>::operator*=(const ArrayType & A)
+Array<T> & Array<T>::operator*=(const ArrayType & A)
 {
    apply1(A, [&](size_type i) { elem[i] *= A[i]; });
    return *this;
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
-const Array<T> & Array<T>::operator/=(const ArrayType & A)
+Array<T> & Array<T>::operator/=(const ArrayType & A)
 {
    apply1(A, [&](size_type i) { elem[i] /= A[i]; });
    return *this;
