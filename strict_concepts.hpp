@@ -24,7 +24,7 @@ template<typename T, typename U>
 concept BaseOf = std::is_base_of<T, U>::value;
 
 template<typename T, typename U>
-concept SameType = std::is_same<std::remove_cv_t<T>, std::remove_cv_t<U>>::value;
+concept SameType = std::is_same<T, U>::value;
 
 template<typename T>
 concept IntegerType = SameType<short, T> || SameType<T, int> ||

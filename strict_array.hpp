@@ -70,12 +70,12 @@ public:
    [[nodiscard]] const StrictVal<T> & front() const { return elem[0]; }
    [[nodiscard]] const StrictVal<T> & back() const { return elem[sz-1]; }
 
-   [[nodiscard]] auto begin() & { return iterator(*this, 0); }
-   [[nodiscard]] auto end() & { return iterator(*this, size()); }
-   [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
-   [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
+   [[nodiscard]] auto begin() & { return iterator{*this, 0}; }
+   [[nodiscard]] auto end() & { return iterator{*this, size()}; }
+   [[nodiscard]] auto begin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
 
    [[nodiscard]] auto rbegin() & { return std::reverse_iterator{end()}; }
    [[nodiscard]] auto rend() & { return std::reverse_iterator{begin()}; }
@@ -98,8 +98,8 @@ public:
    template<typename F> void apply(F f);
 
 private:
-   size_type sz;
    StrictVal<T>* elem;
+   size_type sz;
 
    bool valid_index(size_type index) const;
    template<typename F> void apply0(F f);
@@ -187,13 +187,13 @@ template<ArrayBaseType ArrayType>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> Array<T>::Array() :
-   sz{},
-   elem{}
+   elem{},
+   sz{}
 {}
 
 template<RealType T> Array<T>::Array(size_type size) :
-   sz{size},
-   elem{new StrictVal<T>[static_cast<std::size_t>(size)]}
+   elem{new StrictVal<T>[static_cast<std::size_t>(size)]},
+   sz{size}
 {}
 
 template<RealType T> Array<T>::Array(size_type size, StrictVal<T> val)
@@ -216,8 +216,8 @@ template<RealType T> Array<T>::Array(const Array<T> & A) :
 }
 
 template<RealType T> Array<T>::Array(Array<T> && A) noexcept :
-   sz{std::exchange(A.sz, {})},
-   elem{std::exchange(A.elem, {})}
+   elem{std::exchange(A.elem, {})},
+   sz{std::exchange(A.sz, {})}
 {}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -230,8 +230,8 @@ template<RealType T> Array<T> & Array<T>::operator=(StrictVal<T> val)
 
 template<RealType T> Array<T> & Array<T>::operator=(const Array<T> & A)
 {
-   ASSERT_STRICT_DEBUG(sz == A.sz);
    if(this != &A) {
+      ASSERT_STRICT_DEBUG(sz == A.sz);
       std::copy(A.begin(), A.end(), begin());
    }
    return *this;
@@ -512,17 +512,17 @@ public:
    using real_type = typename T::real_type;
    using expr_type = UnaryExpr<T, Op>;
 
-   UnaryExpr(const T & A, Op op) : sz(A.size()), A(A), op(op) { ASSERT_STRICT_DEBUG(A.size() > 0); }
+   explicit UnaryExpr(const T & A, Op op) : A{A}, sz{A.size()}, op{op} { ASSERT_STRICT_DEBUG(A.size() > 0); }
    UnaryExpr(const UnaryExpr &) = default;
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
-   [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
+   [[nodiscard]] auto begin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
@@ -530,8 +530,8 @@ public:
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
 private:
-   const size_type sz;
-   const typename T::expr_type A;
+   typename T::expr_type A;
+   size_type sz;
    Op op;
 };
 
@@ -545,7 +545,7 @@ public:
    using real_type = typename T1::real_type;
    using expr_type = BinExpr<T1, T2, Op>;
 
-   BinExpr(const T1 & A, const T2 & B, Op op) : sz(A.size()), A(A), B(B), op(op) {
+   explicit BinExpr(const T1 & A, const T2 & B, Op op) : A{A}, B{B}, sz{A.size()}, op{op} {
       static_assert(SameType<typename T1::real_type, typename T2::real_type>);
       ASSERT_STRICT_DEBUG(A.size() == B.size());
       ASSERT_STRICT_DEBUG(A.size() > 0);
@@ -556,10 +556,10 @@ public:
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
-   [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
+   [[nodiscard]] auto begin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
@@ -567,9 +567,9 @@ public:
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
 private:
-   const size_type sz;
-   const typename T1::expr_type A;
-   const typename T2::expr_type B;
+   typename T1::expr_type A;
+   typename T2::expr_type B;
+   size_type sz;
    Op op;
 };
 
@@ -583,7 +583,7 @@ public:
    using real_type = typename T1::real_type;
    using expr_type = BinExprValLeft<T1, T2, Op>;
 
-   BinExprValLeft(const T1 & B, T2 val, Op op) : sz(B.size()), B(B), val(val), op(op) {
+   explicit BinExprValLeft(const T1 & B, T2 val, Op op) : B{B}, val{val}, sz{B.size()}, op{op} {
       static_assert(SameType<typename T1::real_type, T2>);
       ASSERT_STRICT_DEBUG(B.size() > 0);
    }
@@ -593,10 +593,10 @@ public:
    [[nodiscard]] const value_type operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
-   [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
+   [[nodiscard]] auto begin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
@@ -604,9 +604,9 @@ public:
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
 private:
-   const size_type sz;
-   const typename T1::expr_type B;
-   const StrictVal<T2> val;
+   typename T1::expr_type B;
+   StrictVal<T2> val;
+   size_type sz;
    Op op;
 };
 
@@ -620,7 +620,7 @@ public:
    using real_type = typename T1::real_type;
    using expr_type = BinExprValRight<T1, T2, Op>;
 
-   BinExprValRight(const T1 & A, T2 val, Op op) : sz(A.size()), A(A), val(val), op(op) {
+   explicit BinExprValRight(const T1 & A, T2 val, Op op) : A{A}, val{val}, sz{A.size()}, op{op} {
       static_assert(SameType<typename T1::real_type, T2>);
       ASSERT_STRICT_DEBUG(A.size() > 0);
    }
@@ -630,10 +630,10 @@ public:
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] size_type size() const { return sz; }
 
-   [[nodiscard]] auto begin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto end() const & { return const_iterator(*this, size()); }
-   [[nodiscard]] auto cbegin() const & { return const_iterator(*this, 0); }
-   [[nodiscard]] auto cend() const & { return const_iterator(*this, size()); }
+   [[nodiscard]] auto begin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
@@ -641,9 +641,9 @@ public:
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
 private:
-   const size_type sz;
-   const typename T1::expr_type A;
-   const StrictVal<T2> val;
+   typename T1::expr_type A;
+   StrictVal<T2> val;
+   size_type sz;
    Op op;
 };
 

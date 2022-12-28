@@ -14,6 +14,7 @@
 #else
 
 #include <cassert>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <numeric>
@@ -95,7 +96,7 @@ int main()
 
    const Array<float32> E(5000);
    std::unique_ptr<float32[]> E1_ptr = unique_blas_array(E);
-   std::unique_ptr<float32[]> E2_ptr = unique_blas_array(E+1.F);
+   std::unique_ptr<float32[]> E2_ptr = unique_blas_array(E + 1.F);
    float32* e1 = E1_ptr.get();
    float32* e2 = E2_ptr.get();
 
