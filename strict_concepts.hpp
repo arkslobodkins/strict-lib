@@ -21,17 +21,17 @@ using float32 = float;
 using float64 = double;
 
 template<typename T, typename U>
-concept BaseOf = std::is_base_of<T, U>::value;
+concept BaseOf = std::is_base_of_v<T, U>;
 
 template<typename T, typename U>
-concept SameType = std::is_same<T, U>::value;
+concept SameType = std::is_same_v<T, U>;
 
 template<typename T>
 concept IntegerType = SameType<short, T> || SameType<T, int> ||
                       SameType<T, long int> || SameType<T, long long int>;
 
 template<typename T>
-concept StandardFloatingType = std::is_floating_point<T>::value;
+concept StandardFloatingType = std::is_floating_point_v<T>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef STRICT_QUADRUPLE_PRECISION
