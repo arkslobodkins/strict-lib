@@ -124,18 +124,18 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> cos(StrictVal
 
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #ifdef STRICT_QUADRUPLE_PRECISION
-   template<QuadType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
-   template<QuadType T> [[nodiscard]] inline StrictVal<T> exp(StrictVal<T> v);
-   template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrt(StrictVal<T> v);
-   template<QuadType T> [[nodiscard]] inline StrictVal<T> sin(StrictVal<T> v);
-   template<QuadType T> [[nodiscard]] inline StrictVal<T> cos(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> exp(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrt(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> sin(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> cos(StrictVal<T> v);
 
-   template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
+template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T>::StrictVal(U val) : x(val)
+constexpr inline StrictVal<T>::StrictVal(U val) : x{val}
 {
    static_assert(SameType<T, U>);
 }
@@ -158,7 +158,7 @@ constexpr inline StrictVal<T>::operator U () const
 template<RealType T> template<RealType U>
 constexpr inline U StrictVal<T>::convert() const
 {
-   return U(x);
+   return static_cast<U>(x);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
