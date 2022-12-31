@@ -239,15 +239,9 @@ template<RealType T> Array<T> & Array<T>::operator=(const Array<T> & A)
 
 template<RealType T> Array<T> & Array<T>::operator=(Array<T> && A) noexcept
 {
-   if(this != &A) {
-      ASSERT_STRICT_DEBUG(sz == A.sz);
-      delete[] elem;
-      elem = A.elem;
-
-      A.elem = {};
-      A.sz = {};
-   }
-
+   ASSERT_STRICT_DEBUG(sz == A.sz);
+   Array<T> temp(std::move(A));
+   swap(temp);
    return *this;
 }
 
