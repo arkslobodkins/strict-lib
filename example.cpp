@@ -1,4 +1,4 @@
-// For example, compile using a fairly recent version of gcc, clang or recent intel compilers from intel-oneAPI
+// For example, compile using a fairly recent version of gcc, clang or recent intel compiler from intel-oneAPI
 // g++-12.2 -std=c++20 example.cpp
 // dpcpp -std=c++20 example.cpp
 // icpx -std=c++20 example.cpp
@@ -25,8 +25,8 @@ using namespace strict_array;
 template<typename F>
 void derivative(Array<float64> & A, F f)
 {
-   constexpr StrictVal<float64> h = 0.000'001;
-   constexpr StrictVal<float64> two_h = 2. * h;
+   constexpr Strict64 h = 0.000'001;
+   constexpr Strict64 two_h = 2. * h;
    for(auto & x : A)
       x = ( f(x+h) - f(x-h) ) / two_h;
 }
@@ -34,7 +34,7 @@ void derivative(Array<float64> & A, F f)
 template<RealType T>
 StrictVal<T> sign(StrictVal<T> x)
 {
-   return x > T(0) ? T(1) : T(-1);
+   return x > T{0} ? T{1} : T{-1};
 }
 
 int main()
@@ -85,9 +85,9 @@ int main()
 
    Array<float32> D{1.F, 2.F, 3.F, 4.F, 5.F};
    D.apply([](auto & x) {x = x*x;});
-   double prod = dot_prod(D, D).convert<double>();
+   float64 prod = dot_prod(D, D).convert<float64>();
    for(auto it = D.begin(); it != D.end(); ++it) {
-      double sqt = sqrt(it->convert<double>());
+      float64 sqt = sqrt(it->convert<float64>());
       cout << "square root of " << *it << " = " << sqt << endl;
    }
 

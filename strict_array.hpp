@@ -451,7 +451,7 @@ void Array<T>::apply1(const ArrayType & A, F f)
 struct UnaryMinus : private UnaryOperation
 {
    template<RealType T>
-   auto operator()(const StrictVal<T> strict_val) const {
+   StrictVal<T> operator()(const StrictVal<T> strict_val) const {
       return -strict_val;
    }
 };
@@ -459,7 +459,7 @@ struct UnaryMinus : private UnaryOperation
 struct UnaryAbs : private UnaryOperation
 {
    template<RealType T>
-   auto operator()(const StrictVal<T> strict_val) const {
+   StrictVal<T> operator()(const StrictVal<T> strict_val) const {
       return abs(strict_val);
    }
 };
@@ -467,7 +467,7 @@ struct UnaryAbs : private UnaryOperation
 struct Plus : private BinaryOperation
 {
    template<RealType T>
-   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+   StrictVal<T> operator()(const StrictVal<T> left, const StrictVal<T> right) const {
       return left + right;
    }
 };
@@ -475,7 +475,7 @@ struct Plus : private BinaryOperation
 struct Minus : private BinaryOperation
 {
    template<RealType T>
-   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+   StrictVal<T> operator()(const StrictVal<T> left, const StrictVal<T> right) const {
       return left - right;
    }
 };
@@ -483,7 +483,7 @@ struct Minus : private BinaryOperation
 struct Mult : private BinaryOperation
 {
    template<RealType T>
-   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+   StrictVal<T> operator()(const StrictVal<T> left, const StrictVal<T> right) const {
       return left * right;
    }
 };
@@ -491,7 +491,7 @@ struct Mult : private BinaryOperation
 struct Divide : private BinaryOperation
 {
    template<RealType T>
-   auto operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+   StrictVal<T> operator()(const StrictVal<T> left, const StrictVal<T> right) const {
       return left / right;
    }
 };

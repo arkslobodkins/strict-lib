@@ -13,6 +13,11 @@
 
 namespace strict_array {
 
+template<RealType T> struct StrictVal;
+using Strict32 = StrictVal<float32>;
+using Strict64 = StrictVal<float64>;
+using Strict128 = StrictVal<float128>;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 struct StrictVal
