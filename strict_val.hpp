@@ -26,10 +26,10 @@ public:
    using value_type = T;
    explicit constexpr StrictVal() = default;
    constexpr StrictVal(const StrictVal &) = default;
-   constexpr StrictVal & operator=(const StrictVal &) = default;
+   constexpr StrictVal & operator=(const StrictVal &) & = default;
 
    template<RealType U> constexpr inline StrictVal(U val);
-   template<RealType U> constexpr inline StrictVal & operator=(U val);
+   template<RealType U> constexpr inline StrictVal & operator=(U val) &;
    template<RealType U> constexpr inline operator U () const; // safe conversion
    template<RealType U> constexpr inline U convert() const;   // conversion chosen by the user;
 
@@ -146,7 +146,7 @@ constexpr inline StrictVal<T>::StrictVal(U val) : x{val}
 }
 
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator=(U val) &
 {
    static_assert(SameType<T, U>);
    x = val;

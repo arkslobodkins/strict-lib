@@ -39,12 +39,12 @@ public:
    Array(const Array & A);
    Array(Array && a) noexcept;
 
-   Array & operator=(StrictVal<T> val);
-   Array & operator=(const Array & A);
-   Array & operator=(Array && A) noexcept;
+   Array & operator=(StrictVal<T> val) &;
+   Array & operator=(const Array & A) &;
+   Array & operator=(Array && A) & noexcept;
 
    template<ArrayExprType ArrExpr> Array(const ArrExpr & expr);
-   template<ArrayExprType ArrExpr> const Array & operator=(const ArrExpr & expr);
+   template<ArrayExprType ArrExpr> const Array & operator=(const ArrExpr & expr) &;
 
    ~Array();
 
@@ -65,10 +65,12 @@ public:
    [[nodiscard]] inline StrictVal<T> & operator[](size_type i);
    [[nodiscard]] inline const StrictVal<T> & operator[](size_type i) const;
 
-   [[nodiscard]] StrictVal<T> & front() { return elem[0]; }
-   [[nodiscard]] StrictVal<T> & back() { return elem[sz-1]; }
-   [[nodiscard]] const StrictVal<T> & front() const { return elem[0]; }
-   [[nodiscard]] const StrictVal<T> & back() const { return elem[sz-1]; }
+   [[nodiscard]] StrictVal<T> & front() & { return elem[0]; }
+   [[nodiscard]] StrictVal<T> & back() & { return elem[sz-1]; }
+   [[nodiscard]] const StrictVal<T> & front() const & { return elem[0]; }
+   [[nodiscard]] const StrictVal<T> & back() const & { return elem[sz-1]; }
+   void front() && { assert(false); }
+   void back() && { assert(false); }
 
    [[nodiscard]] auto begin() & { return iterator{*this, 0}; }
    [[nodiscard]] auto end() & { return iterator{*this, size()}; }
@@ -76,6 +78,10 @@ public:
    [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
    [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
    [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
+   void begin() && { assert(false); }
+   void end() && { assert(false); }
+   void cbegin() && { assert(false); }
+   void cend() && { assert(false); }
 
    [[nodiscard]] auto rbegin() & { return std::reverse_iterator{end()}; }
    [[nodiscard]] auto rend() & { return std::reverse_iterator{begin()}; }
@@ -83,13 +89,21 @@ public:
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
    [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
+   void rbegin() && { assert(false); }
+   void rend() && { assert(false); }
+   void crbegin() && { assert(false); }
+   void crend() && { assert(false); }
 
    [[nodiscard]] size_type size() const { return sz; }
+
    [[nodiscard]] StrictVal<T>* data() & { return sz > 0 ? &elem[0] : nullptr; }
    [[nodiscard]] const StrictVal<T>* data() const & { return sz > 0 ? &elem[0] : nullptr; }
+   void data() && { assert(false); }
 
    [[nodiscard]] std::vector<StrictVal<T>*> within_range(StrictVal<T> low, StrictVal<T> high) &;
    [[nodiscard]] std::vector<const StrictVal<T>*> within_range(StrictVal<T> low, StrictVal<T> high) const &;
+   void within_range() && { assert(false); }
+
    [[nodiscard]] Array sub_array(size_type first, size_type last);
 
    void sort_increasing();
@@ -221,14 +235,14 @@ template<RealType T> Array<T>::Array(Array<T> && A) noexcept :
 {}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> Array<T> & Array<T>::operator=(StrictVal<T> val)
+template<RealType T> Array<T> & Array<T>::operator=(StrictVal<T> val) &
 {
    ASSERT_STRICT_DEBUG(sz > 0);
    std::fill(begin(), end(), val);
    return *this;
 }
 
-template<RealType T> Array<T> & Array<T>::operator=(const Array<T> & A)
+template<RealType T> Array<T> & Array<T>::operator=(const Array<T> & A) &
 {
    if(this != &A) {
       ASSERT_STRICT_DEBUG(sz == A.sz);
@@ -237,7 +251,7 @@ template<RealType T> Array<T> & Array<T>::operator=(const Array<T> & A)
    return *this;
 }
 
-template<RealType T> Array<T> & Array<T>::operator=(Array<T> && A) noexcept
+template<RealType T> Array<T> & Array<T>::operator=(Array<T> && A) & noexcept
 {
    ASSERT_STRICT_DEBUG(sz == A.sz);
    Array<T> temp(std::move(A));
@@ -254,7 +268,7 @@ template<ArrayExprType ArrExpr> Array<T>::Array(const ArrExpr & expr)
 }
 
 template<RealType T>
-template<ArrayExprType ArrExpr> const Array<T> & Array<T>::operator=(const ArrExpr & expr)
+template<ArrayExprType ArrExpr> const Array<T> & Array<T>::operator=(const ArrExpr & expr) &
 {
    ASSERT_STRICT_DEBUG(sz == expr.size());
    std::copy(expr.begin(), expr.end(), begin());
@@ -517,11 +531,19 @@ public:
    [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
    [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
    [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
+   void begin() && { assert(false); }
+   void end() && { assert(false); }
+   void cbegin() && { assert(false); }
+   void cend() && { assert(false); }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
    [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
+   void rbegin() && { assert(false); }
+   void rend() && { assert(false); }
+   void crbegin() && { assert(false); }
+   void crend() && { assert(false); }
 
 private:
    typename T::expr_type A;
@@ -554,11 +576,19 @@ public:
    [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
    [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
    [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
+   void begin() && { assert(false); }
+   void end() && { assert(false); }
+   void cbegin() && { assert(false); }
+   void cend() && { assert(false); }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
    [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
+   void rbegin() && { assert(false); }
+   void rend() && { assert(false); }
+   void crbegin() && { assert(false); }
+   void crend() && { assert(false); }
 
 private:
    typename T1::expr_type A;
@@ -591,11 +621,19 @@ public:
    [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
    [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
    [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
+   void begin() && { assert(false); }
+   void end() && { assert(false); }
+   void cbegin() && { assert(false); }
+   void cend() && { assert(false); }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
    [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
+   void rbegin() && { assert(false); }
+   void rend() && { assert(false); }
+   void crbegin() && { assert(false); }
+   void crend() && { assert(false); }
 
 private:
    typename T1::expr_type B;
@@ -628,11 +666,19 @@ public:
    [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
    [[nodiscard]] auto cbegin() const & { return const_iterator{*this, 0}; }
    [[nodiscard]] auto cend() const & { return const_iterator{*this, size()}; }
+   void begin() && { assert(false); }
+   void end() && { assert(false); }
+   void cbegin() && { assert(false); }
+   void cend() && { assert(false); }
 
    [[nodiscard]] auto rbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto rend() const & { return std::reverse_iterator{cbegin()}; }
    [[nodiscard]] auto crbegin() const & { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
+   void rbegin() && { assert(false); }
+   void rend() && { assert(false); }
+   void crbegin() && { assert(false); }
+   void crend() && { assert(false); }
 
 private:
    typename T1::expr_type A;
