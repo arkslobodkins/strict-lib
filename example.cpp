@@ -99,6 +99,14 @@ int main()
    std::unique_ptr<float32[]> E2_ptr = unique_blas_array(E + 1.F);
    float32* e1 = E1_ptr.get();
    float32* e2 = E2_ptr.get();
+   cout << endl;
+
+   // 6. Quadruple precision is supported on GCC and Intel Classic.
+   #ifdef STRICT_QUADRUPLE_PRECISION
+   const Array<float128> F1{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
+   const Array<float128> F2{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
+   cout << F1 + F2 << endl;
+   #endif
 
    return EXIT_SUCCESS;
 }
