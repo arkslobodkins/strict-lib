@@ -46,7 +46,7 @@ int main()
    // printing and once when computing infinity norm).
 
    Array<float64> A{-1., -2., -3., -4., -5.};
-   auto func = [](auto x) { return x * exp(x); };
+   auto func = [](auto x) { return x * exps(x); };
    derivative(A, func);
    cout << 2. * A;
    cout << "infinity norm = " << norm_inf(2. * A) << endl << endl;
@@ -108,6 +108,9 @@ int main()
    const Array<float128> F2{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
    cout << F1 + F2 << endl;
    #endif
+
+   static_assert(std::random_access_iterator<iterator<Array<float64>>>);
+   static_assert(std::random_access_iterator<const_iterator<Array<float64>>>);
 
    return EXIT_SUCCESS;
 }

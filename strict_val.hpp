@@ -124,18 +124,18 @@ template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> min(StrictVal<T
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> max(StrictVal<T> strict_val, T val);
 
 template<StandardFloatingType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exp(StrictVal<T> v);
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrt(StrictVal<T> v);
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sin(StrictVal<T> v);
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> cos(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
 
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #ifdef STRICT_QUADRUPLE_PRECISION
 template<QuadType T> [[nodiscard]] constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
-template<QuadType T> [[nodiscard]] inline StrictVal<T> exp(StrictVal<T> v);
-template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrt(StrictVal<T> v);
-template<QuadType T> [[nodiscard]] inline StrictVal<T> sin(StrictVal<T> v);
-template<QuadType T> [[nodiscard]] inline StrictVal<T> cos(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
 
 template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #endif
@@ -433,16 +433,16 @@ template<StandardFloatingType T> constexpr inline auto two_prod(StrictVal<T> v1,
    return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
 }
 
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exp(StrictVal<T> v)
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v)
 { return StrictVal<T>{std::exp(T{v})}; }
 
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrt(StrictVal<T> v)
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v)
 { return StrictVal<T>{std::sqrt(T{v})}; }
 
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sin(StrictVal<T> v)
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v)
 { return StrictVal<T>{std::sin(T{v})}; }
 
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> cos(StrictVal<T> v)
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v)
 { return StrictVal<T>{std::cos(T{v})}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -466,16 +466,16 @@ template<QuadType T> constexpr inline auto two_prod(StrictVal<T> v1, StrictVal<T
    return std::pair<StrictVal<T>, StrictVal<T>>{r, s};
 }
 
-template<QuadType T> [[nodiscard]] inline StrictVal<T> exp(StrictVal<T> v)
+template<QuadType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v)
 { return StrictVal<T>{expq(T{v})}; }
 
-template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrt(StrictVal<T> v)
+template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v)
 { return StrictVal<T>{sqrtq(T{v})}; }
 
-template<QuadType T> [[nodiscard]] inline StrictVal<T> sin(StrictVal<T> v)
+template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v)
 { return StrictVal<T>{sinq(T{v})}; }
 
-template<QuadType T> [[nodiscard]] inline StrictVal<T> cos(StrictVal<T> v)
+template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v)
 { return StrictVal<T>{cosq(T{v})}; }
 
 template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
