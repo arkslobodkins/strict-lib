@@ -5,9 +5,7 @@
 
 // To use quadruple precision, for example:
 // g++-12.2 -std=gnu++20 example.cpp -lquadmath
-
 // To enable debugging and range checking add -DSTRICT_DEBUG_ON
-// To enable division by 0 checking add -DSTRICT_DIVISION_ON
 
 #if __cplusplus < 202002L
 #error requires c++20 or higher
@@ -101,8 +99,9 @@ int main()
    float32* e2 = E2_ptr.get();
    cout << endl;
 
-   // 6. Quadruple precision is supported on GCC and Intel Classic. GNU extensions
+   // 6. Quadruple precision is supported on GCC. GNU extensions
    // must be enabled via -std=gnu++20.
+
    #ifdef STRICT_QUADRUPLE_PRECISION
    const Array<float128> F1{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
    const Array<float128> F2{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
