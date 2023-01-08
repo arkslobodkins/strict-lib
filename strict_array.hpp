@@ -177,6 +177,9 @@ template<ArrayBaseType ArrayType>
 [[nodiscard]] auto max_index(const ArrayType & A);  // returns std::pair<size_type, StrictVal<real_type>>
 
 template<FloatingArrayBaseType ArrayType>
+[[nodiscard]] bool all_finite(const ArrayType & A);
+
+template<FloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm_inf(const ArrayType & A);
 
 template<StandardFloatingArrayBaseType ArrayType>
@@ -198,6 +201,7 @@ template<ArrayBaseType ArrayType>
 
 template<ArrayBaseType ArrayType>
 [[nodiscard]] bool all_negative(const ArrayType & A);
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> Array<T>::Array() :
@@ -914,6 +918,15 @@ auto min_index(const ArrayType & A)
       if(A[i] < min.second)
          min = {i, A[i]};
    return min;
+}
+
+template<FloatingArrayBaseType ArrayType>
+bool all_finite(const ArrayType & A)
+{
+   ASSERT_STRICT_DEBUG(A.size() > 0);
+   for(auto x : A)
+      if(!isfinite_s(x)) return false;
+   return true;
 }
 
 template<FloatingArrayBaseType ArrayType>
