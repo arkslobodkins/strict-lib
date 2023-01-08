@@ -31,7 +31,9 @@ concept IntegerType = SameType<short, T> || SameType<T, int> ||
                       SameType<T, long int> || SameType<T, long long int>;
 
 template<typename T>
-concept StandardFloatingType = std::is_floating_point_v<T>;
+concept StandardFloatingType = SameType<T, float> ||
+                               SameType<T, double> ||
+                               SameType<T, long double>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef STRICT_QUADRUPLE_PRECISION

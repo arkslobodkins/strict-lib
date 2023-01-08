@@ -138,6 +138,7 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(StrictVa
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline bool isfinite_s(StrictVal<T> v);
 
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #ifdef STRICT_QUADRUPLE_PRECISION
@@ -146,6 +147,7 @@ template<QuadType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline bool isfinite_s(StrictVal<T> v);
 
 template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #endif
@@ -422,6 +424,9 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(StrictVa
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v)
 { return StrictVal<T>{std::cos(T{v})}; }
 
+template<StandardFloatingType T> [[nodiscard]] inline bool isfinite_s(StrictVal<T> v)
+{ return std::isfinite(T{v}); }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
@@ -454,6 +459,9 @@ template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v)
 
 template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v)
 { return StrictVal<T>{cosq(T{v})}; }
+
+template<QuadType T> [[nodiscard]] inline bool isfinite_s(StrictVal<T> v)
+{ return finiteq(T{v}); }
 
 template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
