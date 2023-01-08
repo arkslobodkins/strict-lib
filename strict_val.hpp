@@ -20,6 +20,16 @@ using Strict64 = StrictVal<float64>;
 using Strict128 = StrictVal<float128>;
 #endif
 
+// std::isfinite is constexpr only since C++23.
+// Therefore, it must be implemented.
+template<RealType T>
+constexpr bool not_finite(T x)
+{
+   return (x > std::numeric_limits<double>::max()) ||
+          (x < std::numeric_limits<double>::lowest()) ||
+          (x != x);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 struct StrictVal
@@ -183,13 +193,7 @@ constexpr inline StrictVal<T> StrictVal<T>::operator*=(StrictVal<T> strict_val)
 
 template<RealType T>
 constexpr inline StrictVal<T> StrictVal<T>::operator/=(StrictVal<T> strict_val)
-{
-   #ifdef STRICT_DIVISION_ON
-   if(strict_val.x == T{0}) STRICT_THROW_ZERO_DIVISION();
-   #endif
-   x /= strict_val.x;
-   return *this;
-}
+{ x /= strict_val.x; return *this; }
 
 template<RealType T> template<IntegerType U>
 constexpr inline StrictVal<T> StrictVal<T>::operator%=(StrictVal<T> strict_val)
@@ -218,14 +222,7 @@ constexpr inline StrictVal<T> StrictVal<T>::operator*=(U val)
 
 template<RealType T> template<RealType U>
 constexpr inline StrictVal<T> StrictVal<T>::operator/=(U val)
-{
-   static_assert(SameType<T, U>);
-   #ifdef STRICT_DIVISION_ON
-   if(val == T{0}) STRICT_THROW_ZERO_DIVISION();
-   #endif
-   x /= val;
-   return *this;
-}
+{ static_assert(SameType<T, U>); x /= val; return *this; }
 
 template<RealType T> template<IntegerType U>
 constexpr inline StrictVal<T> StrictVal<T>::operator%=(U val)
@@ -250,12 +247,7 @@ template<RealType T> constexpr inline StrictVal<T> operator*=(T & val, StrictVal
 { return StrictVal<T>{val *= T{strict_val}}; }
 
 template<RealType T> constexpr inline StrictVal<T> operator/=(T & val, StrictVal<T> strict_val)
-{
-   #ifdef STRICT_DIVISION_ON
-   if(T{strict_val} == T{0}) STRICT_THROW_ZERO_DIVISION();
-   #endif
-   return StrictVal<T>{val /= T{strict_val}};
-}
+{ return StrictVal<T>{val /= T{strict_val}}; }
 
 template<IntegerType T> constexpr inline StrictVal<T> operator%=(T & val, StrictVal<T> strict_val)
 { return StrictVal<T>{val %= T{strict_val}}; }
@@ -277,12 +269,7 @@ template<RealType T> constexpr inline StrictVal<T> operator*(StrictVal<T> v1, St
 { return StrictVal<T>{T{T{v1} * T{v2}}}; }
 
 template<RealType T> constexpr inline StrictVal<T> operator/(StrictVal<T> v1, StrictVal<T> v2)
-{
-   #ifdef STRICT_DIVISION_ON
-   if(T{v2} == T{0}) STRICT_THROW_ZERO_DIVISION();
-   #endif
-   return StrictVal<T>{T{T{v1} / T{v2}}};
-}
+{ return StrictVal<T>{T{T{v1} / T{v2}}}; }
 
 template<IntegerType T> constexpr inline StrictVal<T> operator%(StrictVal<T> v1, StrictVal<T> v2)
 { return StrictVal<T>{T{T{v1} % T{v2}}}; }
@@ -304,12 +291,7 @@ template<RealType T> constexpr inline StrictVal<T> operator*(StrictVal<T> strict
 { return StrictVal<T>{T{T{strict_val} * val}}; }
 
 template<RealType T> constexpr inline StrictVal<T> operator/(StrictVal<T> strict_val, T val)
-{
-   #ifdef STRICT_DIVISION_ON
-   if(val == T{0}) STRICT_THROW_ZERO_DIVISION();
-   #endif
-   return StrictVal<T>{T{T{strict_val} / val}};
-}
+{ return StrictVal<T>{T{T{strict_val} / val}}; }
 
 template<IntegerType T> constexpr inline StrictVal<T> operator%(StrictVal<T> strict_val, T val)
 { return StrictVal<T>{T{T{strict_val} % val}}; }
@@ -331,12 +313,7 @@ template<RealType T> constexpr inline StrictVal<T> operator*(T val, StrictVal<T>
 { return StrictVal<T>{T{val * T{strict_val}}}; }
 
 template<RealType T> constexpr inline StrictVal<T> operator/(T val, StrictVal<T> strict_val)
-{
-   #ifdef STRICT_DIVISION_ON
-   if(T{strict_val} == T{0}) STRICT_THROW_ZERO_DIVISION();
-   #endif
-   return StrictVal<T>{T{val / T{strict_val}}};
-}
+{ return StrictVal<T>{T{val / T{strict_val}}}; }
 
 template<IntegerType T> constexpr inline StrictVal<T> operator%(T val, StrictVal<T> strict_val)
 { return StrictVal<T>{T{val % T{strict_val}}}; }

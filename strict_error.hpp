@@ -13,9 +13,9 @@
    throw std::out_of_range{"OUT OF RANGE! " + trace_err(__FILE__, __func__, __LINE__)};     \
    } while(0)
 
-#define STRICT_THROW_ZERO_DIVISION()                                                         \
-   do {                                                                                      \
-   throw std::runtime_error{"ZERO DIVISION! " + trace_err(__FILE__, __func__, __LINE__)};    \
+#define STRICT_THROW_NOT_FINITE()                                                              \
+   do {                                                                                        \
+   throw std::runtime_error{"VALUE IS NOT FINITE " + trace_err(__FILE__, __func__, __LINE__)}; \
    } while(0)
 
 #ifdef STRICT_DEBUG_ON
