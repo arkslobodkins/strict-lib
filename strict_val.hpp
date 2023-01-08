@@ -21,7 +21,7 @@ using Strict128 = StrictVal<float128>;
 #endif
 
 // std::isfinite is constexpr only since C++23.
-// Therefore, it must to be implemented.
+// Therefore, it must be implemented.
 template<RealType T>
 constexpr bool not_finite(T x)
 {
