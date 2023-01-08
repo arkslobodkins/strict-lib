@@ -101,7 +101,8 @@ int main()
    float32* e2 = E2_ptr.get();
    cout << endl;
 
-   // 6. Quadruple precision is supported on GCC and Intel Classic.
+   // 6. Quadruple precision is supported on GCC and Intel Classic. GNU extensions
+   // must be enabled via -std=gnu++20.
    #ifdef STRICT_QUADRUPLE_PRECISION
    const Array<float128> F1{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
    const Array<float128> F2{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};

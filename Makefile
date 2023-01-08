@@ -1,7 +1,7 @@
 all: example
 
-CXX = g++-12.2 -std=gnu++20
-CXXFLAGS = -O3
+CXX = g++-12.2
+CXXFLAGS = -O3 -std=gnu++20
 LFLAGS = -lquadmath -lm
 
 example: example.cpp
