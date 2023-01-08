@@ -1,7 +1,7 @@
 all: example
 
 CXX = g++-12.2
-CXXFLAGS = -O3 -std=gnu++20 -DSTRICT_DEBUG_ON
+CXXFLAGS = -std=gnu++20 -O3 -DSTRICT_DEBUG_ON
 LFLAGS = -lquadmath -lm
 
 example: example.cpp
