@@ -107,6 +107,7 @@ int main()
    const Array<float128> F2{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
    cout << F1 + F2 << endl;
    #endif
+   cout << isfinite_s(Strict64{0.0/0.0}) << endl;
 
    return EXIT_SUCCESS;
 }

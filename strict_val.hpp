@@ -11,6 +11,10 @@
 #include "strict_concepts.hpp"
 #include "strict_error.hpp"
 
+#if defined (__INTEL_COMPILER) || defined (__INTEL_LLVM_COMPILER)
+#include <mathimf.h>
+#endif
+
 namespace strict_array {
 
 template<RealType T> struct StrictVal;
@@ -19,16 +23,6 @@ using Strict64 = StrictVal<float64>;
 #ifdef STRICT_QUADRUPLE_PRECISION
 using Strict128 = StrictVal<float128>;
 #endif
-
-// std::isfinite is constexpr only since C++23.
-// Therefore, it must be implemented.
-template<RealType T>
-constexpr bool not_finite(T x)
-{
-   return (x > std::numeric_limits<double>::max()) ||
-          (x < std::numeric_limits<double>::lowest()) ||
-          (x != x);
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -425,7 +419,14 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVa
 { return StrictVal<T>{std::cos(T{v})}; }
 
 template<StandardFloatingType T> [[nodiscard]] inline bool isfinite_s(StrictVal<T> v)
-{ return std::isfinite(T{v}); }
+{
+   // std::isfinite was not giving the correct result on one of the platforms when compiled with intel
+   #if defined (__INTEL_COMPILER) || defined (__INTEL_LLVM_COMPILER)
+   return finite(T{v});
+   #else
+   return std::isfinite(T{v});
+   #endif
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
