@@ -421,7 +421,7 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVa
 template<StandardFloatingType T> [[nodiscard]] inline bool isfinite_s(StrictVal<T> v)
 {
    // std::isfinite was not giving the correct result when compiled with one of the
-   // oneAPI versions.
+   // oneAPI versions. The problem might be a bug in the standard.
    #if defined (__INTEL_COMPILER) || defined (__INTEL_LLVM_COMPILER)
    return finite(T{v});
    #else
