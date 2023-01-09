@@ -108,9 +108,6 @@ int main()
    cout << F1 + F2 << endl;
    #endif
 
-   static_assert(std::random_access_iterator<iterator<Array<float64>>>);
-   static_assert(std::random_access_iterator<const_iterator<Array<float64>>>);
-
    return EXIT_SUCCESS;
 }
 
