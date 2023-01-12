@@ -197,7 +197,6 @@ template<ArrayBaseType ArrayType>
 template<ArrayBaseType ArrayType>
 [[nodiscard]] bool all_negative(const ArrayType & A);
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> Array<T>::Array() :
    elem{},
@@ -873,7 +872,7 @@ auto max(const ArrayType & A)
    ASSERT_STRICT_DEBUG(A.size() > 0);
    auto max_elem = A[0];
    for(decltype(A.size()) i = 1; i < A.size(); ++i)
-      max_elem = max(A[i], max_elem);
+      max_elem = maxs(A[i], max_elem);
    return max_elem;
 }
 
