@@ -182,13 +182,8 @@ template<FloatingArrayBaseType ArrayType>
 template<FloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm_inf(const ArrayType & A);
 
-template<StandardFloatingArrayBaseType ArrayType>
+template<FloatingArrayBaseType ArrayType>
 [[nodiscard]] auto norm2(const ArrayType & A);
-
-#ifdef STRICT_QUADRUPLE_PRECISION
-template<QuadFloatingArrayBaseType ArrayType>
-[[nodiscard]] auto norm2(const ArrayType & A);
-#endif
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 [[nodiscard]] auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2);
@@ -478,7 +473,7 @@ struct UnaryAbs : private UnaryOperation
 {
    template<RealType T>
    StrictVal<T> operator()(const StrictVal<T> strict_val) const {
-      return abs(strict_val);
+      return abss(strict_val);
    }
 };
 
@@ -888,7 +883,7 @@ auto min(const ArrayType & A)
    ASSERT_STRICT_DEBUG(A.size() > 0);
    auto min_elem = A[0];
    for(decltype(A.size()) i = 1; i < A.size(); ++i)
-      min_elem = min(A[i], min_elem);
+      min_elem = mins(A[i], min_elem);
    return min_elem;
 }
 
@@ -925,7 +920,7 @@ bool all_finite(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
    for(auto x : A)
-      if(!isfinite_s(x)) return false;
+      if(!isfinites(x)) return false;
    return true;
 }
 
@@ -933,31 +928,20 @@ template<FloatingArrayBaseType ArrayType>
 auto norm_inf(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   auto max_abs = abs(A[0]);
+   auto max_abs = abss(A[0]);
    for(decltype(A.size()) i = 1; i < A.size(); ++i) {
-      auto abs_i = abs(A[i]);
-      max_abs  = max(abs_i, max_abs);
+      auto abs_i = abss(A[i]);
+      max_abs  = maxs(abs_i, max_abs);
    }
    return max_abs;
 }
 
-template<StandardFloatingArrayBaseType ArrayType>
+template<FloatingArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   using T = typename ArrayType::real_type;
-   return StrictVal<T>{std::sqrt(T{dot_prod(A, A)})};
+   return sqrts(dot_prod(A, A));
 }
-
-#ifdef STRICT_QUADRUPLE_PRECISION
-template<QuadFloatingArrayBaseType ArrayType>
-auto norm2(const ArrayType & A)
-{
-   ASSERT_STRICT_DEBUG(A.size() > 0);
-   using T = typename ArrayType::real_type;
-   return StrictVal<T>{sqrtq(T{dot_prod(A, A)})};
-}
-#endif
 
 template<ArrayBaseType ArrayType1, ArrayBaseType ArrayType2>
 auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)

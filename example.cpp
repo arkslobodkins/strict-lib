@@ -60,7 +60,7 @@ int main()
    Array B = array_random<float32>(n, -1.F, 1.F);
    auto half_range = B.within_range(-0.5F, 0.5F);
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
-   for(auto x : B) assert(abs(x) >= 0.5F && abs(x) <= 1.F); // test mapping
+   for(auto x : B) assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
 
    // 3. Fill C with 0, 1, 2, ..., then multiply C by 2
    // (which gives expression template) and
@@ -107,7 +107,6 @@ int main()
    const Array<float128> F2{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
    cout << F1 + F2 << endl;
    #endif
-   cout << isfinite_s(Strict64{0.0/0.0}) << endl;
 
    return EXIT_SUCCESS;
 }
