@@ -88,6 +88,7 @@ int main()
       float64 sqt = sqrt(it->convert<float64>());
       cout << "square root of " << *it << " = " << sqt << endl;
    }
+   cout << endl;
 
    // 5. Get raw array of zeros and ones. The type of the elements
    // of the raw array is float32, rather than Strictval<float32>.
@@ -97,7 +98,6 @@ int main()
    std::unique_ptr<float32[]> E2_ptr = unique_blas_array(E + 1.F);
    float32* e1 = E1_ptr.get();
    float32* e2 = E2_ptr.get();
-   cout << endl;
 
    // 6. Quadruple precision is supported on GCC. GNU extensions
    // must be enabled via -std=gnu++20.
@@ -107,6 +107,18 @@ int main()
    const Array<float128> F2{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
    cout << F1 + F2 << endl;
    #endif
+
+   // 7. StrictVal<T> was designed so that
+   // StrictVal<T> and T can be used interchangably.
+   // Therefore, algorithms based on iterators are
+   // compatible as well(as long as they are of the same type T).
+
+   float64 g_raw[5]{};
+   Array<float64> G{1., 2., 3., 4., 5.};
+   std::copy(G.begin(), G.end(), g_raw);
+   g_raw[1]++; g_raw[3]++;
+   std::copy(g_raw, g_raw+5, G.begin());
+   cout << G << endl;
 
    return EXIT_SUCCESS;
 }

@@ -99,6 +99,7 @@ template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator%(T 
 template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator<<(T val, StrictVal<T> strict_val);
 template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator>>(T val, StrictVal<T> strict_val);
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> [[nodiscard]] constexpr inline bool operator==(StrictVal<T> v1, StrictVal<T> v2);
 template<RealType T> [[nodiscard]] constexpr inline bool operator<(StrictVal<T> v1, StrictVal<T> v2);
 template<RealType T> [[nodiscard]] constexpr inline bool operator>(StrictVal<T> v1, StrictVal<T> v2);
@@ -120,7 +121,6 @@ template<RealType T> [[nodiscard]] constexpr inline bool operator<=(T val, Stric
 template<RealType T> [[nodiscard]] constexpr inline bool operator>=(T val, StrictVal<T> strict_val);
 template<RealType T> [[nodiscard]] constexpr inline bool operator!=(T val, StrictVal<T> strict_val);
 
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> abss(T v);
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> abss(StrictVal<T> v);
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(StrictVal<T> v1, StrictVal<T> v2);
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(StrictVal<T> v1, StrictVal<T> v2);
@@ -128,14 +128,8 @@ template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(T val, Str
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(T val, StrictVal<T> strict_val);
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(StrictVal<T> strict_val, T val);
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(T v1, T v2);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(T v1, T v2);
 
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(T v);
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrts(T v);
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(T v);
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(T v);
-template<StandardFloatingType T> [[nodiscard]] inline bool isfinites(T v);
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
@@ -146,18 +140,12 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> fmas(StrictVa
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 
 #ifdef STRICT_QUADRUPLE_PRECISION
-template<QuadType T> [[nodiscard]] inline StrictVal<T> exps(T v);
-template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrts(T v);
-template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(T v);
-template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(T v);
-template<QuadType T> [[nodiscard]] inline bool isisfinites(T v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline bool isisfinites(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3);
-template<QuadType T> std::ostream & operator<<(std::ostream & os, T val);
 template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 #endif
 
@@ -395,9 +383,6 @@ template<RealType T> constexpr inline bool operator!=(T val, StrictVal<T> strict
 { return val != T{strict_val}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> constexpr inline StrictVal<T> abss(T v)
-{ return v > T{0} ? v : -v; }
-
 template<RealType T> constexpr inline StrictVal<T> abss(StrictVal<T> v)
 { return T{v} > T{0} ? v : -v; }
 
@@ -418,12 +403,6 @@ template<RealType T> constexpr inline StrictVal<T> mins(StrictVal<T> strict_val,
 
 template<RealType T> constexpr inline StrictVal<T> maxs(StrictVal<T> strict_val, T val)
 { return strict_val > val ? strict_val : StrictVal<T>{val}; }
-
-template<RealType T> constexpr inline StrictVal<T> mins(T v1, T v2)
-{ return v1 < v2 ? v1 : v2; }
-
-template<RealType T> constexpr inline StrictVal<T> maxs(T v1, T v2)
-{ return v1 > v2 ? v1 : v2; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(T v)
@@ -490,21 +469,6 @@ template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef STRICT_QUADRUPLE_PRECISION
-template<QuadType T> [[nodiscard]] inline StrictVal<T> exps(T v)
-{ return StrictVal<T>{expq(v)}; }
-
-template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrts(T v)
-{ return StrictVal<T>{sqrtq(v)}; }
-
-template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(T v)
-{ return StrictVal<T>{sinq(v)}; }
-
-template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(T v)
-{ return StrictVal<T>{cosq(v)}; }
-
-template<QuadType T> [[nodiscard]] inline bool isfinites(T v)
-{ return finiteq(v); }
-
 template<QuadType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v)
 { return StrictVal<T>{expq(T{v})}; }
 
@@ -522,15 +486,6 @@ template<QuadType T> [[nodiscard]] inline bool isfinites(StrictVal<T> v)
 
 template<QuadType T> [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3)
 { return  StrictVal<T>{fmaq(T{v1}, T{v2}, T{v3})}; }
-
-template<QuadType T> std::ostream & operator<<(std::ostream & os, T val)
-{
-   int width = 39;
-   char buf[128];
-   quadmath_snprintf(buf, sizeof(buf), "%+-#*.32Qe", width, val);
-   os << buf;
-   return os;
-}
 
 template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
