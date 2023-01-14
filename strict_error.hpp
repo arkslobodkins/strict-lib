@@ -5,6 +5,7 @@
 #else
 
 #include <cassert>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 
@@ -14,7 +15,13 @@
    } while(0)
 
 #ifdef STRICT_DEBUG_ON
-#define ASSERT_STRICT_DEBUG(condition) assert(condition)
+#define ASSERT_STRICT_DEBUG(condition)                                          \
+   do {                                                                         \
+      if(!(condition)) {                                                        \
+         std::cerr << "assertion " << (#condition) << " failed " << std::endl;  \
+         std::abort();                                                          \
+      }                                                                         \
+   } while(0)
 #else
 #define ASSERT_STRICT_DEBUG(condition) ((void)0)
 #endif
