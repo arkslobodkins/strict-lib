@@ -1,3 +1,5 @@
+// Arkadijs Slobodkins, 2023
+
 #include <cassert>
 #include <cmath>
 #include <cstdlib>

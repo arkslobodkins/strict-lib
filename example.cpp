@@ -1,3 +1,5 @@
+// Arkadijs Slobodkins, 2023
+
 // For example, compile using a fairly recent version of gcc, clang or recent intel compiler from intel-oneAPI
 // g++-12.2 -std=c++20 example.cpp
 // dpcpp -std=c++20 example.cpp

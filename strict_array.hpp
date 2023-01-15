@@ -1,3 +1,5 @@
+// Arkadijs Slobodkins, 2023
+
 #pragma once
 
 #if __cplusplus < 202002L
