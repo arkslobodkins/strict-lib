@@ -1,6 +1,6 @@
 all: example
 
-CXX = g++-12.2
+CXX = g++-12.1
 CXXFLAGS = -std=gnu++20 -O3 -DSTRICT_DEBUG_ON
 LFLAGS = -lquadmath -lm
 
