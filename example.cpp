@@ -119,6 +119,7 @@ int main()
    g_raw[1]++; g_raw[3]++;
    std::copy(g_raw, g_raw+5, G.begin());
    cout << G << endl;
+
    return EXIT_SUCCESS;
 }
 
