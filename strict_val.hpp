@@ -124,12 +124,6 @@ template<RealType T> [[nodiscard]] constexpr inline bool operator!=(T val, Stric
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> abss(StrictVal<T> v);
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(StrictVal<T> v1, StrictVal<T> v2);
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(StrictVal<T> v1, StrictVal<T> v2);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(T v1, T v2);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(T v1, T v2);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v);
@@ -394,24 +388,6 @@ template<RealType T> constexpr inline StrictVal<T> mins(StrictVal<T> v1, StrictV
 { return v1 < v2 ? v1 : v2; }
 
 template<RealType T> constexpr inline StrictVal<T> maxs(StrictVal<T> v1, StrictVal<T> v2)
-{ return v1 > v2 ? v1 : v2; }
-
-template<RealType T> constexpr inline StrictVal<T> mins(T val, StrictVal<T> strict_val)
-{ return val < strict_val ? StrictVal<T>{val} : strict_val; }
-
-template<RealType T> constexpr inline StrictVal<T> maxs(T val, StrictVal<T> strict_val)
-{ return val > strict_val ? StrictVal<T>{val} : strict_val; }
-
-template<RealType T> constexpr inline StrictVal<T> mins(StrictVal<T> strict_val, T val)
-{ return strict_val < val ? strict_val : StrictVal<T>{val}; }
-
-template<RealType T> constexpr inline StrictVal<T> maxs(StrictVal<T> strict_val, T val)
-{ return strict_val > val ? strict_val : StrictVal<T>{val}; }
-
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(T v1, T v2)
-{ return v1 < v2 ? v1 : v2; }
-
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(T v1, T v2)
 { return v1 > v2 ? v1 : v2; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
