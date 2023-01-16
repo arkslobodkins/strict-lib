@@ -801,17 +801,17 @@ template<FloatingArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
    ASSERT_STRICT_DEBUG(A.size() > 0);
-   using sv_T = typename ArrayType::value_type;
+   using rv_T = typename ArrayType::real_type;
 
-   sv_T sum{};
-   sv_T c{};
+   volatile rv_T sum{};
+   volatile rv_T c{};
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
-      sv_T y = A[i] - c;
-      sv_T t = sum + y;
+      volatile rv_T y = A[i] - c;
+      volatile rv_T t = sum + y;
       c = (t - sum) - y;
       sum = t;
    }
-   return sum;
+   return StrictVal<rv_T>{sum};
 }
 
 template<IntegerArrayBaseType ArrayType>
