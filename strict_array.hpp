@@ -87,6 +87,7 @@ public:
    [[nodiscard]] auto crend() const & { return std::reverse_iterator{cbegin()}; }
 
    [[nodiscard]] size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return sz == 0; }
 
    [[nodiscard]] StrictVal<T>* data() & { return sz > 0 ? &elem[0] : nullptr; }
    [[nodiscard]] const StrictVal<T>* data() const & { return sz > 0 ? &elem[0] : nullptr; }
@@ -514,6 +515,7 @@ public:
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return sz == 0; }
 
    [[nodiscard]] auto begin() const & { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
@@ -551,6 +553,7 @@ public:
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return sz == 0; }
 
    [[nodiscard]] auto begin() const & { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
@@ -588,6 +591,7 @@ public:
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return sz == 0; }
 
    [[nodiscard]] auto begin() const & { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
@@ -625,6 +629,7 @@ public:
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return sz == 0; }
 
    [[nodiscard]] auto begin() const & { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const & { return const_iterator{*this, size()}; }
@@ -800,7 +805,7 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 template<FloatingArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    using rv_T = typename ArrayType::real_type;
 
    volatile rv_T sum{};
@@ -817,7 +822,7 @@ auto sum(const ArrayType & A)
 template<IntegerArrayBaseType ArrayType>
 auto sum(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    auto sum = A[0];
    for(decltype(A.size()) i = 1; i < A.size(); ++i)
       sum += A[i];
@@ -827,7 +832,7 @@ auto sum(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto max(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    auto max_elem = A[0];
    for(decltype(A.size()) i = 1; i < A.size(); ++i)
       max_elem = maxs(A[i], max_elem);
@@ -837,7 +842,7 @@ auto max(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto min(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    auto min_elem = A[0];
    for(decltype(A.size()) i = 1; i < A.size(); ++i)
       min_elem = mins(A[i], min_elem);
@@ -847,7 +852,7 @@ auto min(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto max_index(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    using sz_T = typename ArrayType::size_type;
    using sv_T = typename ArrayType::value_type;
 
@@ -861,7 +866,7 @@ auto max_index(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 auto min_index(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    using sz_T = typename ArrayType::size_type;
    using sv_T = typename ArrayType::value_type;
 
@@ -875,7 +880,7 @@ auto min_index(const ArrayType & A)
 template<FloatingArrayBaseType ArrayType>
 bool all_finite(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    for(auto x : A)
       if(!isfinites(x)) return false;
    return true;
@@ -884,7 +889,7 @@ bool all_finite(const ArrayType & A)
 template<FloatingArrayBaseType ArrayType>
 auto norm_inf(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    auto max_abs = abss(A[0]);
    for(decltype(A.size()) i = 1; i < A.size(); ++i) {
       auto abs_i = abss(A[i]);
@@ -896,7 +901,7 @@ auto norm_inf(const ArrayType & A)
 template<FloatingArrayBaseType ArrayType>
 auto norm2(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    return sqrts(dot_prod(A, A));
 }
 
@@ -905,14 +910,14 @@ auto dot_prod(const ArrayType1 & A1, const ArrayType2 & A2)
 {
    static_assert(SameType<typename ArrayType1::real_type, typename ArrayType2::real_type>);
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
-   ASSERT_STRICT_DEBUG(A1.size() > 0);
+   ASSERT_STRICT_DEBUG(!A1.empty());
    return sum(A1 * A2);
 }
 
 template<ArrayBaseType ArrayType>
 bool does_contain_zero(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    using T = typename ArrayType::real_type;
    for(auto x : A)
       if(x == T{0}) return true;
@@ -922,7 +927,7 @@ bool does_contain_zero(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 bool all_positive(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    using T = typename ArrayType::real_type;
    for(auto x : A)
       if(x <= T{0}) return false;
@@ -932,7 +937,7 @@ bool all_positive(const ArrayType & A)
 template<ArrayBaseType ArrayType>
 bool all_negative(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(A.size() > 0);
+   ASSERT_STRICT_DEBUG(!A.empty());
    using T = typename ArrayType::real_type;
    for(auto x : A)
       if(x >= T{0}) return false;

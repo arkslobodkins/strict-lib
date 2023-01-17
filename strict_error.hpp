@@ -17,12 +17,13 @@
    } while(0)
 
 #ifdef STRICT_DEBUG_ON
-#define ASSERT_STRICT_DEBUG(condition)                                          \
-   do {                                                                         \
-      if(!(condition)) {                                                        \
-         std::cerr << "assertion " << (#condition) << " failed " << std::endl;  \
-         std::abort();                                                          \
-      }                                                                         \
+#define ASSERT_STRICT_DEBUG(condition)                                      \
+   do {                                                                     \
+      if(!(condition)) {                                                    \
+         std::cerr << trace_err(__FILE__, __func__, __LINE__) <<            \
+         ":\nassertion " << (#condition) << " failed" << std::endl;         \
+         std::abort();                                                      \
+      }                                                                     \
    } while(0)
 #else
 #define ASSERT_STRICT_DEBUG(condition) ((void)0)
