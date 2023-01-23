@@ -78,6 +78,12 @@ template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && Floatin
 template<typename T> concept QuadFloatingArrayBaseType = ArrayBaseType<T> && QuadType<typename T::real_type>;
 #endif
 
+#ifdef STRICT_QUADRUPLE_PRECISION
+template<typename T> concept NotQuadFloatingArrayBaseType = ArrayBaseType<T> && !QuadType<typename T::real_type>;
+#else
+template<typename T> concept NotQuadFloatingArrayBaseType = ArrayBaseType<T>;
+#endif
+
 }
 
 #endif
