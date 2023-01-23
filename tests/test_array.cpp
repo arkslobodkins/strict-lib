@@ -17,7 +17,7 @@ void assert_array(const std::valarray<T> & v, const Array<T> & s)
 }
 
 template<StandardFloatingType T>
-void assert_floats()
+void assert_float_ops()
 {
    auto n = 300LL;
    std::valarray<T> v1(n), v2(n), v3(n);
@@ -37,6 +37,16 @@ void assert_floats()
    v3 *= v2; s3 *= s2; assert_array(v3, s3);
    v3 /= v2; s3 /= s2; assert_array(v3, s3);
 
+   v3 += T{2} + v2; s3 += T{2} + s2; assert_array(v3, s3);
+   v3 -= T{2} - v2; s3 -= T{2} - s2; assert_array(v3, s3);
+   v3 *= T{2} * v2; s3 *= T{2} * s2; assert_array(v3, s3);
+   v3 /= T{2} / v2; s3 /= T{2} / s2; assert_array(v3, s3);
+
+   v3 += v2 + T{2}; s3 += s2 + T{2}; assert_array(v3, s3);
+   v3 -= v2 + T{2}; s3 -= s2 + T{2}; assert_array(v3, s3);
+   v3 *= v2 + T{2}; s3 *= s2 + T{2}; assert_array(v3, s3);
+   v3 /= v2 + T{2}; s3 /= s2 + T{2}; assert_array(v3, s3);
+
    v3 = v1 + v2; s3 = s1 + s2; assert_array(v3, s3);
    v3 = v1 - v2; s3 = s1 - s2; assert_array(v3, s3);
    v3 = v1 * v2; s3 = s1 * s2; assert_array(v3, s3);
@@ -52,14 +62,20 @@ void assert_floats()
    v3 = T{2} * v2; s3 = T{2} * s2; assert_array(v3, s3);
    v3 = T{2} / v2; s3 = T{2} / s2; assert_array(v3, s3);
 
+   v3 = T{2} + v1 + v2 - T{3}; s3 = T{2} + s1 + s2 - T{3}; assert_array(v3, s3);
+   v3 = T{2} + v1 - v2 - T{3}; s3 = T{2} + s1 - s2 - T{3}; assert_array(v3, s3);
+   v3 = T{2} + v1 * v2 - T{3}; s3 = T{2} + s1 * s2 - T{3}; assert_array(v3, s3);
+   v3 = T{2} + v1 / v2 - T{3}; s3 = T{2} + s1 / s2 - T{3}; assert_array(v3, s3);
+
    v3 = v1.max(); s3 = max(s1); assert_array(v3, s3);
    v3 = v1.min(); s3 = min(s1); assert_array(v3, s3);
 }
 
 int main(int argc, char *argv[])
 {
-   assert_floats<float>();
-   assert_floats<double>();
-   assert_floats<long double>();
+   assert_float_ops<float>();
+   assert_float_ops<double>();
+   assert_float_ops<long double>();
+
    return EXIT_SUCCESS;
 }

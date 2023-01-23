@@ -111,7 +111,7 @@ int main()
    #endif
 
    // 7. StrictVal<T> was designed so that
-   // StrictVal<T> and T can be used interchangably.
+   // StrictVal<T> and T can be used interchangeably.
    // Therefore, algorithms based on iterators are
    // compatible as well(as long as they are of the same type T).
 
