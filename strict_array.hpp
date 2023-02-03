@@ -86,7 +86,7 @@ public:
    [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
-   [[nodiscard]] size_type size() const { return sz; }
+   [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sz > -1); return sz; }
    [[nodiscard]] bool empty() const { ASSERT_STRICT_DEBUG(sz > -1); return sz == 0; }
 
    [[nodiscard]] StrictVal<T>* data() & { return !empty() ? &elem[0] : nullptr; }
