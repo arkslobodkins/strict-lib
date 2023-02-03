@@ -7,7 +7,6 @@
 #else
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <ctime>
 #include <initializer_list>
