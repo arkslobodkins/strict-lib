@@ -96,6 +96,7 @@ public:
    [[nodiscard]] std::vector<const StrictVal<T>*> within_range(StrictVal<T> low, StrictVal<T> high) const;
 
    [[nodiscard]] Array sub_array(size_type first, size_type last);
+   template<RealType U> [[nodiscard]] Array<U> convert() const; // conversion chosen by the user;
 
    void sort_increasing();
    void sort_decreasing();
@@ -414,6 +415,15 @@ Array<T> Array<T>::sub_array(size_type first, size_type last)
    for(size_type i = 0; i < s.size(); ++i)
       s.elem[i] = elem[first+i];
    return s;
+}
+
+template<RealType T> template<RealType U>
+Array<U> Array<T>::convert() const
+{
+   Array<U> A(size());
+   for(size_type i = 0; i < size(); ++i)
+      A[i] = ((*this)[i]).template convert<U>();
+   return A;
 }
 
 template<RealType T>
