@@ -132,7 +132,7 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(StrictVa
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
-template<StandardFloatingType T> [[nodiscard]] inline bool isisfinites(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline bool isfinites(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3);
 
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
@@ -142,7 +142,7 @@ template<QuadType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
-template<QuadType T> [[nodiscard]] inline bool isisfinites(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline bool isfinites(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3);
 
 template<QuadType T> std::ostream & operator<<(std::ostream & os, T val);
@@ -393,29 +393,6 @@ template<RealType T> constexpr inline StrictVal<T> maxs(StrictVal<T> v1, StrictV
 { return v1 > v2 ? v1 : v2; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(T v)
-{ return StrictVal<T>{std::exp(v)}; }
-
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrts(T v)
-{ return StrictVal<T>{std::sqrt(v)}; }
-
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(T v)
-{ return StrictVal<T>{std::sin(v)}; }
-
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(T v)
-{ return StrictVal<T>{std::cos(v)}; }
-
-template<StandardFloatingType T> [[nodiscard]] inline bool isisfinites(T v)
-{
-   // std::isfinite was not giving the correct result when compiled with one of the
-   // oneAPI versions. The problem might be a bug in the standard.
-   #if defined (__INTEL_COMPILER) || defined (__INTEL_LLVM_COMPILER)
-   return finite(v);
-   #else
-   return std::isfinite(v);
-   #endif
-}
-
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v)
 { return StrictVal<T>{std::exp(T{v})}; }
 
