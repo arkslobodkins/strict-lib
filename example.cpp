@@ -122,6 +122,19 @@ int main()
    std::copy(g_raw, g_raw+5, G.begin());
    cout << G << endl;
 
+   Array<int> H = array_random<int>(9, 0, 5);
+   const Array<int> J = array_random<int>(9, 0, 5);
+   H.sl(0, 2) = 2 * H.sl(3, 5) + 10 * H.sl(6, 8);
+   H.sl(0, 2) = 1 + J.sl(6, 8);
+   H.sl(0, 2) = 1 + J.sl(6, 8);
+   H.sl(0, 5) = 1;
+
+   auto exprp = H + 1 + H;
+   cout << exprp << endl;
+
+//   auto sl_expr = H.sl(0, 3) + H.sl(1, 4);
+//   cout << sl_expr + 1;
+
    return EXIT_SUCCESS;
 }
 

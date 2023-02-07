@@ -6,13 +6,13 @@
    #error requires c++20 or higher
 #else
 
-#include "strict_error.hpp"
 #include "strict_concepts.hpp"
+#include "strict_error.hpp"
 
 namespace strict_array {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 class iterator
 {
 public:
@@ -55,20 +55,20 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 [[nodiscard]] inline iterator<ArrayType> operator+(typename iterator<ArrayType>::difference_type incr, const iterator<ArrayType> & it)
 { return it + incr; }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 [[nodiscard]] inline iterator<ArrayType> operator-(typename iterator<ArrayType>::difference_type incr, const iterator<ArrayType> & it)
 { return it + incr; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType>::iterator() : A_ptr{nullptr}, pos{0}
 {}
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType>::iterator(ArrayType & A, size_type pos) :
    A_ptr{&A},
    pos{pos}
@@ -76,21 +76,21 @@ inline iterator<ArrayType>::iterator(ArrayType & A, size_type pos) :
    ASSERT_STRICT_DEBUG(pos > -1 && pos <= (*A_ptr).size());
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType> & iterator<ArrayType>::operator++()
 {
    ++pos;
    return *this;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType> & iterator<ArrayType>::operator--()
 {
    --pos;
    return *this;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType> iterator<ArrayType>::operator++(int)
 {
    auto old = *this;
@@ -98,7 +98,7 @@ inline iterator<ArrayType> iterator<ArrayType>::operator++(int)
    return old;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType> iterator<ArrayType>::operator--(int)
 {
    auto old = *this;
@@ -106,21 +106,21 @@ inline iterator<ArrayType> iterator<ArrayType>::operator--(int)
    return old;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType> & iterator<ArrayType>::operator+=(difference_type incr)
 {
    pos += incr;
    return *this;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType> & iterator<ArrayType>::operator-=(difference_type incr)
 {
    pos -= incr;
    return *this;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType> iterator<ArrayType>::operator+(difference_type incr) const
 {
    auto new_it = *this;
@@ -128,7 +128,7 @@ inline iterator<ArrayType> iterator<ArrayType>::operator+(difference_type incr) 
    return new_it;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline iterator<ArrayType> iterator<ArrayType>::operator-(difference_type incr) const
 {
    auto new_it = *this;
@@ -136,14 +136,14 @@ inline iterator<ArrayType> iterator<ArrayType>::operator-(difference_type incr) 
    return new_it;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline auto iterator<ArrayType>::operator-(const iterator & it) const -> difference_type
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos - it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline auto iterator<ArrayType>::operator[](difference_type n) const -> reference
 {
    #ifdef STRICT_DEBUG_ON
@@ -152,7 +152,7 @@ inline auto iterator<ArrayType>::operator[](difference_type n) const -> referenc
    return (*A_ptr)[pos + n];
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline auto iterator<ArrayType>::operator*() const -> reference
 {
    #ifdef STRICT_DEBUG_ON
@@ -161,48 +161,48 @@ inline auto iterator<ArrayType>::operator*() const -> reference
    return (*A_ptr)[pos];
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 [[nodiscard]] inline auto iterator<ArrayType>::operator->() const -> pointer
 {
    return &((*A_ptr)[pos]);
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool iterator<ArrayType>::operator==(const iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos == it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool iterator<ArrayType>::operator!=(const iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos != it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool iterator<ArrayType>::operator<(const iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos < it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool iterator<ArrayType>::operator<=(const iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos <= it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool iterator<ArrayType>::operator>(const iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos > it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool iterator<ArrayType>::operator>=(const iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
@@ -210,7 +210,7 @@ inline bool iterator<ArrayType>::operator>=(const iterator<ArrayType> & it) cons
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 class const_iterator
 {
 public:
@@ -252,20 +252,20 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 [[nodiscard]] inline const_iterator<ArrayType> operator+(typename const_iterator<ArrayType>::difference_type incr, const const_iterator<ArrayType> & it)
 { return it + incr; }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 [[nodiscard]] inline const_iterator<ArrayType> operator-(typename const_iterator<ArrayType>::difference_type incr, const const_iterator<ArrayType> & it)
 { return it + incr; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType>::const_iterator() : A_ptr{nullptr}, pos{0}
 {}
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType>::const_iterator(const ArrayType & A, size_type pos) :
    A_ptr{&A},
    pos{pos}
@@ -273,21 +273,21 @@ inline const_iterator<ArrayType>::const_iterator(const ArrayType & A, size_type 
    ASSERT_STRICT_DEBUG(pos > -1 && pos <= (*A_ptr).size());
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType> & const_iterator<ArrayType>::operator++()
 {
    ++pos;
    return *this;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType> & const_iterator<ArrayType>::operator--()
 {
    --pos;
    return *this;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType> const_iterator<ArrayType>::operator++(int)
 {
    auto old = *this;
@@ -295,7 +295,7 @@ inline const_iterator<ArrayType> const_iterator<ArrayType>::operator++(int)
    return old;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType> const_iterator<ArrayType>::operator--(int)
 {
    auto old = *this;
@@ -303,21 +303,21 @@ inline const_iterator<ArrayType> const_iterator<ArrayType>::operator--(int)
    return old;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType> & const_iterator<ArrayType>::operator+=(difference_type incr)
 {
    pos += incr;
    return *this;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType> & const_iterator<ArrayType>::operator-=(difference_type incr)
 {
    pos -= incr;
    return *this;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType> const_iterator<ArrayType>::operator+(difference_type incr) const
 {
    auto new_it = *this;
@@ -325,7 +325,7 @@ inline const_iterator<ArrayType> const_iterator<ArrayType>::operator+(difference
    return new_it;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline const_iterator<ArrayType> const_iterator<ArrayType>::operator-(difference_type incr) const
 {
    auto new_it = *this;
@@ -333,14 +333,14 @@ inline const_iterator<ArrayType> const_iterator<ArrayType>::operator-(difference
    return new_it;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline auto const_iterator<ArrayType>::operator-(const const_iterator & it) const -> difference_type
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos - it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline decltype(auto) const_iterator<ArrayType>::operator[](difference_type n) const
 {
    #ifdef STRICT_DEBUG_ON
@@ -349,7 +349,7 @@ inline decltype(auto) const_iterator<ArrayType>::operator[](difference_type n) c
    return (*A_ptr)[pos + n];
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline decltype(auto) const_iterator<ArrayType>::operator*() const
 {
    #ifdef STRICT_DEBUG_ON
@@ -358,48 +358,48 @@ inline decltype(auto) const_iterator<ArrayType>::operator*() const
    return (*A_ptr)[pos];
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 [[nodiscard]] inline auto const_iterator<ArrayType>::operator->() const -> pointer
 {
    return &((*A_ptr)[pos]);
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool const_iterator<ArrayType>::operator==(const const_iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos == it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool const_iterator<ArrayType>::operator!=(const const_iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos != it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool const_iterator<ArrayType>::operator<(const const_iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos < it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool const_iterator<ArrayType>::operator<=(const const_iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos <= it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool const_iterator<ArrayType>::operator>(const const_iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos > it.pos;
 }
 
-template<ArrayBaseType ArrayType>
+template<BaseType ArrayType>
 inline bool const_iterator<ArrayType>::operator>=(const const_iterator<ArrayType> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);

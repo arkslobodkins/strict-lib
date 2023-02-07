@@ -55,13 +55,19 @@ template<typename T> concept RealType = FloatingType<T> || IntegerType<T>;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ArrayBase{};
-class ArrayExpr{};
-class UnaryOperation{};
-class BinaryOperation{};
+class Base {};
+class ArrayBase : private Base {};
+class SliceArrayBase : private Base {};
+class ArrayExpr {};
+class SliceArrayExpr {};
+class UnaryOperation {};
+class BinaryOperation {};
 
+template<typename T> concept BaseType = BaseOf<Base, T>;
 template<typename T> concept ArrayBaseType = BaseOf<ArrayBase, T>;
 template<typename T> concept ArrayExprType = BaseOf<ArrayExpr, T>;
+template<typename T> concept SliceArrayBaseType = BaseOf<SliceArrayBase, T>;
+template<typename T> concept SliceArrayExprType = BaseOf<SliceArrayExpr, T>;
 template<typename T> concept UnaryOperationType = BaseOf<UnaryOperation, T>;
 template<typename T> concept BinaryOperationType = BaseOf<BinaryOperation, T>;
 
