@@ -131,15 +131,15 @@ int main()
    H.sl(0, 2) = 2 * H.sl(3, 5) + 10 * H.sl(6, 8);
    H.sl(0, 2) = 1 + J.sl(6, 8);
 
-   H.sl(0, 4) = 1;                       // set first five entries to 1
    auto first_five = H.sl(0 , 4);        // first_five refers to the first 5 entries of H
+   first_five = 1;                       // set first five entries to 1
    first_five = {1, 2, 3, 4, 5};         // set them to 1, 2, 3, 4, 5
    for(auto & x : first_five) x = x*x*x; // raise them to the power 3
 
-   cout << 100*H.sl(0, 2) << endl;           // multiply SliceArray by 100
-   cout << (100*H).sl(0, 2) << endl;         // slice the Array expression template produced by 100*H
-   cout << 100*H.sl(0, 4).sl(0, 2) << endl;  // slice the slice and multiply by 100
-   cout << 100*H.sl(0, 4).sl(0, 2) << endl;  // slice the SliceArray expression template produced by 100*H.sl(0, 4)
+   cout << 100 * H.sl(0, 2) << endl;           // multiply SliceArray by 100
+   cout << (100 * H).sl(0, 2) << endl;         // slice the Array expression template produced by 100*H
+   cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the slice and multiply by 100
+   cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the SliceArray expression template produced by 100*H.sl(0, 4)
 
    return EXIT_SUCCESS;
 }
