@@ -71,12 +71,6 @@ template<typename T> concept SliceArrayExprType = BaseOf<SliceArrayExpr, T>;
 template<typename T> concept UnaryOperationType = BaseOf<UnaryOperation, T>;
 template<typename T> concept BinaryOperationType = BaseOf<BinaryOperation, T>;
 
-// Forward declarations(expression templates)
-template<ArrayBaseType T1, UnaryOperationType Op> class UnaryExpr;
-template<ArrayBaseType T1, ArrayBaseType T2, BinaryOperationType Op> class BinExpr;
-template<ArrayBaseType T1, RealType T2, BinaryOperationType Op> class BinExprValLeft;
-template<ArrayBaseType T1, RealType T2, BinaryOperationType Op> class BinExprValRight;
-
 template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::real_type>;
 template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatingType<typename T::real_type>;
 template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && FloatingType<typename T::real_type>;

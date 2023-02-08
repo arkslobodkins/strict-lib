@@ -40,6 +40,8 @@ private:
    size_type m_stride;
 };
 
+template<BaseType BType> class ConstSliceArray; // forward-declare
+
 template<BaseType BType>
 class SliceArray : private SliceArrayBase
 {
@@ -47,22 +49,25 @@ public:
    using size_type = BType::size_type;
    using value_type = BType::value_type;
    using real_type = BType::real_type;
-   using expr_type = const SliceArray<BType> &;
+   using expr_type = const SliceArray<BType>;
 
 private:
    BType* const A;
-   Slice<size_type> sl;
+   Slice<size_type> slice;
 
 public:
-   SliceArray(BType & A, Slice<size_type> sl) : A{&A}, sl{sl} {}
-   SliceArray(const SliceArray &) = delete;
+   SliceArray(BType & A, Slice<size_type> slice);
+   SliceArray(const SliceArray & s);
    SliceArray & operator=(const SliceArray & s);
    template<SliceArrayBaseType SType> SliceArray & operator=(const SType & s); // SType is either SliceArray or expression template of SliceArray.
    SliceArray & operator=(StrictVal<real_type> s);
+   SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
 
-   [[nodiscard]] auto operator[](size_type i) const { return (*A)[sl.start()+i*sl.stride()]; }
-   [[nodiscard]] auto operator[](size_type i) ->decltype((*A)[i]) { return (*A)[sl.start()+i*sl.stride()]; }
-   [[nodiscard]] size_type size() const { return sl.size(); }
+   [[nodiscard]] auto operator[](size_type i) -> decltype((*A)[i]) { return (*A)[slice.start()+i*slice.stride()]; }
+   [[nodiscard]] auto operator[](size_type i) const { return (*A)[slice.start()+i*slice.stride()]; }
+   [[nodiscard]] auto sl(size_type first, size_type last);
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
+   [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] bool empty() const { return A->empty(); }
 
    [[nodiscard]] auto begin() { return iterator{*this, 0}; }
@@ -79,6 +84,14 @@ public:
    [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 };
+
+template<BaseType BType>
+SliceArray<BType>::SliceArray(BType & A, Slice<size_type> slice) : A{&A}, slice{slice}
+{}
+
+template<BaseType BType>
+SliceArray<BType>::SliceArray(const SliceArray<BType> & s) : A{s.A}, slice{s.slice}
+{}
 
 template<BaseType BType>
 SliceArray<BType> & SliceArray<BType>::operator=(const SliceArray<BType> & s)
@@ -105,20 +118,41 @@ SliceArray<BType> & SliceArray<BType>::operator=(StrictVal<real_type> val)
 }
 
 template<BaseType BType>
+SliceArray<BType> & SliceArray<BType>::operator=(std::initializer_list<StrictVal<real_type>> list)
+{
+   assert(size() == static_cast<size_type>(list.size()));
+   std::copy(list.begin(), list.end(), begin());
+   return *this;
+}
+
+template<BaseType BType>
+auto SliceArray<BType>::sl(size_type first, size_type last)
+{
+   return SliceArray<SliceArray<BType>>(*this, Slice(first, last-first+1, size_type{1}));
+}
+
+template<BaseType BType>
+auto SliceArray<BType>::sl(size_type first, size_type last) const
+{
+   return ConstSliceArray<SliceArray<BType>>(*this, Slice(first, last-first+1, size_type{1}));
+}
+
+template<BaseType BType>
 class ConstSliceArray : private SliceArrayBase
 {
 public:
    using size_type = BType::size_type;
    using value_type = BType::value_type;
    using real_type = BType::real_type;
-   using expr_type = const ConstSliceArray<BType> &;
+   using expr_type = const ConstSliceArray<BType>;
 
-   ConstSliceArray(const BType & A, Slice<size_type> sl) : A{&A}, sl{sl} {}
-   ConstSliceArray(const ConstSliceArray &) = delete;
+   ConstSliceArray(const BType & A, Slice<size_type> slice) : A{&A}, slice{slice} {}
+   ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
-   [[nodiscard]] auto operator[](size_type i) const { return (*A)[sl.start()+i*sl.stride()]; }
-   [[nodiscard]] size_type size() const { return sl.size(); }
+   [[nodiscard]] auto operator[](size_type i) const { return (*A)[slice.start()+i*slice.stride()]; }
+   [[nodiscard]] size_type size() const { return slice.size(); }
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] bool empty() const { return A->empty(); }
 
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
@@ -133,8 +167,18 @@ public:
 
 private:
    const BType* const A;
-   Slice<size_type> sl;
+   Slice<size_type> slice;
 };
+
+template<BaseType BType>
+ConstSliceArray<BType>::ConstSliceArray(const ConstSliceArray<BType> & cs) : A{cs.A}, slice{cs.slice}
+{}
+
+template<BaseType BType>
+auto ConstSliceArray<BType>::sl(size_type first, size_type last) const
+{
+   return ConstSliceArray<SliceArray<BType>>(*this, Slice(first, last-first+1, size_type{1}));
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T1, SliceArrayBaseType T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
@@ -205,8 +249,8 @@ public:
    [[nodiscard]] inline StrictVal<T> & operator[](size_type i);
    [[nodiscard]] inline const StrictVal<T> & operator[](size_type i) const;
 
-   auto sl(size_type first, size_type last);
-   auto sl(size_type first, size_type last) const;
+   [[nodiscard]] auto sl(size_type first, size_type last);
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
 
    [[nodiscard]] StrictVal<T> & front() { return elem[0]; }
    [[nodiscard]] StrictVal<T> & back() { return elem[sz-1]; }
@@ -687,6 +731,7 @@ public:
    SliceUnaryExpr & operator=(const SliceUnaryExpr &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i]); }
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -704,6 +749,10 @@ private:
    typename T::expr_type A;
    Op op;
 };
+
+template<SliceArrayBaseType T, UnaryOperationType Op>
+auto SliceUnaryExpr<T, Op>::sl(size_type first, size_type last) const
+{ return ConstSliceArray<SliceUnaryExpr<T, Op>>(*this, Slice(first, last-first+1, size_type{1})); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T1, SliceArrayBaseType T2, BinaryOperationType Op>
@@ -726,6 +775,7 @@ public:
    SliceBinExpr & operator=(const SliceBinExpr &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], B[i]); }
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -745,6 +795,10 @@ private:
    Op op;
 };
 
+template<SliceArrayBaseType T1, SliceArrayBaseType T2, BinaryOperationType Op>
+auto SliceBinExpr<T1, T2, Op>::sl(size_type first, size_type last) const
+{ return ConstSliceArray<SliceBinExpr<T1, T2, Op>>(*this, Slice(first, last-first+1, size_type{1})); }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T1, RealType T2, BinaryOperationType Op>
 class SliceBinExprValLeft : private SliceArrayBase, private SliceArrayExpr
@@ -763,6 +817,7 @@ public:
    SliceBinExprValLeft & operator=(const SliceBinExprValLeft &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(val, B[i]); }
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return B.size(); }
    [[nodiscard]] bool empty() const { return B.empty(); }
 
@@ -782,6 +837,10 @@ private:
    Op op;
 };
 
+template<SliceArrayBaseType T1, RealType T2, BinaryOperationType Op>
+auto SliceBinExprValLeft<T1, T2, Op>::sl(size_type first, size_type last) const
+{ return ConstSliceArray<SliceBinExprValLeft<T1, T2, Op>>(*this, Slice(first, last-first+1, size_type{1})); }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T1, RealType T2, BinaryOperationType Op>
 class SliceBinExprValRight : private SliceArrayBase, private SliceArrayExpr
@@ -799,6 +858,7 @@ class SliceBinExprValRight : private SliceArrayBase, private SliceArrayExpr
    SliceBinExprValRight & operator=(const SliceBinExprValRight &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], val); }
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -817,6 +877,10 @@ private:
    StrictVal<T2> val;
    Op op;
 };
+
+template<SliceArrayBaseType T1, RealType T2, BinaryOperationType Op>
+auto SliceBinExprValRight<T1, T2, Op>::sl(size_type first, size_type last) const
+{ return ConstSliceArray<SliceBinExprValRight<T1, T2, Op>>(*this, Slice(first, last-first+1, size_type{1})); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T1, SliceArrayBaseType T2>
@@ -928,6 +992,7 @@ public:
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i]); }
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -945,6 +1010,10 @@ private:
    typename T::expr_type A;
    Op op;
 };
+
+template<ArrayBaseType T, UnaryOperationType Op>
+auto UnaryExpr<T, Op>::sl(size_type first, size_type last) const
+{ return ConstSliceArray<UnaryExpr<T, Op>>(*this, Slice(first, last-first+1, size_type{1})); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T1, ArrayBaseType T2, BinaryOperationType Op>
@@ -967,6 +1036,7 @@ public:
    BinExpr & operator=(const BinExpr &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], B[i]); }
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -986,6 +1056,10 @@ private:
    Op op;
 };
 
+template<ArrayBaseType T1, ArrayBaseType T2, BinaryOperationType Op>
+auto BinExpr<T1, T2, Op>::sl(size_type first, size_type last) const
+{ return ConstSliceArray<BinExpr<T1, T2, Op>>(*this, Slice(first, last-first+1, size_type{1})); }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T1, RealType T2, BinaryOperationType Op>
 class BinExprValLeft : private ArrayBase, private ArrayExpr
@@ -1004,6 +1078,7 @@ public:
    BinExprValLeft & operator=(const BinExprValLeft &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(val, B[i]); }
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return B.size(); }
    [[nodiscard]] bool empty() const { return B.empty(); }
 
@@ -1023,6 +1098,10 @@ private:
    Op op;
 };
 
+template<ArrayBaseType T1, RealType T2, BinaryOperationType Op>
+auto BinExprValLeft<T1, T2, Op>::sl(size_type first, size_type last) const
+{ return ConstSliceArray<BinExprValLeft<T1, T2, Op>>(*this, Slice(first, last-first+1, size_type{1})); }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T1, RealType T2, BinaryOperationType Op>
 class BinExprValRight : private ArrayBase, private ArrayExpr
@@ -1041,6 +1120,7 @@ public:
    BinExprValRight & operator=(const BinExprValRight &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], val); }
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -1059,6 +1139,10 @@ private:
    StrictVal<T2> val;
    Op op;
 };
+
+template<ArrayBaseType T1, RealType T2, BinaryOperationType Op>
+auto BinExprValRight<T1, T2, Op>::sl(size_type first, size_type last) const
+{ return ConstSliceArray<BinExprValRight<T1, T2, Op>>(*this, Slice(first, last-first+1, size_type{1})); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T1, ArrayBaseType T2>

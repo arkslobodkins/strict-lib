@@ -122,18 +122,24 @@ int main()
    std::copy(g_raw, g_raw+5, G.begin());
    cout << G << endl;
 
+   // 8. SliceArray class provides slicing for Array,
+   // expression templates of Array, SliceArray itself,
+   // and expression templates of SliceArray.
+
    Array<int> H = array_random<int>(9, 0, 5);
    const Array<int> J = array_random<int>(9, 0, 5);
    H.sl(0, 2) = 2 * H.sl(3, 5) + 10 * H.sl(6, 8);
    H.sl(0, 2) = 1 + J.sl(6, 8);
-   H.sl(0, 2) = 1 + J.sl(6, 8);
-   H.sl(0, 5) = 1;
 
-   auto exprp = H + 1 + H;
-   cout << exprp << endl;
+   H.sl(0, 4) = 1;                       // set first five entries to 1
+   auto first_five = H.sl(0 , 4);        // first_five refers to the first 5 entries of H
+   first_five = {1, 2, 3, 4, 5};         // set them to 1, 2, 3, 4, 5
+   for(auto & x : first_five) x = x*x*x; // raise them to the power 3
 
-//   auto sl_expr = H.sl(0, 3) + H.sl(1, 4);
-//   cout << sl_expr + 1;
+   cout << 100*H.sl(0, 2) << endl;           // multiply SliceArray by 100
+   cout << (100*H).sl(0, 2) << endl;         // slice the Array expression template produced by 100*H
+   cout << 100*H.sl(0, 4).sl(0, 2) << endl;  // slice the slice and multiply by 100
+   cout << 100*H.sl(0, 4).sl(0, 2) << endl;  // slice the SliceArray expression template produced by 100*H.sl(0, 4)
 
    return EXIT_SUCCESS;
 }
