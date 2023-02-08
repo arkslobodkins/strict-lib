@@ -28,11 +28,13 @@ template<IntegerType size_type>
 class Slice
 {
 public:
-   Slice(size_type start, size_type size, size_type stride) : m_start{start}, m_size{size}, m_stride{stride}
+   explicit Slice(size_type start, size_type size, size_type stride)
+      : m_start{start}, m_size{size}, m_stride{stride}
    { ASSERT_STRICT_DEBUG(size > 0); }
-   size_type start() const { return m_start; }
-   size_type size() const { return m_size; }
-   size_type stride() const { return m_stride; }
+
+   [[nodiscard]] size_type start() const { return m_start; }
+   [[nodiscard]] size_type size() const { return m_size; }
+   [[nodiscard]] size_type stride() const { return m_stride; }
 
 private:
    size_type m_start;
@@ -56,11 +58,12 @@ private:
    Slice<size_type> slice;
 
 public:
-   SliceArray(BType & A, Slice<size_type> slice);
+   explicit SliceArray(BType & A, Slice<size_type> slice);
    SliceArray(const SliceArray & s);
 
    SliceArray & operator=(const SliceArray & s);
-   template<SliceArrayBaseType SType> SliceArray & operator=(const SType & s); // SType is either SliceArray or expression template of SliceArray.
+   template<SliceArrayBaseType SType> SliceArray & operator=(const SType & s); // SType is either SliceArray or
+                                                                               // expression template of SliceArray.
    SliceArray & operator=(StrictVal<real_type> s);
    SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
 
@@ -235,7 +238,7 @@ public:
    using real_type = BType::real_type;
    using expr_type = const ConstSliceArray<BType>;
 
-   ConstSliceArray(const BType & A, Slice<size_type> slice) : A{&A}, slice{slice} {}
+   explicit ConstSliceArray(const BType & A, Slice<size_type> slice) : A{&A}, slice{slice} {}
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
@@ -416,14 +419,14 @@ template<ArrayBaseType T> [[nodiscard]] auto abs(const T & A);
 template<ArrayBaseType T> [[nodiscard]] auto unique_blas_array(const T & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType ArrayType>
-std::ostream & operator<<(std::ostream & os, const ArrayType & A);
-
 template<IntegerType T>
 [[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
 
 template<FloatingType T>
 [[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
+
+template<BaseType BType>
+std::ostream & operator<<(std::ostream & os, const BType & A);
 
 template<IntegerArrayBaseType ArrayType>
 [[nodiscard]] auto sum(const ArrayType & A);
@@ -1362,15 +1365,6 @@ namespace internal {
    }
 }
 
-template<BaseType ArrayType> std::ostream & operator<<(std::ostream & os, const ArrayType & A)
-{
-   using T = typename ArrayType::real_type;
-   for(decltype(A.size()) i = 0; i < A.size(); ++i) {
-      os << "[" << i << "] =" << internal::smart_spaces<T>(A.size(), i) << A[i] << std::endl;
-   }
-   return os;
-}
-
 template<IntegerType T>
 Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
@@ -1394,6 +1388,15 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
    for(auto & x : A)
       x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
    return A;
+}
+
+template<BaseType BType> std::ostream & operator<<(std::ostream & os, const BType & A)
+{
+   using T = typename BType::real_type;
+   for(decltype(A.size()) i = 0; i < A.size(); ++i) {
+      os << "[" << i << "] =" << internal::smart_spaces<T>(A.size(), i) << A[i] << std::endl;
+   }
+   return os;
 }
 
 template<FloatingArrayBaseType ArrayType>
