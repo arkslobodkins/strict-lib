@@ -141,6 +141,9 @@ int main()
    cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the slice and multiply by 100
    cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the SliceArray expression template produced by 100*H.sl(0, 4)
 
+   const auto ss = H;
+   cout << ss.sl(0, 1) << endl;
+
    return EXIT_SUCCESS;
 }
 

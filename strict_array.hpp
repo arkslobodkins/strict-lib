@@ -24,6 +24,133 @@
 
 namespace strict_array {
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<RealType T>
+class Array : private ArrayBase
+{
+public:
+   using size_type = long long int;
+   using value_type = StrictVal<T>;
+   using real_type = T;
+   using expr_type = const Array<T> &;
+
+   explicit Array();
+   explicit Array(size_type size);
+   explicit Array(size_type size, StrictVal<T> val);
+   Array(std::initializer_list<StrictVal<T>> list);
+   Array(const Array & A);
+   Array(Array && a) noexcept;
+
+   Array & operator=(StrictVal<T> val) &;
+   Array & operator=(std::initializer_list<StrictVal<T>> list) &;
+   Array & operator=(const Array & A) &;
+   Array & operator=(Array && A) & noexcept;
+
+   template<ArrayExprType ArrExpr> Array(const ArrExpr & expr);
+   template<ArrayExprType ArrExpr> const Array & operator=(const ArrExpr & expr) &;
+
+   ~Array();
+
+   Array & operator+=(StrictVal<T> val);
+   Array & operator-=(StrictVal<T> val);
+   Array & operator*=(StrictVal<T> val);
+   Array & operator/=(StrictVal<T> val);
+
+   template<ArrayBaseType ArrayType> Array & operator+=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> Array & operator-=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> Array & operator*=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> Array & operator/=(const ArrayType & A);
+
+   void swap(Array & A) noexcept;
+   void resize(size_type size);
+   void resize_and_assign(const Array & A);
+
+   [[nodiscard]] inline StrictVal<T> & operator[](size_type i);
+   [[nodiscard]] inline const StrictVal<T> & operator[](size_type i) const;
+
+   [[nodiscard]] auto sl(size_type first, size_type last);
+   [[nodiscard]] auto sl(size_type first, size_type last) const;
+
+   [[nodiscard]] StrictVal<T> & front() { return elem[0]; }
+   [[nodiscard]] StrictVal<T> & back() { return elem[sz-1]; }
+   [[nodiscard]] const StrictVal<T> & front() const { return elem[0]; }
+   [[nodiscard]] const StrictVal<T> & back() const { return elem[sz-1]; }
+
+   [[nodiscard]] auto begin() { return iterator{*this, 0}; }
+   [[nodiscard]] auto end() { return iterator{*this, size()}; }
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() { return std::reverse_iterator{end()}; }
+   [[nodiscard]] auto rend() { return std::reverse_iterator{begin()}; }
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
+   [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sz > -1); return sz; }
+   [[nodiscard]] bool empty() const { ASSERT_STRICT_DEBUG(sz > -1); return sz == 0; }
+
+   [[nodiscard]] StrictVal<T>* data() & { return !empty() ? &elem[0] : nullptr; }
+   [[nodiscard]] const StrictVal<T>* data() const & { return !empty() ? &elem[0] : nullptr; }
+
+   [[nodiscard]] std::vector<StrictVal<T>*> within_range(StrictVal<T> low, StrictVal<T> high);
+   [[nodiscard]] std::vector<const StrictVal<T>*> within_range(StrictVal<T> low, StrictVal<T> high) const;
+
+   [[nodiscard]] Array sub_array(size_type first, size_type last);
+   template<RealType U> [[nodiscard]] Array<U> convert() const; // conversion chosen by the user;
+
+   void sort_increasing();
+   void sort_decreasing();
+
+   template<typename F> void apply(F f);
+
+private:
+   StrictVal<T>* elem;
+   size_type sz;
+
+   bool valid_index(size_type index) const;
+   template<typename F> void apply0(F f);
+   template<ArrayBaseType ArrayType, typename F> void apply1(const ArrayType & A, F f);
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
+template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator-(const T1 & A, const T2 & B);
+template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator*(const T1 & A, const T2 & B);
+template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator/(const T1 & A, const T2 & B);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator+(StrictVal<U> val, const T & B);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator-(StrictVal<U> val, const T & B);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator*(StrictVal<U> val, const T & B);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(StrictVal<U> val, const T & B);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator+(const T & A, StrictVal<U> val);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A, StrictVal<U> val);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, StrictVal<U> val);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, StrictVal<U> val);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator+(U val, const T & B);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator-(U val, const T & B);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator*(U val, const T & B);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(U val, const T & B);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator+(const T & A, U val);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A, U val);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
+template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
+
+template<ArrayBaseType T> [[nodiscard]] const auto & operator+(const T & A);
+template<ArrayBaseType T> [[nodiscard]] auto operator-(const T & A);
+template<ArrayBaseType T> [[nodiscard]] auto abs(const T & A);
+template<ArrayBaseType T> [[nodiscard]] auto unique_blas_array(const T & A);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<IntegerType T>
+[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
+
+template<FloatingType T>
+[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<IntegerType size_type>
 class Slice
 {
@@ -42,8 +169,7 @@ private:
    size_type m_stride;
 };
 
-template<BaseType BType> class ConstSliceArray; // forward-declare
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BType>
 class SliceArray : private SliceArrayBase
 {
@@ -297,133 +423,6 @@ template<SliceArrayBaseType T, RealType U> [[nodiscard]] auto operator/(const T 
 template<SliceArrayBaseType T> [[nodiscard]] const auto & operator+(const T & A);
 template<SliceArrayBaseType T> [[nodiscard]] auto operator-(const T & A);
 template<SliceArrayBaseType T> [[nodiscard]] auto abs(const T & A);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-class Array : private ArrayBase
-{
-public:
-   using size_type = long long int;
-   using value_type = StrictVal<T>;
-   using real_type = T;
-   using expr_type = const Array<T> &;
-
-   explicit Array();
-   explicit Array(size_type size);
-   explicit Array(size_type size, StrictVal<T> val);
-   Array(std::initializer_list<StrictVal<T>> list);
-   Array(const Array & A);
-   Array(Array && a) noexcept;
-
-   Array & operator=(StrictVal<T> val) &;
-   Array & operator=(std::initializer_list<StrictVal<T>> list) &;
-   Array & operator=(const Array & A) &;
-   Array & operator=(Array && A) & noexcept;
-
-   template<ArrayExprType ArrExpr> Array(const ArrExpr & expr);
-   template<ArrayExprType ArrExpr> const Array & operator=(const ArrExpr & expr) &;
-
-   ~Array();
-
-   Array & operator+=(StrictVal<T> val);
-   Array & operator-=(StrictVal<T> val);
-   Array & operator*=(StrictVal<T> val);
-   Array & operator/=(StrictVal<T> val);
-
-   template<ArrayBaseType ArrayType> Array & operator+=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> Array & operator-=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> Array & operator*=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> Array & operator/=(const ArrayType & A);
-
-   void swap(Array & A) noexcept;
-   void resize(size_type size);
-   void resize_and_assign(const Array & A);
-
-   [[nodiscard]] inline StrictVal<T> & operator[](size_type i);
-   [[nodiscard]] inline const StrictVal<T> & operator[](size_type i) const;
-
-   [[nodiscard]] auto sl(size_type first, size_type last);
-   [[nodiscard]] auto sl(size_type first, size_type last) const;
-
-   [[nodiscard]] StrictVal<T> & front() { return elem[0]; }
-   [[nodiscard]] StrictVal<T> & back() { return elem[sz-1]; }
-   [[nodiscard]] const StrictVal<T> & front() const { return elem[0]; }
-   [[nodiscard]] const StrictVal<T> & back() const { return elem[sz-1]; }
-
-   [[nodiscard]] auto begin() { return iterator{*this, 0}; }
-   [[nodiscard]] auto end() { return iterator{*this, size()}; }
-   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
-   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
-
-   [[nodiscard]] auto rbegin() { return std::reverse_iterator{end()}; }
-   [[nodiscard]] auto rend() { return std::reverse_iterator{begin()}; }
-   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
-   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
-
-   [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sz > -1); return sz; }
-   [[nodiscard]] bool empty() const { ASSERT_STRICT_DEBUG(sz > -1); return sz == 0; }
-
-   [[nodiscard]] StrictVal<T>* data() & { return !empty() ? &elem[0] : nullptr; }
-   [[nodiscard]] const StrictVal<T>* data() const & { return !empty() ? &elem[0] : nullptr; }
-
-   [[nodiscard]] std::vector<StrictVal<T>*> within_range(StrictVal<T> low, StrictVal<T> high);
-   [[nodiscard]] std::vector<const StrictVal<T>*> within_range(StrictVal<T> low, StrictVal<T> high) const;
-
-   [[nodiscard]] Array sub_array(size_type first, size_type last);
-   template<RealType U> [[nodiscard]] Array<U> convert() const; // conversion chosen by the user;
-
-   void sort_increasing();
-   void sort_decreasing();
-
-   template<typename F> void apply(F f);
-
-private:
-   StrictVal<T>* elem;
-   size_type sz;
-
-   bool valid_index(size_type index) const;
-   template<typename F> void apply0(F f);
-   template<ArrayBaseType ArrayType, typename F> void apply1(const ArrayType & A, F f);
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
-template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator-(const T1 & A, const T2 & B);
-template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator*(const T1 & A, const T2 & B);
-template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator/(const T1 & A, const T2 & B);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator+(StrictVal<U> val, const T & B);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator-(StrictVal<U> val, const T & B);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator*(StrictVal<U> val, const T & B);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(StrictVal<U> val, const T & B);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator+(const T & A, StrictVal<U> val);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A, StrictVal<U> val);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, StrictVal<U> val);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, StrictVal<U> val);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator+(U val, const T & B);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator-(U val, const T & B);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator*(U val, const T & B);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(U val, const T & B);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator+(const T & A, U val);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A, U val);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
-template<ArrayBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
-
-template<ArrayBaseType T> [[nodiscard]] const auto & operator+(const T & A);
-template<ArrayBaseType T> [[nodiscard]] auto operator-(const T & A);
-template<ArrayBaseType T> [[nodiscard]] auto abs(const T & A);
-
-template<ArrayBaseType T> [[nodiscard]] auto unique_blas_array(const T & A);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<IntegerType T>
-[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
-
-template<FloatingType T>
-[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
 
 template<BaseType BType>
 std::ostream & operator<<(std::ostream & os, const BType & A);
