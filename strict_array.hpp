@@ -58,6 +58,7 @@ private:
 public:
    SliceArray(BType & A, Slice<size_type> slice);
    SliceArray(const SliceArray & s);
+
    SliceArray & operator=(const SliceArray & s);
    template<SliceArrayBaseType SType> SliceArray & operator=(const SType & s); // SType is either SliceArray or expression template of SliceArray.
    SliceArray & operator=(StrictVal<real_type> s);
@@ -69,6 +70,16 @@ public:
    [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] bool empty() const { return A->empty(); }
+
+   SliceArray & operator+=(StrictVal<real_type> val);
+   SliceArray & operator-=(StrictVal<real_type> val);
+   SliceArray & operator*=(StrictVal<real_type> val);
+   SliceArray & operator/=(StrictVal<real_type> val);
+
+   template<SliceArrayBaseType SliceArrayType> SliceArray & operator+=(const SliceArrayType & A);
+   template<SliceArrayBaseType SliceArrayType> SliceArray & operator-=(const SliceArrayType & A);
+   template<SliceArrayBaseType SliceArrayType> SliceArray & operator*=(const SliceArrayType & A);
+   template<SliceArrayBaseType SliceArrayType> SliceArray & operator/=(const SliceArrayType & A);
 
    [[nodiscard]] auto begin() { return iterator{*this, 0}; }
    [[nodiscard]] auto end() { return iterator{*this, size()}; }
@@ -83,6 +94,10 @@ public:
    [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
    [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
+private:
+   template<typename F> void apply0(F f);
+   template<SliceArrayBaseType SliceArrayType, typename F> void apply1(const SliceArrayType & A, F f);
 };
 
 template<BaseType BType>
@@ -135,6 +150,80 @@ template<BaseType BType>
 auto SliceArray<BType>::sl(size_type first, size_type last) const
 {
    return ConstSliceArray<SliceArray<BType>>(*this, Slice(first, last-first+1, size_type{1}));
+}
+
+template<BaseType BType>
+SliceArray<BType> & SliceArray<BType>::operator+=(StrictVal<real_type> val)
+{
+   apply0([&](size_type i) { (*this)[i] += val; } );
+   return *this;
+}
+
+template<BaseType BType>
+SliceArray<BType> & SliceArray<BType>::operator-=(StrictVal<real_type> val)
+{
+   apply0([&](size_type i) { (*this)[i] -= val; } );
+   return *this;
+}
+
+template<BaseType BType>
+SliceArray<BType> & SliceArray<BType>::operator*=(StrictVal<real_type> val)
+{
+   apply0([&](size_type i) { (*this)[i] *= val; } );
+   return *this;
+}
+
+template<BaseType BType>
+SliceArray<BType> & SliceArray<BType>::operator/=(StrictVal<real_type> val)
+{
+   apply0([&](size_type i) { (*this)[i] /= val; } );
+   return *this;
+}
+
+template<BaseType BType> template<SliceArrayBaseType SliceArrayType>
+SliceArray<BType> & SliceArray<BType>::operator+=(const SliceArrayType & A)
+{
+   apply1(A, [&](size_type i) { (*this)[i] += A[i]; });
+   return *this;
+}
+
+template<BaseType BType> template<SliceArrayBaseType SliceArrayType>
+SliceArray<BType> & SliceArray<BType>::operator-=(const SliceArrayType & A)
+{
+   apply1(A, [&](size_type i) { (*this)[i] -= A[i]; });
+   return *this;
+}
+
+template<BaseType BType> template<SliceArrayBaseType SliceArrayType>
+SliceArray<BType> & SliceArray<BType>::operator*=(const SliceArrayType & A)
+{
+   apply1(A, [&](size_type i) { (*this)[i] *= A[i]; });
+   return *this;
+}
+
+template<BaseType BType> template<SliceArrayBaseType SliceArrayType>
+SliceArray<BType> & SliceArray<BType>::operator/=(const SliceArrayType & A)
+{
+   apply1(A, [&](size_type i) { (*this)[i] /= A[i]; });
+   return *this;
+}
+
+template<BaseType BType> template<typename F>
+void SliceArray<BType>::apply0(F f)
+{
+   ASSERT_STRICT_DEBUG(!empty());
+   for(size_type i = 0; i < size(); ++i)
+      f(i);
+}
+
+template<BaseType BType> template<SliceArrayBaseType SliceArrayType, typename F>
+void SliceArray<BType>::apply1(const SliceArrayType & A, F f)
+{
+   (void)A;
+   ASSERT_STRICT_DEBUG(size() == A.size());
+   ASSERT_STRICT_DEBUG(!empty());
+   for(size_type i = 0; i < size(); ++i)
+      f(i);
 }
 
 template<BaseType BType>
@@ -224,6 +313,7 @@ public:
    Array(Array && a) noexcept;
 
    Array & operator=(StrictVal<T> val) &;
+   Array & operator=(std::initializer_list<StrictVal<T>> list) &;
    Array & operator=(const Array & A) &;
    Array & operator=(Array && A) & noexcept;
 
@@ -416,6 +506,14 @@ template<RealType T> Array<T> & Array<T>::operator=(StrictVal<T> val) &
 {
    ASSERT_STRICT_DEBUG(!empty());
    std::fill(begin(), end(), val);
+   return *this;
+}
+
+template<RealType T>
+Array<T> & Array<T>::operator=(std::initializer_list<StrictVal<T>> list) &
+{
+   assert(size() == static_cast<size_type>(list.size()));
+   std::copy(list.begin(), list.end(), begin());
    return *this;
 }
 
