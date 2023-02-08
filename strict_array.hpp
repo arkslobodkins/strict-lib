@@ -68,7 +68,7 @@ public:
    SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
 
    [[nodiscard]] auto operator[](size_type i) -> decltype((*A)[i]) { return (*A)[slice.start()+i*slice.stride()]; }
-   [[nodiscard]] auto operator[](size_type i) const { return (*A)[slice.start()+i*slice.stride()]; }
+   [[nodiscard]] const auto operator[](size_type i) const { return (*A)[slice.start()+i*slice.stride()]; }
    [[nodiscard]] auto sl(size_type first, size_type last);
    [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return slice.size(); }
@@ -242,7 +242,7 @@ public:
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
-   [[nodiscard]] auto operator[](size_type i) const { return (*A)[slice.start()+i*slice.stride()]; }
+   [[nodiscard]] const auto operator[](size_type i) const { return (*A)[slice.start()+i*slice.stride()]; }
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] bool empty() const { return A->empty(); }
