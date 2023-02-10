@@ -141,6 +141,16 @@ int main()
    cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the slice and multiply by 100
    cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the SliceArray expression template produced by 100*H.sl(0, 4)
 
+   // 9. Just like for expression templates of Array, non-member functions
+   // can be used for SliceArray and its expression templates.
+
+   Array<double> K{1., 2., 3., 4., 5., 6.};
+   auto m = max(K.sl(0, 3));
+   auto n1 = norm2(K.sl(0, 2));
+   auto n2 = norm2(K.sl(0, 2) + K.sl(3, 5));
+   auto d = dot_prod(K.sl(0, 2), K.sl(3, 5)+1.);
+   auto u_ptr  = unique_blas_array(K.sl(0, 3) + 1.);
+
    return EXIT_SUCCESS;
 }
 

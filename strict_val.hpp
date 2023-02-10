@@ -423,9 +423,9 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> fmas(StrictVa
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
    int num_digits{};
-   if(SameType<T, float>)            num_digits = std::numeric_limits<float>::digits10 + 1;
-   else if(SameType<T, double>)      num_digits = std::numeric_limits<double>::digits10 + 1;
-   else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10 + 1;
+   if(SameType<T, float>)            num_digits = std::numeric_limits<float>::digits10 + 2;
+   else if(SameType<T, double>)      num_digits = std::numeric_limits<double>::digits10 + 2;
+   else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10 + 2;
    else                              num_digits = int(std::cout.precision());
 
    os << std::setprecision(num_digits) << T{strict_val};

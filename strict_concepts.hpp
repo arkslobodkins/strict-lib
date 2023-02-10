@@ -71,17 +71,17 @@ template<typename T> concept SliceArrayExprType = BaseOf<SliceArrayExpr, T>;
 template<typename T> concept UnaryOperationType = BaseOf<UnaryOperation, T>;
 template<typename T> concept BinaryOperationType = BaseOf<BinaryOperation, T>;
 
-template<typename T> concept IntegerArrayBaseType = ArrayBaseType<T> && IntegerType<typename T::real_type>;
-template<typename T> concept StandardFloatingArrayBaseType = ArrayBaseType<T> && StandardFloatingType<typename T::real_type>;
-template<typename T> concept FloatingArrayBaseType = ArrayBaseType<T> && FloatingType<typename T::real_type>;
+template<typename T> concept IntegerBaseType = BaseType<T> && IntegerType<typename T::real_type>;
+template<typename T> concept StandardFloatingBaseType = BaseType<T> && StandardFloatingType<typename T::real_type>;
+template<typename T> concept FloatingBaseType = BaseType<T> && FloatingType<typename T::real_type>;
 #ifdef STRICT_QUADRUPLE_PRECISION
-template<typename T> concept QuadFloatingArrayBaseType = ArrayBaseType<T> && QuadType<typename T::real_type>;
+template<typename T> concept QuadFloatingBaseType = BaseType<T> && QuadType<typename T::real_type>;
 #endif
 
 #ifdef STRICT_QUADRUPLE_PRECISION
-template<typename T> concept NotQuadFloatingArrayBaseType = ArrayBaseType<T> && !QuadType<typename T::real_type>;
+template<typename T> concept NotQuadFloatingBaseType = BaseType<T> && !QuadType<typename T::real_type>;
 #else
-template<typename T> concept NotQuadFloatingArrayBaseType = ArrayBaseType<T>;
+template<typename T> concept NotQuadFloatingBaseType = BaseType<T>;
 #endif
 
 }
