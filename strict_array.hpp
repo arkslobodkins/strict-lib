@@ -115,8 +115,10 @@ private:
    size_type sz;
 
    bool valid_index(size_type index) const;
+
    template<typename F> void apply0(F f);
-   template<ArrayBaseType ArrayType, typename F> void apply1(const ArrayType & A, F f);
+   template<ArrayBaseType ArrayType, typename F>
+      void apply1(const ArrayType & A, F f);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -251,7 +253,7 @@ public:
    SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
 
    [[nodiscard]] auto operator[](size_type i) -> decltype((*A)[i]) { return (*A)[slice.start()+i*slice.stride()]; }
-   [[nodiscard]] const auto operator[](size_type i) const { return (*A)[slice.start()+i*slice.stride()]; }
+   [[nodiscard]] auto operator[](size_type i) const -> decltype((*A)[i]) { return (*A)[slice.start()+i*slice.stride()]; }
    [[nodiscard]] auto sl(size_type first, size_type last);
    [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return slice.size(); }
@@ -283,7 +285,8 @@ public:
 
 private:
    template<typename F> void apply0(F f);
-   template<SliceArrayBaseType SliceArrayType, typename F> void apply1(const SliceArrayType & A, F f);
+   template<SliceArrayBaseType SliceArrayType, typename F>
+      void apply1(const SliceArrayType & A, F f);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -299,11 +302,16 @@ public:
    using expr_type = const ConstSliceArray<BType>;
    using base_type = SliceArrayBase;
 
+private:
+   const BType* const A;
+   Slice<size_type> slice;
+
+public:
    explicit ConstSliceArray(const BType & A, Slice<size_type> slice) : A{&A}, slice{slice} {}
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
-   [[nodiscard]] const auto operator[](size_type i) const { return (*A)[slice.start()+i*slice.stride()]; }
+   [[nodiscard]] auto operator[](size_type i) const -> decltype((*A)[i]) { return (*A)[slice.start()+i*slice.stride()]; }
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] auto sl(size_type first, size_type last) const;
    [[nodiscard]] bool empty() const { return A->empty(); }
@@ -317,10 +325,6 @@ public:
    [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
    [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
-
-private:
-   const BType* const A;
-   Slice<size_type> slice;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -825,7 +829,7 @@ auto ConstSliceArray<BType>::sl(size_type first, size_type last) const
 struct UnaryMinus : private UnaryOperation
 {
    template<RealType T>
-   StrictVal<T> operator()(const StrictVal<T> strict_val) const {
+   StrictVal<T> operator()(StrictVal<T> strict_val) const {
       return -strict_val;
    }
 };
@@ -833,7 +837,7 @@ struct UnaryMinus : private UnaryOperation
 struct UnaryAbs : private UnaryOperation
 {
    template<RealType T>
-   StrictVal<T> operator()(const StrictVal<T> strict_val) const {
+   StrictVal<T> operator()(StrictVal<T> strict_val) const {
       return abss(strict_val);
    }
 };
@@ -841,7 +845,7 @@ struct UnaryAbs : private UnaryOperation
 struct Plus : private BinaryOperation
 {
    template<RealType T>
-   StrictVal<T> operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+   StrictVal<T> operator()(StrictVal<T> left, StrictVal<T> right) const {
       return left + right;
    }
 };
@@ -849,7 +853,7 @@ struct Plus : private BinaryOperation
 struct Minus : private BinaryOperation
 {
    template<RealType T>
-   StrictVal<T> operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+   StrictVal<T> operator()(StrictVal<T> left, StrictVal<T> right) const {
       return left - right;
    }
 };
@@ -857,7 +861,7 @@ struct Minus : private BinaryOperation
 struct Mult : private BinaryOperation
 {
    template<RealType T>
-   StrictVal<T> operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+   StrictVal<T> operator()(StrictVal<T> left, StrictVal<T> right) const {
       return left * right;
    }
 };
@@ -865,7 +869,7 @@ struct Mult : private BinaryOperation
 struct Divide : private BinaryOperation
 {
    template<RealType T>
-   StrictVal<T> operator()(const StrictVal<T> left, const StrictVal<T> right) const {
+   StrictVal<T> operator()(StrictVal<T> left, StrictVal<T> right) const {
       return left / right;
    }
 };

@@ -151,6 +151,10 @@ int main()
    auto d = dot_prod(K.sl(0, 2), K.sl(3, 5)+1.);
    auto u_ptr  = unique_blas_array(K.sl(0, 3) + 1.);
 
+   const Array<double> M(5);
+   auto gi = M.sl(0, 3).begin();
+   gi->convert<int>();
+
    return EXIT_SUCCESS;
 }
 
