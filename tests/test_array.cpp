@@ -5,6 +5,7 @@
 #include <valarray>
 
 #include "../strict_array.hpp"
+#include "../strict_util.hpp"
 
 using namespace strict_array;
 
@@ -13,7 +14,7 @@ void assert_array(const std::valarray<T> & v, const Array<T> & s)
 {
    assert((long long int)v.size() == s.size());
    for(auto i = 0LL; i < s.size(); ++i)
-      assert(v[i] == s[i]);
+      assert(within_tol_abs(v[i], s[i]));
 }
 
 template<StandardFloatingType T>

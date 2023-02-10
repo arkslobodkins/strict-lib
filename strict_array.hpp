@@ -230,9 +230,9 @@ template<BaseType BType>
 class SliceArray : private SliceArrayBase
 {
 public:
-   using size_type = BType::size_type;
-   using value_type = BType::value_type;
-   using real_type = BType::real_type;
+   using size_type = typename BType::size_type;
+   using value_type = typename BType::value_type;
+   using real_type = typename BType::real_type;
    using expr_type = const SliceArray<BType>;
    using base_type = SliceArrayBase;
 
@@ -293,9 +293,9 @@ template<BaseType BType>
 class ConstSliceArray : private SliceArrayBase
 {
 public:
-   using size_type = BType::size_type;
-   using value_type = BType::value_type;
-   using real_type = BType::real_type;
+   using size_type = typename BType::size_type;
+   using value_type = typename BType::value_type;
+   using real_type = typename BType::real_type;
    using expr_type = const ConstSliceArray<BType>;
    using base_type = SliceArrayBase;
 
