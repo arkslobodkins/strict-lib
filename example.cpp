@@ -160,7 +160,6 @@ int main()
    K.Assign(L.sl(1, 6)); // If type is not derived from ArrayBase,
                          // Assign routine can be used to assign
                          // other types of the same size.
-
    return EXIT_SUCCESS;
 }
 
