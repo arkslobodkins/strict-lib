@@ -10,7 +10,6 @@
 #include <cmath>
 #include <ctime>
 #include <initializer_list>
-#include <iterator>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -155,50 +154,50 @@ template<FloatingType T>
 [[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BType>
-std::ostream & operator<<(std::ostream & os, const BType & A);
+template<BaseType BaseT>
+std::ostream & operator<<(std::ostream & os, const BaseT & A);
 
-template<IntegerBaseType IntBType>
-[[nodiscard]] auto sum(const IntBType & A);
+template<IntegerBaseType IntBaseT>
+[[nodiscard]] auto sum(const IntBaseT & A);
 
-template<FloatingBaseType FloatBType>
-[[nodiscard]] auto sum(const FloatBType & A);
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto sum(const FloatBaseT & A);
 
-template<BaseType BType>
-[[nodiscard]] auto max(const BType & A);
+template<BaseType BaseT>
+[[nodiscard]] auto max(const BaseT & A);
 
-template<BaseType BType>
-[[nodiscard]] auto min(const BType & A);
+template<BaseType BaseT>
+[[nodiscard]] auto min(const BaseT & A);
 
-template<BaseType BType>
-[[nodiscard]] auto min_index(const BType & A);  // returns std::pair<size_type, StrictVal<real_type>>
+template<BaseType BaseT>
+[[nodiscard]] auto min_index(const BaseT & A);  // returns std::pair<size_type, StrictVal<real_type>>
 
-template<BaseType BType>
-[[nodiscard]] auto max_index(const BType & A);  // returns std::pair<size_type, StrictVal<real_type>>
+template<BaseType BaseT>
+[[nodiscard]] auto max_index(const BaseT & A);  // returns std::pair<size_type, StrictVal<real_type>>
 
-template<FloatingBaseType FloatBType>
-[[nodiscard]] bool all_finite(const FloatBType & A);
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] bool all_finite(const FloatBaseT & A);
 
-template<FloatingBaseType FloatBType>
-[[nodiscard]] auto norm_inf(const FloatBType & A);
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm_inf(const FloatBaseT & A);
 
-template<FloatingBaseType FloatBType>
-[[nodiscard]] auto norm2(const FloatBType & A);
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm2(const FloatBaseT & A);
 
 template<BaseType BType1, BaseType BType2>
 [[nodiscard]] auto dot_prod(const BType1 & A1, const BType2 & A2);
 
-template<BaseType BType>
-[[nodiscard]] bool does_contain_zero(const BType & A);
+template<BaseType BaseT>
+[[nodiscard]] bool does_contain_zero(const BaseT & A);
 
-template<BaseType BType>
-[[nodiscard]] bool all_positive(const BType & A);
+template<BaseType BaseT>
+[[nodiscard]] bool all_positive(const BaseT & A);
 
-template<BaseType BType>
-[[nodiscard]] bool all_negative(const BType & A);
+template<BaseType BaseT>
+[[nodiscard]] bool all_negative(const BaseT & A);
 
-template<BaseType BType>
-[[nodiscard]] auto unique_blas_array(const BType & A);
+template<BaseType BaseT>
+[[nodiscard]] auto unique_blas_array(const BaseT & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -228,22 +227,22 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BType>
+template<BaseType BaseT>
 class SliceArray : private SliceArrayBase
 {
 public:
-   using size_type = typename BType::size_type;
-   using value_type = typename BType::value_type;
-   using real_type = typename BType::real_type;
-   using expr_type = const SliceArray<BType>;
+   using size_type = typename BaseT::size_type;
+   using value_type = typename BaseT::value_type;
+   using real_type = typename BaseT::real_type;
+   using expr_type = const SliceArray<BaseT>;
    using base_type = SliceArrayBase;
 
 private:
-   BType* const A;
+   BaseT* const A;
    Slice<size_type> slice;
 
 public:
-   explicit SliceArray(BType & A, Slice<size_type> slice);
+   explicit SliceArray(BaseT & A, Slice<size_type> slice);
    SliceArray(const SliceArray & s);
 
    SliceArray & operator=(const SliceArray & s);
@@ -292,22 +291,22 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BType>
+template<BaseType BaseT>
 class ConstSliceArray : private SliceArrayBase
 {
 public:
-   using size_type = typename BType::size_type;
-   using value_type = typename BType::value_type;
-   using real_type = typename BType::real_type;
-   using expr_type = const ConstSliceArray<BType>;
+   using size_type = typename BaseT::size_type;
+   using value_type = typename BaseT::value_type;
+   using real_type = typename BaseT::real_type;
+   using expr_type = const ConstSliceArray<BaseT>;
    using base_type = SliceArrayBase;
 
 private:
-   const BType* const A;
+   const BaseT* const A;
    Slice<size_type> slice;
 
 public:
-   explicit ConstSliceArray(const BType & A, Slice<size_type> slice) : A{&A}, slice{slice} {}
+   explicit ConstSliceArray(const BaseT & A, Slice<size_type> slice) : A{&A}, slice{slice} {}
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
@@ -684,24 +683,24 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BType>
-SliceArray<BType>::SliceArray(BType & A, Slice<size_type> slice) : A{&A}, slice{slice}
+template<BaseType BaseT>
+SliceArray<BaseT>::SliceArray(BaseT & A, Slice<size_type> slice) : A{&A}, slice{slice}
 {}
 
-template<BaseType BType>
-SliceArray<BType>::SliceArray(const SliceArray<BType> & s) : A{s.A}, slice{s.slice}
+template<BaseType BaseT>
+SliceArray<BaseT>::SliceArray(const SliceArray<BaseT> & s) : A{s.A}, slice{s.slice}
 {}
 
-template<BaseType BType>
-SliceArray<BType> & SliceArray<BType>::operator=(const SliceArray<BType> & s)
+template<BaseType BaseT>
+SliceArray<BaseT> & SliceArray<BaseT>::operator=(const SliceArray<BaseT> & s)
 {
    ASSERT_STRICT_DEBUG(size() == s.size());
    std::copy(s.begin(), s.end(), begin());
    return *this;
 }
 
-template<BaseType BType> template<SliceArrayBaseType SType>
-SliceArray<BType> & SliceArray<BType>::operator=(const SType & s)
+template<BaseType BaseT> template<SliceArrayBaseType SType>
+SliceArray<BaseT> & SliceArray<BaseT>::operator=(const SType & s)
 {
    static_assert(SameType<typename SType::real_type, real_type>); // for friendlier compiler messages
    ASSERT_STRICT_DEBUG(size() == s.size());
@@ -709,99 +708,99 @@ SliceArray<BType> & SliceArray<BType>::operator=(const SType & s)
    return *this;
 }
 
-template<BaseType BType>
-SliceArray<BType> & SliceArray<BType>::operator=(StrictVal<real_type> val)
+template<BaseType BaseT>
+SliceArray<BaseT> & SliceArray<BaseT>::operator=(StrictVal<real_type> val)
 {
    std::fill(begin(), end(), val);
    return *this;
 }
 
-template<BaseType BType>
-SliceArray<BType> & SliceArray<BType>::operator=(std::initializer_list<StrictVal<real_type>> list)
+template<BaseType BaseT>
+SliceArray<BaseT> & SliceArray<BaseT>::operator=(std::initializer_list<StrictVal<real_type>> list)
 {
    assert(size() == static_cast<size_type>(list.size()));
    std::copy(list.begin(), list.end(), begin());
    return *this;
 }
 
-template<BaseType BType>
-auto SliceArray<BType>::sl(size_type first, size_type last)
+template<BaseType BaseT>
+auto SliceArray<BaseT>::sl(size_type first, size_type last)
 {
-   return SliceArray<SliceArray<BType>>(*this, Slice(first, last-first+1, size_type{1}));
+   return SliceArray<SliceArray<BaseT>>(*this, Slice(first, last-first+1, size_type{1}));
 }
 
-template<BaseType BType>
-auto SliceArray<BType>::sl(size_type first, size_type last) const
+template<BaseType BaseT>
+auto SliceArray<BaseT>::sl(size_type first, size_type last) const
 {
-   return ConstSliceArray<SliceArray<BType>>(*this, Slice(first, last-first+1, size_type{1}));
+   return ConstSliceArray<SliceArray<BaseT>>(*this, Slice(first, last-first+1, size_type{1}));
 }
 
-template<BaseType BType>
-SliceArray<BType> & SliceArray<BType>::operator+=(StrictVal<real_type> val)
+template<BaseType BaseT>
+SliceArray<BaseT> & SliceArray<BaseT>::operator+=(StrictVal<real_type> val)
 {
    apply0([&](size_type i) { (*this)[i] += val; } );
    return *this;
 }
 
-template<BaseType BType>
-SliceArray<BType> & SliceArray<BType>::operator-=(StrictVal<real_type> val)
+template<BaseType BaseT>
+SliceArray<BaseT> & SliceArray<BaseT>::operator-=(StrictVal<real_type> val)
 {
    apply0([&](size_type i) { (*this)[i] -= val; } );
    return *this;
 }
 
-template<BaseType BType>
-SliceArray<BType> & SliceArray<BType>::operator*=(StrictVal<real_type> val)
+template<BaseType BaseT>
+SliceArray<BaseT> & SliceArray<BaseT>::operator*=(StrictVal<real_type> val)
 {
    apply0([&](size_type i) { (*this)[i] *= val; } );
    return *this;
 }
 
-template<BaseType BType>
-SliceArray<BType> & SliceArray<BType>::operator/=(StrictVal<real_type> val)
+template<BaseType BaseT>
+SliceArray<BaseT> & SliceArray<BaseT>::operator/=(StrictVal<real_type> val)
 {
    apply0([&](size_type i) { (*this)[i] /= val; } );
    return *this;
 }
 
-template<BaseType BType> template<SliceArrayBaseType SliceArrayType>
-SliceArray<BType> & SliceArray<BType>::operator+=(const SliceArrayType & A)
+template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<BaseT> & SliceArray<BaseT>::operator+=(const SliceArrayType & A)
 {
    apply1(A, [&](size_type i) { (*this)[i] += A[i]; });
    return *this;
 }
 
-template<BaseType BType> template<SliceArrayBaseType SliceArrayType>
-SliceArray<BType> & SliceArray<BType>::operator-=(const SliceArrayType & A)
+template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<BaseT> & SliceArray<BaseT>::operator-=(const SliceArrayType & A)
 {
    apply1(A, [&](size_type i) { (*this)[i] -= A[i]; });
    return *this;
 }
 
-template<BaseType BType> template<SliceArrayBaseType SliceArrayType>
-SliceArray<BType> & SliceArray<BType>::operator*=(const SliceArrayType & A)
+template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<BaseT> & SliceArray<BaseT>::operator*=(const SliceArrayType & A)
 {
    apply1(A, [&](size_type i) { (*this)[i] *= A[i]; });
    return *this;
 }
 
-template<BaseType BType> template<SliceArrayBaseType SliceArrayType>
-SliceArray<BType> & SliceArray<BType>::operator/=(const SliceArrayType & A)
+template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<BaseT> & SliceArray<BaseT>::operator/=(const SliceArrayType & A)
 {
    apply1(A, [&](size_type i) { (*this)[i] /= A[i]; });
    return *this;
 }
 
-template<BaseType BType> template<typename F>
-void SliceArray<BType>::apply0(F f)
+template<BaseType BaseT> template<typename F>
+void SliceArray<BaseT>::apply0(F f)
 {
    ASSERT_STRICT_DEBUG(!empty());
    for(size_type i = 0; i < size(); ++i)
       f(i);
 }
 
-template<BaseType BType> template<SliceArrayBaseType SliceArrayType, typename F>
-void SliceArray<BType>::apply1(const SliceArrayType & A, F f)
+template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType, typename F>
+void SliceArray<BaseT>::apply1(const SliceArrayType & A, F f)
 {
    (void)A;
    ASSERT_STRICT_DEBUG(size() == A.size());
@@ -813,14 +812,14 @@ void SliceArray<BType>::apply1(const SliceArrayType & A, F f)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BType>
-ConstSliceArray<BType>::ConstSliceArray(const ConstSliceArray<BType> & cs) : A{cs.A}, slice{cs.slice}
+template<BaseType BaseT>
+ConstSliceArray<BaseT>::ConstSliceArray(const ConstSliceArray<BaseT> & cs) : A{cs.A}, slice{cs.slice}
 {}
 
-template<BaseType BType>
-auto ConstSliceArray<BType>::sl(size_type first, size_type last) const
+template<BaseType BaseT>
+auto ConstSliceArray<BaseT>::sl(size_type first, size_type last) const
 {
-   return ConstSliceArray<SliceArray<BType>>(*this, Slice(first, last-first+1, size_type{1}));
+   return ConstSliceArray<SliceArray<BaseT>>(*this, Slice(first, last-first+1, size_type{1}));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1438,20 +1437,20 @@ namespace internal {
    }
 }
 
-template<BaseType BType> std::ostream & operator<<(std::ostream & os, const BType & A)
+template<BaseType BaseT> std::ostream & operator<<(std::ostream & os, const BaseT & A)
 {
-   using T = typename BType::real_type;
+   using T = typename BaseT::real_type;
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
       os << "[" << i << "] =" << internal::smart_spaces<T>(A.size(), i) << A[i] << std::endl;
    }
    return os;
 }
 
-template<FloatingBaseType FloatBType>
-auto sum(const FloatBType & A)
+template<FloatingBaseType FloatBaseT>
+auto sum(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using rv_T = typename FloatBType::real_type;
+   using rv_T = typename FloatBaseT::real_type;
 
    volatile rv_T sum{};
    volatile rv_T c{};
@@ -1464,8 +1463,8 @@ auto sum(const FloatBType & A)
    return StrictVal<rv_T>{sum};
 }
 
-template<IntegerBaseType IntBType>
-auto sum(const IntBType & A)
+template<IntegerBaseType IntBaseT>
+auto sum(const IntBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    auto sum = A[0];
@@ -1474,8 +1473,8 @@ auto sum(const IntBType & A)
    return sum;
 }
 
-template<BaseType BType>
-auto max(const BType & A)
+template<BaseType BaseT>
+auto max(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    auto max_elem = A[0];
@@ -1484,8 +1483,8 @@ auto max(const BType & A)
    return max_elem;
 }
 
-template<BaseType BType>
-auto min(const BType & A)
+template<BaseType BaseT>
+auto min(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    auto min_elem = A[0];
@@ -1494,12 +1493,12 @@ auto min(const BType & A)
    return min_elem;
 }
 
-template<BaseType BType>
-auto max_index(const BType & A)
+template<BaseType BaseT>
+auto max_index(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using sz_T = typename BType::size_type;
-   using sv_T = typename BType::value_type;
+   using sz_T = typename BaseT::size_type;
+   using sv_T = typename BaseT::value_type;
 
    std::pair<sz_T, sv_T> max = {0, A[0]};
    for(sz_T i = 1; i < A.size(); ++i)
@@ -1508,12 +1507,12 @@ auto max_index(const BType & A)
    return max;
 }
 
-template<BaseType BType>
-auto min_index(const BType & A)
+template<BaseType BaseT>
+auto min_index(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using sz_T = typename BType::size_type;
-   using sv_T = typename BType::value_type;
+   using sz_T = typename BaseT::size_type;
+   using sv_T = typename BaseT::value_type;
 
    std::pair<sz_T, sv_T> min = {0, A[0]};
    for(sz_T i = 1; i < A.size(); ++i)
@@ -1522,8 +1521,8 @@ auto min_index(const BType & A)
    return min;
 }
 
-template<FloatingBaseType FloatBType>
-bool all_finite(const FloatBType & A)
+template<FloatingBaseType FloatBaseT>
+bool all_finite(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto x : A)
@@ -1531,8 +1530,8 @@ bool all_finite(const FloatBType & A)
    return true;
 }
 
-template<FloatingBaseType FloatBType>
-auto norm_inf(const FloatBType & A)
+template<FloatingBaseType FloatBaseT>
+auto norm_inf(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    auto max_abs = abss(A[0]);
@@ -1543,8 +1542,8 @@ auto norm_inf(const FloatBType & A)
    return max_abs;
 }
 
-template<FloatingBaseType FloatBType>
-auto norm2(const FloatBType & A)
+template<FloatingBaseType FloatBaseT>
+auto norm2(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    return sqrts(dot_prod(A, A));
@@ -1560,41 +1559,41 @@ auto dot_prod(const BType1 & A1, const BType2 & A2)
    return sum(A1 * A2);
 }
 
-template<BaseType BType>
-bool does_contain_zero(const BType & A)
+template<BaseType BaseT>
+bool does_contain_zero(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using T = typename BType::real_type;
+   using T = typename BaseT::real_type;
    for(auto x : A)
       if(x == T{0}) return true;
    return false;
 }
 
-template<BaseType BType>
-bool all_positive(const BType & A)
+template<BaseType BaseT>
+bool all_positive(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using T = typename BType::real_type;
+   using T = typename BaseT::real_type;
    for(auto x : A)
       if(x <= T{0}) return false;
    return true;
 }
 
-template<BaseType BType>
-bool all_negative(const BType & A)
+template<BaseType BaseT>
+bool all_negative(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using T = typename BType::real_type;
+   using T = typename BaseT::real_type;
    for(auto x : A)
       if(x >= T{0}) return false;
    return true;
 }
 
-template<BaseType BType>
-[[nodiscard]] auto unique_blas_array(const BType & A)
+template<BaseType BaseT>
+[[nodiscard]] auto unique_blas_array(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using real_type = typename BType::real_type;
+   using real_type = typename BaseT::real_type;
    auto blas_array = std::make_unique<real_type[]>(static_cast<std::size_t>(A.size()));
    std::copy(A.begin(), A.end(), blas_array.get());
    return blas_array;

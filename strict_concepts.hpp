@@ -55,21 +55,31 @@ template<typename T> concept RealType = FloatingType<T> || IntegerType<T>;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Base {};
-class ArrayBase : private Base {};
-class SliceArrayBase : private Base {};
-class ArrayExpr {};
-class SliceArrayExpr {};
 class UnaryOperation {};
 class BinaryOperation {};
 
-template<typename T> concept BaseType = BaseOf<Base, T>;
-template<typename T> concept ArrayBaseType = BaseOf<ArrayBase, T>;
-template<typename T> concept ArrayExprType = BaseOf<ArrayExpr, T>;
-template<typename T> concept SliceArrayBaseType = BaseOf<SliceArrayBase, T>;
-template<typename T> concept SliceArrayExprType = BaseOf<SliceArrayExpr, T>;
+class Base {};
+class ArrayBase : private Base {};
+class SliceArrayBase : private Base {};
+
+class Expr {};
+class ArrayExpr : private Expr{};
+class SliceArrayExpr : private Expr{};
+
 template<typename T> concept UnaryOperationType = BaseOf<UnaryOperation, T>;
 template<typename T> concept BinaryOperationType = BaseOf<BinaryOperation, T>;
+
+template<typename T> concept BaseType = BaseOf<Base, T>;
+template<typename T> concept ArrayBaseType = BaseOf<ArrayBase, T>;
+template<typename T> concept SliceArrayBaseType = BaseOf<SliceArrayBase, T>;
+
+template<typename T> concept ExprType = BaseOf<Expr, T>;
+template<typename T> concept ArrayExprType = BaseOf<ArrayExpr, T>;
+template<typename T> concept SliceArrayExprType = BaseOf<SliceArrayExpr, T>;
+
+template<typename T>
+concept DirectType = requires(T a)
+{ requires std::is_lvalue_reference_v<decltype(a[0])>; };
 
 template<typename T> concept IntegerBaseType = BaseType<T> && IntegerType<typename T::real_type>;
 template<typename T> concept StandardFloatingBaseType = BaseType<T> && StandardFloatingType<typename T::real_type>;
