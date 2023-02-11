@@ -48,6 +48,9 @@ public:
    Array & operator=(const Array & A) &;
    Array & operator=(Array && A) & noexcept;
 
+   // assign either Array, SliceArray, or their expression template
+   template<BaseType BType> Array & Assign(const BType & A) &;
+
    template<ArrayExprType ArrExpr> Array(const ArrExpr & expr);
    template<ArrayExprType ArrExpr> const Array & operator=(const ArrExpr & expr) &;
 
@@ -156,6 +159,9 @@ template<FloatingType T>
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
 std::ostream & operator<<(std::ostream & os, const BaseT & A);
+
+template<BaseType BaseT>
+void print(const BaseT & A, const std::string & name);
 
 template<IntegerBaseType IntBaseT>
 [[nodiscard]] auto sum(const IntBaseT & A);
@@ -424,16 +430,24 @@ template<RealType T> Array<T> & Array<T>::operator=(Array<T> && A) & noexcept
    return *this;
 }
 
+template<RealType T> template<BaseType BType>
+Array<T> & Array<T>::Assign(const BType & A) &
+{
+   ASSERT_STRICT_DEBUG(sz == A.size());
+   std::copy(A.begin(), A.end(), begin());
+   return *this;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-template<ArrayExprType ArrExpr> Array<T>::Array(const ArrExpr & expr)
+template<RealType T> template<ArrayExprType ArrExpr>
+Array<T>::Array(const ArrExpr & expr)
    : Array(expr.size())
 {
    std::copy(expr.begin(), expr.end(), begin());
 }
 
-template<RealType T>
-template<ArrayExprType ArrExpr> const Array<T> & Array<T>::operator=(const ArrExpr & expr) &
+template<RealType T> template<ArrayExprType ArrExpr>
+const Array<T> & Array<T>::operator=(const ArrExpr & expr) &
 {
    ASSERT_STRICT_DEBUG(sz == expr.size());
    std::copy(expr.begin(), expr.end(), begin());
@@ -702,7 +716,7 @@ SliceArray<BaseT> & SliceArray<BaseT>::operator=(const SliceArray<BaseT> & s)
 template<BaseType BaseT> template<SliceArrayBaseType SType>
 SliceArray<BaseT> & SliceArray<BaseT>::operator=(const SType & s)
 {
-   static_assert(SameType<typename SType::real_type, real_type>); // for friendlier compiler messages
+   static_assert(SameType<typename SType::real_type, real_type>);
    ASSERT_STRICT_DEBUG(size() == s.size());
    std::copy(s.begin(), s.end(), begin());
    return *this;
@@ -1316,13 +1330,16 @@ auto operator/(const T & A, U val)
 { return SliceBinExprValRight(A, val, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<SliceArrayBaseType T> const auto & operator+(const T & A)
+template<SliceArrayBaseType T>
+const auto & operator+(const T & A)
 { return A; }
 
-template<SliceArrayBaseType T> auto operator-(const T & A)
+template<SliceArrayBaseType T>
+auto operator-(const T & A)
 { return SliceUnaryExpr(A, UnaryMinus{}); }
 
-template<SliceArrayBaseType T> auto abs(const T & A)
+template<SliceArrayBaseType T>
+auto abs(const T & A)
 { return SliceUnaryExpr(A, UnaryAbs{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1411,13 +1428,16 @@ auto operator/(const T & A, U val)
 { return BinExprValRight(A, val, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType T> const auto & operator+(const T & A)
+template<ArrayBaseType T>
+const auto & operator+(const T & A)
 { return A; }
 
-template<ArrayBaseType T> auto operator-(const T & A)
+template<ArrayBaseType T>
+auto operator-(const T & A)
 { return UnaryExpr(A, UnaryMinus{}); }
 
-template<ArrayBaseType T> auto abs(const T & A)
+template<ArrayBaseType T>
+auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1437,13 +1457,25 @@ namespace internal {
    }
 }
 
-template<BaseType BaseT> std::ostream & operator<<(std::ostream & os, const BaseT & A)
+template<BaseType BaseT>
+std::ostream & operator<<(std::ostream & os, const BaseT & A)
 {
    using T = typename BaseT::real_type;
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
-      os << "[" << i << "] =" << internal::smart_spaces<T>(A.size(), i) << A[i] << std::endl;
+      os << "[" << i << "] ="
+         << internal::smart_spaces<T>(A.size(), i) << A[i] << std::endl;
    }
    return os;
+}
+
+template<BaseType BaseT>
+void print(const BaseT & A, const std::string & name)
+{
+   using T = typename BaseT::real_type;
+   for(decltype(A.size()) i = 0; i < A.size(); ++i) {
+      std::cout << name << "[" << i << "] ="
+         << internal::smart_spaces<T>(A.size(), i) << A[i] << std::endl;
+   }
 }
 
 template<FloatingBaseType FloatBaseT>
@@ -1552,7 +1584,6 @@ auto norm2(const FloatBaseT & A)
 template<BaseType BType1, BaseType BType2>
 auto dot_prod(const BType1 & A1, const BType2 & A2)
 {
-   static_assert(SameType<typename BType1::real_type, typename BType2::real_type>);
    static_assert(SameType<typename BType1::base_type, typename BType2::base_type>);
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_DEBUG(!A1.empty());

@@ -13,38 +13,38 @@ template<FloatingType T>
 void assert_inf_norm()
 {
    Array<T> A{T{1}, T{2}, T{3}, T{4}, T{5}};
-   assert(within_tol_abs(norm_inf(A), T{5}));
+   assert(within_tol_abs<T>(norm_inf(A), T{5}));
 
    A = {T{-1}, T{-2}, T{-3}, T{-4}, T{-5}};
-   assert(within_tol_abs(norm_inf(A), T{5}));
+   assert(within_tol_abs<T>(norm_inf(A), T{5}));
 
    A = {T{5}, T{4}, T{3}, T{2}, T{1}};
-   assert(within_tol_abs(norm_inf(A), T{5}));
+   assert(within_tol_abs<T>(norm_inf(A), T{5}));
 
    A = {T{-5}, T{-4}, T{-3}, T{-2}, T{-1}};
-   assert(within_tol_abs(norm_inf(A), T{5}));
+   assert(within_tol_abs<T>(norm_inf(A), T{5}));
 
    A = {T{-3}, T{-2}, T{-5}, T{-4}, T{-1}};
-   assert(within_tol_abs(norm_inf(A), T{5}));
+   assert(within_tol_abs<T>(norm_inf(A), T{5}));
 
    Array<T> B{T{2}, T{8}, T{6}, T{4}, T{0}, T{-4}, T{-2}};
-   assert(within_tol_abs(norm_inf(B.sl(0, 2)), T{8}));
-   assert(within_tol_abs(norm_inf(B.sl(0, 2) + T{1}), T{9}));
-   assert(within_tol_abs(norm_inf(B.sl(0, 2) * T{2}), T{16}));
-   assert(within_tol_abs(norm_inf(B.sl(0, 2) + B.sl(1, 3)), T{14}));
-   assert(within_tol_abs(norm_inf(B.sl(0, 4).sl(3, 4)), T{4}));
-   assert(within_tol_abs(norm_inf(T{4}*B.sl(3, 4)), T{16}));
+   assert(within_tol_abs<T>(norm_inf(B.sl(0, 2)), T{8}));
+   assert(within_tol_abs<T>(norm_inf(B.sl(0, 2) + T{1}), T{9}));
+   assert(within_tol_abs<T>(norm_inf(B.sl(0, 2) * T{2}), T{16}));
+   assert(within_tol_abs<T>(norm_inf(B.sl(0, 2) + B.sl(1, 3)), T{14}));
+   assert(within_tol_abs<T>(norm_inf(B.sl(0, 4).sl(3, 4)), T{4}));
+   assert(within_tol_abs<T>(norm_inf(T{4}*B.sl(3, 4)), T{16}));
 }
 
 template<FloatingType T>
 void assert_max()
 {
    Array<T> A{T{1}, T{2}, T{3}, T{4}, T{5}};
-   assert(within_tol_abs(max(A), T{5}));
+   assert(within_tol_abs<T>(max(A), T{5}));
 
    A = {T{-1}, T{-2}, T{-3}, T{-4}, T{-5}};
-   assert(within_tol_abs(max(A), T{-1}));
-   assert(within_tol_abs(max(T{-1} * A), T{5}));
+   assert(within_tol_abs<T>(max(A), T{-1}));
+   assert(within_tol_abs<T>(max(T{-1} * A), T{5}));
 }
 
 template<IntegerType T>

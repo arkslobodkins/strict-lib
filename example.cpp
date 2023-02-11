@@ -20,6 +20,7 @@
 #include <numeric>
 
 #include "strict_array.hpp"
+#include "strict_util.hpp"
 using namespace strict_array;
 
 template<typename F>
@@ -137,9 +138,9 @@ int main()
    for(auto & x : first_five) x = x*x*x; // raise them to the power 3
 
    cout << 100 * H.sl(0, 2) << endl;           // multiply SliceArray by 100
-   cout << (100 * H).sl(0, 2) << endl;         // slice the Array expression template produced by 100*H
+   cout << (100 * H).sl(0, 2) << endl;         // slice the Array expression template produced by 100 * H
    cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the slice and multiply by 100
-   cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the SliceArray expression template produced by 100*H.sl(0, 4)
+   cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the SliceArray expression template produced by 100 * H.sl(0, 4)
 
    // 9. Just like for expression templates of Array, non-member functions
    // can be used for SliceArray and expression templates of SliceArray.
@@ -148,8 +149,17 @@ int main()
    auto m = max(K.sl(0, 3));
    auto n1 = norm2(K.sl(0, 2));
    auto n2 = norm2(K.sl(0, 2) + K.sl(3, 5));
-   auto d = dot_prod(K.sl(0, 2), K.sl(3, 5) +1.);
-   auto u_ptr  = unique_blas_array(K.sl(0, 3) + 1.);
+   auto d = dot_prod(K.sl(0, 2), K.sl(3, 5) + 1.);
+   auto u_ptr = unique_blas_array(K.sl(0, 3) + 1.);
+   bool k2_finite = all_finite(K * 2.);
+   bool pos = all_positive(K.sl(0, 2));
+   bool neg = all_negative(-K.sl(0, 2));
+   auto m_index = max_index(-1. * K.sl(1, 3)); // produces expression template containing -2, -3, -4
+                                               // 0 is the index of max value, -2 is the max value
+   Array<double> L{-1., -2., -3., -4., -5., -6., -7.};
+   K.Assign(L.sl(1, 6)); // If type is not derived from ArrayBase,
+                         // Assign routine can be used to assign
+                         // other types of the same size.
 
    return EXIT_SUCCESS;
 }
