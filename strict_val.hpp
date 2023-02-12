@@ -44,38 +44,38 @@ public:
 
    [[nodiscard]] constexpr StrictVal operator+() const { return *this; }
    [[nodiscard]] constexpr StrictVal operator-() const { return StrictVal{-T{*this}}; }
-   constexpr StrictVal operator++() { ++x; return *this; }
-   constexpr StrictVal operator--() { --x; return *this; }
+   constexpr StrictVal & operator++() { ++x; return *this; }
+   constexpr StrictVal & operator--() { --x; return *this; }
    constexpr StrictVal operator++(int) { StrictVal old{x}; ++x; return old; }
    constexpr StrictVal operator--(int) { StrictVal old{x}; --x; return old; }
 
-   constexpr inline StrictVal operator+=(StrictVal strict_val);
-   constexpr inline StrictVal operator-=(StrictVal strict_val);
-   constexpr inline StrictVal operator*=(StrictVal strict_val);
-   constexpr inline StrictVal operator/=(StrictVal strict_val);
-   template<IntegerType U = T> constexpr inline StrictVal operator%=(StrictVal strict_val);
-   template<IntegerType U = T> constexpr inline StrictVal operator<<=(StrictVal strict_val);
-   template<IntegerType U = T> constexpr inline StrictVal operator>>=(StrictVal strict_val);
+   constexpr inline StrictVal & operator+=(StrictVal strict_val);
+   constexpr inline StrictVal & operator-=(StrictVal strict_val);
+   constexpr inline StrictVal & operator*=(StrictVal strict_val);
+   constexpr inline StrictVal & operator/=(StrictVal strict_val);
+   template<IntegerType U = T> constexpr inline StrictVal & operator%=(StrictVal strict_val);
+   template<IntegerType U = T> constexpr inline StrictVal & operator<<=(StrictVal strict_val);
+   template<IntegerType U = T> constexpr inline StrictVal & operator>>=(StrictVal strict_val);
 
-   template<RealType U> constexpr inline StrictVal operator+=(U val);
-   template<RealType U> constexpr inline StrictVal operator-=(U val);
-   template<RealType U> constexpr inline StrictVal operator*=(U val);
-   template<RealType U> constexpr inline StrictVal operator/=(U val);
-   template<IntegerType U = T> constexpr inline StrictVal operator%=(U val);
-   template<IntegerType U = T> constexpr inline StrictVal operator<<=(U val);
-   template<IntegerType U = T> constexpr inline StrictVal operator>>=(U val);
+   template<RealType U> constexpr inline StrictVal & operator+=(U val);
+   template<RealType U> constexpr inline StrictVal & operator-=(U val);
+   template<RealType U> constexpr inline StrictVal & operator*=(U val);
+   template<RealType U> constexpr inline StrictVal & operator/=(U val);
+   template<IntegerType U = T> constexpr inline StrictVal & operator%=(U val);
+   template<IntegerType U = T> constexpr inline StrictVal & operator<<=(U val);
+   template<IntegerType U = T> constexpr inline StrictVal & operator>>=(U val);
 
 private:
    T x{};
 };
 
-template<RealType T> constexpr inline StrictVal<T> operator+=(T & val, StrictVal<T> strict_val);
-template<RealType T> constexpr inline StrictVal<T> operator-=(T & val, StrictVal<T> strict_val);
-template<RealType T> constexpr inline StrictVal<T> operator*=(T & val, StrictVal<T> strict_val);
-template<RealType T> constexpr inline StrictVal<T> operator/=(T & val, StrictVal<T> strict_val);
-template<IntegerType T> constexpr inline StrictVal<T> operator%=(T & val, StrictVal<T> strict_val);
-template<IntegerType T> constexpr inline StrictVal<T> operator<<=(T & val, StrictVal<T> strict_val);
-template<IntegerType T> constexpr inline StrictVal<T> operator>>=(T & val, StrictVal<T> strict_val);
+template<RealType T, RealType U> constexpr inline U & operator+=(U & val, StrictVal<T> strict_val);
+template<RealType T, RealType U> constexpr inline U & operator-=(U & val, StrictVal<T> strict_val);
+template<RealType T, RealType U> constexpr inline U & operator*=(U & val, StrictVal<T> strict_val);
+template<RealType T, RealType U> constexpr inline U & operator/=(U & val, StrictVal<T> strict_val);
+template<IntegerType T, IntegerType U> constexpr U & operator%=(U & val, StrictVal<T> strict_val);
+template<IntegerType T, IntegerType U> constexpr U & operator<<=(U & val, StrictVal<T> strict_val);
+template<IntegerType T, IntegerType U> constexpr U & operator>>=(U & val, StrictVal<T> strict_val);
 
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator+(StrictVal<T> v1, StrictVal<T> v2);
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator-(StrictVal<T> v1, StrictVal<T> v2);
@@ -85,21 +85,21 @@ template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator%(St
 template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator<<(StrictVal<T> v1, StrictVal<T> v2);
 template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator>>(StrictVal<T> v1, StrictVal<T> v2);
 
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator+(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator-(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator*(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator/(StrictVal<T> strict_val, T val);
-template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator%(StrictVal<T> strict_val, T val);
-template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator<<(StrictVal<T> strict_val, T val);
-template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator>>(StrictVal<T> strict_val, T val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> operator+(StrictVal<T> strict_val, U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> operator-(StrictVal<T> strict_val, U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> operator*(StrictVal<T> strict_val, U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> operator/(StrictVal<T> strict_val, U val);
+template<IntegerType T, IntegerType U> [[nodiscard]] constexpr inline StrictVal<T> operator%(StrictVal<T> strict_val, U val);
+template<IntegerType T, IntegerType U> [[nodiscard]] constexpr inline StrictVal<T> operator<<(StrictVal<T> strict_val, U val);
+template<IntegerType T, IntegerType U> [[nodiscard]] constexpr inline StrictVal<T> operator>>(StrictVal<T> strict_val, U val);
 
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator+(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator-(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator*(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> operator/(T val, StrictVal<T> strict_val);
-template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator%(T val, StrictVal<T> strict_val);
-template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator<<(T val, StrictVal<T> strict_val);
-template<IntegerType T> [[nodiscard]] constexpr inline StrictVal<T> operator>>(T val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> operator+(U val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> operator-(U val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> operator*(U val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> operator/(U val, StrictVal<T> strict_val);
+template<IntegerType T, IntegerType U> [[nodiscard]] constexpr inline StrictVal<T> operator%(U val, StrictVal<T> strict_val);
+template<IntegerType T, IntegerType U> [[nodiscard]] constexpr inline StrictVal<T> operator<<(U val, StrictVal<T> strict_val);
+template<IntegerType T, IntegerType U> [[nodiscard]] constexpr inline StrictVal<T> operator>>(U val, StrictVal<T> strict_val);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> [[nodiscard]] constexpr inline bool operator==(StrictVal<T> v1, StrictVal<T> v2);
@@ -109,19 +109,19 @@ template<RealType T> [[nodiscard]] constexpr inline bool operator<=(StrictVal<T>
 template<RealType T> [[nodiscard]] constexpr inline bool operator>=(StrictVal<T> v1, StrictVal<T> v2);
 template<RealType T> [[nodiscard]] constexpr inline bool operator!=(StrictVal<T> v1, StrictVal<T> v2);
 
-template<RealType T> [[nodiscard]] constexpr inline bool operator==(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<=(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>=(StrictVal<T> strict_val, T val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator!=(StrictVal<T> strict_val, T val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator==(StrictVal<T> strict_val, U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator<(StrictVal<T> strict_val, U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator>(StrictVal<T> strict_val, U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator<=(StrictVal<T> strict_val, U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator>=(StrictVal<T> strict_val, U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator!=(StrictVal<T> strict_val, U val);
 
-template<RealType T> [[nodiscard]] constexpr inline bool operator==(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator<=(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator>=(T val, StrictVal<T> strict_val);
-template<RealType T> [[nodiscard]] constexpr inline bool operator!=(T val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator==(U val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator<(U val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator>(U val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator<=(U val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator>=(U val, StrictVal<T> strict_val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline bool operator!=(U val, StrictVal<T> strict_val);
 
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> abss(StrictVal<T> v);
 template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> mins(StrictVal<T> v1, StrictVal<T> v2);
@@ -181,90 +181,90 @@ template<RealType T> template<RealType U>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-constexpr inline StrictVal<T> StrictVal<T>::operator+=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator+=(StrictVal<T> strict_val)
 { x += strict_val.x; return *this; }
 
 template<RealType T>
-constexpr inline StrictVal<T> StrictVal<T>::operator-=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator-=(StrictVal<T> strict_val)
 { x -= strict_val.x; return *this; }
 
 template<RealType T>
-constexpr inline StrictVal<T> StrictVal<T>::operator*=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator*=(StrictVal<T> strict_val)
 { x *= strict_val.x; return *this; }
 
 template<RealType T>
-constexpr inline StrictVal<T> StrictVal<T>::operator/=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator/=(StrictVal<T> strict_val)
 { x /= strict_val.x; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator%=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator%=(StrictVal<T> strict_val)
 { x %= strict_val.x; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator<<=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(StrictVal<T> strict_val)
 { x <<= strict_val.x; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator>>=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(StrictVal<T> strict_val)
 { x >>= strict_val.x; return *this; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator+=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator+=(U val)
 { static_assert(SameType<T, U>); x += val; return *this; }
 
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator-=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator-=(U val)
 { static_assert(SameType<T, U>); x -= val; return *this; }
 
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator*=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator*=(U val)
 { static_assert(SameType<T, U>); x *= val; return *this; }
 
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator/=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator/=(U val)
 { static_assert(SameType<T, U>); x /= val; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator%=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator%=(U val)
 { static_assert(SameType<T, U>); x %= val; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator<<=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(U val)
 { static_assert(SameType<T, U>); x <<= val; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> StrictVal<T>::operator>>=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(U val)
 { static_assert(SameType<T, U>); x >>= val; return *this; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-constexpr inline StrictVal<T> operator+=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val += T{strict_val}}; }
+template<RealType T, RealType U>
+constexpr inline U & operator+=(U & val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); val += T{strict_val}; return val; }
 
-template<RealType T>
-constexpr inline StrictVal<T> operator-=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val -= T{strict_val}}; }
+template<RealType T, RealType U>
+constexpr inline U & operator-=(U & val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); val -= T{strict_val}; return val; }
 
-template<RealType T>
-constexpr inline StrictVal<T> operator*=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val *= T{strict_val}}; }
+template<RealType T, RealType U>
+constexpr inline U & operator*=(U & val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); val *= T{strict_val}; return val; }
 
-template<RealType T>
-constexpr inline StrictVal<T> operator/=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val /= T{strict_val}}; }
+template<RealType T, RealType U>
+constexpr inline U & operator/=(U & val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); val /= T{strict_val}; return val; }
 
-template<IntegerType T>
-constexpr inline StrictVal<T> operator%=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val %= T{strict_val}}; }
+template<IntegerType T, IntegerType U>
+constexpr inline U & operator%=(U & val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); val %= T{strict_val}; return val; }
 
-template<IntegerType T>
-constexpr inline StrictVal<T> operator<<=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val <<= T{strict_val}}; }
+template<IntegerType T, IntegerType U>
+constexpr inline U & operator<<=(U & val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); val <<= T{strict_val}; return val; }
 
-template<IntegerType T>
-constexpr inline StrictVal<T> operator>>=(T & val, StrictVal<T> strict_val)
-{ return StrictVal<T>{val >>= T{strict_val}}; }
+template<IntegerType T, IntegerType U>
+constexpr inline U & operator>>=(U & val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); val >>= T{strict_val}; return val; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -296,62 +296,62 @@ template<IntegerType T>
 { return StrictVal<T>{T{T{v1} >> T{v2}}}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator+(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T{T{strict_val} + val}}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator+(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} + val}}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator-(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T{T{strict_val} - val}}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator-(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} - val}}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator*(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T{T{strict_val} * val}}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator*(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} * val}}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator/(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T{T{strict_val} / val}}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator/(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} / val}}; }
 
-template<IntegerType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator%(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T{T{strict_val} % val}}; }
+template<IntegerType T, IntegerType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator%(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} % val}}; }
 
-template<IntegerType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator<<(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T{T{strict_val} << val}}; }
+template<IntegerType T, IntegerType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator<<(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} << val}}; }
 
-template<IntegerType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator>>(StrictVal<T> strict_val, T val)
-{ return StrictVal<T>{T{T{strict_val} >> val}}; }
+template<IntegerType T, IntegerType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator>>(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} >> val}}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator+(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T{val + T{strict_val}}}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator+(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{val + T{strict_val}}}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator-(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T{val - T{strict_val}}}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator-(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{val - T{strict_val}}}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator*(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T{val * T{strict_val}}}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator*(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{val * T{strict_val}}}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator/(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T{val / T{strict_val}}}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator/(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{val / T{strict_val}}}; }
 
-template<IntegerType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator%(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T{val % T{strict_val}}}; }
+template<IntegerType T, IntegerType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator%(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{val % T{strict_val}}}; }
 
-template<IntegerType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator<<(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T{val << T{strict_val}}}; }
+template<IntegerType T, IntegerType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator<<(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{val << T{strict_val}}}; }
 
-template<IntegerType T>
-[[nodiscard]] constexpr inline StrictVal<T> operator>>(T val, StrictVal<T> strict_val)
-{ return StrictVal<T>{T{val >> T{strict_val}}}; }
+template<IntegerType T, IntegerType U>
+[[nodiscard]] constexpr inline StrictVal<T> operator>>(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return StrictVal<T>{T{val >> T{strict_val}}}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -379,54 +379,54 @@ template<RealType T>
 { return T{v1} != T{v2}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator==(StrictVal<T> strict_val, T val)
-{ return T{strict_val} == val; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator==(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return T{strict_val} == val; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator<(StrictVal<T> strict_val, T val)
-{ return T{strict_val} < val; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator<(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return T{strict_val} < val; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator>(StrictVal<T> strict_val, T val)
-{ return T{strict_val} > val; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator>(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return T{strict_val} > val; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator<=(StrictVal<T> strict_val, T val)
-{ return T{strict_val} <= val; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator<=(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return T{strict_val} <= val; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator>=(StrictVal<T> strict_val, T val)
-{ return T{strict_val} >= val; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator>=(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return T{strict_val} >= val; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator!=(StrictVal<T> strict_val, T val)
-{ return T{strict_val} != val; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator!=(StrictVal<T> strict_val, U val)
+{ static_assert(SameType<T, U>); return T{strict_val} != val; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator==(T val, StrictVal<T> strict_val)
-{ return val == T{strict_val}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator==(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return val == T{strict_val}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator<(T val, StrictVal<T> strict_val)
-{ return val < T{strict_val}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator<(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return val < T{strict_val}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator>(T val, StrictVal<T> strict_val)
-{ return val > T{strict_val}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator>(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return val > T{strict_val}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator<=(T val, StrictVal<T> strict_val)
-{ return val <= T{strict_val}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator<=(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return val <= T{strict_val}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator>=(T val, StrictVal<T> strict_val)
-{ return val >= T{strict_val}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator>=(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return val >= T{strict_val}; }
 
-template<RealType T>
-[[nodiscard]] constexpr inline bool operator!=(T val, StrictVal<T> strict_val)
-{ return val != T{strict_val}; }
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline bool operator!=(U val, StrictVal<T> strict_val)
+{ static_assert(SameType<T, U>); return val != T{strict_val}; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
