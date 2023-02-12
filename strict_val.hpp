@@ -49,21 +49,21 @@ public:
    constexpr StrictVal operator++(int) { StrictVal old{x}; ++x; return old; }
    constexpr StrictVal operator--(int) { StrictVal old{x}; --x; return old; }
 
-   constexpr inline StrictVal & operator+=(StrictVal strict_val);
-   constexpr inline StrictVal & operator-=(StrictVal strict_val);
-   constexpr inline StrictVal & operator*=(StrictVal strict_val);
-   constexpr inline StrictVal & operator/=(StrictVal strict_val);
-   template<IntegerType U = T> constexpr inline StrictVal & operator%=(StrictVal strict_val);
-   template<IntegerType U = T> constexpr inline StrictVal & operator<<=(StrictVal strict_val);
-   template<IntegerType U = T> constexpr inline StrictVal & operator>>=(StrictVal strict_val);
+   constexpr inline StrictVal & operator+=(StrictVal strict_val) &;
+   constexpr inline StrictVal & operator-=(StrictVal strict_val) &;
+   constexpr inline StrictVal & operator*=(StrictVal strict_val) &;
+   constexpr inline StrictVal & operator/=(StrictVal strict_val) &;
+   template<IntegerType U = T> constexpr inline StrictVal & operator%=(StrictVal strict_val) &;
+   template<IntegerType U = T> constexpr inline StrictVal & operator<<=(StrictVal strict_val) &;
+   template<IntegerType U = T> constexpr inline StrictVal & operator>>=(StrictVal strict_val) &;
 
-   template<RealType U> constexpr inline StrictVal & operator+=(U val);
-   template<RealType U> constexpr inline StrictVal & operator-=(U val);
-   template<RealType U> constexpr inline StrictVal & operator*=(U val);
-   template<RealType U> constexpr inline StrictVal & operator/=(U val);
-   template<IntegerType U = T> constexpr inline StrictVal & operator%=(U val);
-   template<IntegerType U = T> constexpr inline StrictVal & operator<<=(U val);
-   template<IntegerType U = T> constexpr inline StrictVal & operator>>=(U val);
+   template<RealType U> constexpr inline StrictVal & operator+=(U val) &;
+   template<RealType U> constexpr inline StrictVal & operator-=(U val) &;
+   template<RealType U> constexpr inline StrictVal & operator*=(U val) &;
+   template<RealType U> constexpr inline StrictVal & operator/=(U val) &;
+   template<IntegerType U = T> constexpr inline StrictVal & operator%=(U val) &;
+   template<IntegerType U = T> constexpr inline StrictVal & operator<<=(U val) &;
+   template<IntegerType U = T> constexpr inline StrictVal & operator>>=(U val) &;
 
 private:
    T x{};
@@ -181,60 +181,60 @@ template<RealType T> template<RealType U>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-constexpr inline StrictVal<T> & StrictVal<T>::operator+=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator+=(StrictVal<T> strict_val) &
 { x += strict_val.x; return *this; }
 
 template<RealType T>
-constexpr inline StrictVal<T> & StrictVal<T>::operator-=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator-=(StrictVal<T> strict_val) &
 { x -= strict_val.x; return *this; }
 
 template<RealType T>
-constexpr inline StrictVal<T> & StrictVal<T>::operator*=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator*=(StrictVal<T> strict_val) &
 { x *= strict_val.x; return *this; }
 
 template<RealType T>
-constexpr inline StrictVal<T> & StrictVal<T>::operator/=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator/=(StrictVal<T> strict_val) &
 { x /= strict_val.x; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator%=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator%=(StrictVal<T> strict_val) &
 { x %= strict_val.x; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(StrictVal<T> strict_val) &
 { x <<= strict_val.x; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(StrictVal<T> strict_val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(StrictVal<T> strict_val) &
 { x >>= strict_val.x; return *this; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator+=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator+=(U val) &
 { static_assert(SameType<T, U>); x += val; return *this; }
 
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator-=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator-=(U val) &
 { static_assert(SameType<T, U>); x -= val; return *this; }
 
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator*=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator*=(U val) &
 { static_assert(SameType<T, U>); x *= val; return *this; }
 
 template<RealType T> template<RealType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator/=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator/=(U val) &
 { static_assert(SameType<T, U>); x /= val; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator%=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator%=(U val) &
 { static_assert(SameType<T, U>); x %= val; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(U val) &
 { static_assert(SameType<T, U>); x <<= val; return *this; }
 
 template<RealType T> template<IntegerType U>
-constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(U val)
+constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(U val) &
 { static_assert(SameType<T, U>); x >>= val; return *this; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
