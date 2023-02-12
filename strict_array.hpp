@@ -55,15 +55,15 @@ public:
 
    ~Array();
 
-   Array & operator+=(StrictVal<T> val);
-   Array & operator-=(StrictVal<T> val);
-   Array & operator*=(StrictVal<T> val);
-   Array & operator/=(StrictVal<T> val);
+   Array & operator+=(StrictVal<T> val) &;
+   Array & operator-=(StrictVal<T> val) &;
+   Array & operator*=(StrictVal<T> val) &;
+   Array & operator/=(StrictVal<T> val) &;
 
-   template<ArrayBaseType ArrayType> Array & operator+=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> Array & operator-=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> Array & operator*=(const ArrayType & A);
-   template<ArrayBaseType ArrayType> Array & operator/=(const ArrayType & A);
+   template<ArrayBaseType ArrayType> Array & operator+=(const ArrayType & A) &;
+   template<ArrayBaseType ArrayType> Array & operator-=(const ArrayType & A) &;
+   template<ArrayBaseType ArrayType> Array & operator*=(const ArrayType & A) &;
+   template<ArrayBaseType ArrayType> Array & operator/=(const ArrayType & A) &;
 
    void swap(Array & A) noexcept;
    void resize(size_type size);
@@ -487,7 +487,7 @@ template<RealType T> Array<T>::~Array()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-Array<T> & Array<T>::operator+=(StrictVal<T> val)
+Array<T> & Array<T>::operator+=(StrictVal<T> val) &
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { elem[i] += val; } );
@@ -495,7 +495,7 @@ Array<T> & Array<T>::operator+=(StrictVal<T> val)
 }
 
 template<RealType T>
-Array<T> & Array<T>::operator-=(StrictVal<T> val)
+Array<T> & Array<T>::operator-=(StrictVal<T> val) &
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { elem[i] -= val; } );
@@ -503,7 +503,7 @@ Array<T> & Array<T>::operator-=(StrictVal<T> val)
 }
 
 template<RealType T>
-Array<T> & Array<T>::operator*=(StrictVal<T> val)
+Array<T> & Array<T>::operator*=(StrictVal<T> val) &
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { elem[i] *= val; } );
@@ -511,7 +511,7 @@ Array<T> & Array<T>::operator*=(StrictVal<T> val)
 }
 
 template<RealType T>
-Array<T> & Array<T>::operator/=(StrictVal<T> val)
+Array<T> & Array<T>::operator/=(StrictVal<T> val) &
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { elem[i] /= val; } );
@@ -520,7 +520,7 @@ Array<T> & Array<T>::operator/=(StrictVal<T> val)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<ArrayBaseType ArrayType>
-Array<T> & Array<T>::operator+=(const ArrayType & A)
+Array<T> & Array<T>::operator+=(const ArrayType & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size()); // Changed A.sz to A.size().
    ASSERT_STRICT_DEBUG(!empty());
@@ -529,7 +529,7 @@ Array<T> & Array<T>::operator+=(const ArrayType & A)
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
-Array<T> & Array<T>::operator-=(const ArrayType & A)
+Array<T> & Array<T>::operator-=(const ArrayType & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -538,7 +538,7 @@ Array<T> & Array<T>::operator-=(const ArrayType & A)
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
-Array<T> & Array<T>::operator*=(const ArrayType & A)
+Array<T> & Array<T>::operator*=(const ArrayType & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -547,7 +547,7 @@ Array<T> & Array<T>::operator*=(const ArrayType & A)
 }
 
 template<RealType T> template<ArrayBaseType ArrayType>
-Array<T> & Array<T>::operator/=(const ArrayType & A)
+Array<T> & Array<T>::operator/=(const ArrayType & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
