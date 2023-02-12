@@ -72,8 +72,8 @@ public:
    [[nodiscard]] inline StrictVal<T> & operator[](size_type i);
    [[nodiscard]] inline const StrictVal<T> & operator[](size_type i) const;
 
-   [[nodiscard]] auto sl(size_type first, size_type last);
-   [[nodiscard]] auto sl(size_type first, size_type last) const;
+   [[nodiscard]] inline auto sl(size_type first, size_type last);
+   [[nodiscard]] inline auto sl(size_type first, size_type last) const;
 
    [[nodiscard]] StrictVal<T> & front() { return elem[0]; }
    [[nodiscard]] StrictVal<T> & back() { return elem[sz-1]; }
@@ -242,7 +242,7 @@ private:
    Slice<size_type> slice;
 
 public:
-   explicit SliceArray(BaseT & A, Slice<size_type> slice);
+   explicit inline SliceArray(BaseT & A, Slice<size_type> slice);
    SliceArray(const SliceArray & s);
 
    SliceArray & operator=(const SliceArray & s);
@@ -251,10 +251,13 @@ public:
    SliceArray & operator=(StrictVal<real_type> s);
    SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
 
-   [[nodiscard]] auto operator[](size_type i) -> decltype((*A)[i]) { return (*A)[slice.start()+i*slice.stride()]; }
-   [[nodiscard]] auto operator[](size_type i) const -> decltype((*A)[i]) { return (*A)[slice.start()+i*slice.stride()]; }
-   [[nodiscard]] auto sl(size_type first, size_type last);
-   [[nodiscard]] auto sl(size_type first, size_type last) const;
+   [[nodiscard]] auto operator[](size_type i) -> decltype((*A)[i])
+   { return (*A)[slice.start() + i*slice.stride()]; }
+   [[nodiscard]] auto operator[](size_type i) const -> decltype((*A)[i])
+   { return (*A)[slice.start() + i*slice.stride()]; }
+
+   [[nodiscard]] inline auto sl(size_type first, size_type last);
+   [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] bool empty() const { return A->empty(); }
 
@@ -305,13 +308,13 @@ private:
    Slice<size_type> slice;
 
 public:
-   explicit ConstSliceArray(const BaseT & A, Slice<size_type> slice);
+   explicit inline ConstSliceArray(const BaseT & A, Slice<size_type> slice);
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
    [[nodiscard]] auto operator[](size_type i) const -> decltype((*A)[i]) { return (*A)[slice.start()+i*slice.stride()]; }
    [[nodiscard]] size_type size() const { return slice.size(); }
-   [[nodiscard]] auto sl(size_type first, size_type last) const;
+   [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] bool empty() const { return A->empty(); }
 
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
@@ -377,27 +380,31 @@ namespace internal {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> Array<T>::Array() :
+template<RealType T>
+Array<T>::Array() :
    elem{},
    sz{}
 {}
 
-template<RealType T> Array<T>::Array(size_type size) :
+template<RealType T>
+Array<T>::Array(size_type size) :
    elem{new StrictVal<T>[static_cast<std::size_t>(size)]},
    sz{size}
 {
    ASSERT_STRICT_DEBUG(sz > -1);
 }
 
-template<RealType T> Array<T>::Array(size_type size, StrictVal<T> val)
-   : Array(size)
+template<RealType T>
+Array<T>::Array(size_type size, StrictVal<T> val) :
+   Array(size)
 {
    ASSERT_STRICT_DEBUG(sz > 0);
    std::fill(begin(), end(), val);
 }
 
-template<RealType T> Array<T>::Array(std::initializer_list<StrictVal<T>> list)
-   : Array(static_cast<size_type>(list.size()))
+template<RealType T>
+Array<T>::Array(std::initializer_list<StrictVal<T>> list) :
+   Array(static_cast<size_type>(list.size()))
 {
    std::copy(list.begin(), list.end(), begin());
 }
@@ -408,13 +415,15 @@ template<RealType T> Array<T>::Array(const Array<T> & A) :
    std::copy(A.begin(), A.end(), begin());
 }
 
-template<RealType T> Array<T>::Array(Array<T> && A) noexcept :
+template<RealType T>
+Array<T>::Array(Array<T> && A) noexcept :
    elem{std::exchange(A.elem, {})},
    sz{std::exchange(A.sz, {})}
 {}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> Array<T> & Array<T>::operator=(StrictVal<T> val) &
+template<RealType T>
+Array<T> & Array<T>::operator=(StrictVal<T> val) &
 {
    ASSERT_STRICT_DEBUG(!empty());
    std::fill(begin(), end(), val);
@@ -429,7 +438,8 @@ Array<T> & Array<T>::operator=(std::initializer_list<StrictVal<T>> list) &
    return *this;
 }
 
-template<RealType T> Array<T> & Array<T>::operator=(const Array<T> & A) &
+template<RealType T>
+Array<T> & Array<T>::operator=(const Array<T> & A) &
 {
    if(this != &A) {
       ASSERT_STRICT_DEBUG(sz == A.sz);
@@ -438,7 +448,8 @@ template<RealType T> Array<T> & Array<T>::operator=(const Array<T> & A) &
    return *this;
 }
 
-template<RealType T> Array<T> & Array<T>::operator=(Array<T> && A) & noexcept
+template<RealType T>
+Array<T> & Array<T>::operator=(Array<T> && A) & noexcept
 {
    ASSERT_STRICT_DEBUG(sz == A.sz);
    Array<T> temp(std::move(A));
@@ -456,8 +467,8 @@ Array<T> & Array<T>::Assign(const BType & A) &
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<ArrayExprType ArrExpr>
-Array<T>::Array(const ArrExpr & expr)
-   : Array(expr.size())
+Array<T>::Array(const ArrExpr & expr) :
+   Array(expr.size())
 {
    std::copy(expr.begin(), expr.end(), begin());
 }
@@ -520,7 +531,7 @@ Array<T> & Array<T>::operator+=(const ArrayType & A)
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator-=(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(sz == A.size()); // Changed A.sz to A.size().
+   ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
    apply1(A, [&](size_type i) { elem[i] -= A[i]; });
    return *this;
@@ -529,7 +540,7 @@ Array<T> & Array<T>::operator-=(const ArrayType & A)
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator*=(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(sz == A.size()); // Changed A.sz to A.size().
+   ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
    apply1(A, [&](size_type i) { elem[i] *= A[i]; });
    return *this;
@@ -538,27 +549,30 @@ Array<T> & Array<T>::operator*=(const ArrayType & A)
 template<RealType T> template<ArrayBaseType ArrayType>
 Array<T> & Array<T>::operator/=(const ArrayType & A)
 {
-   ASSERT_STRICT_DEBUG(sz == A.size()); // Changed A.sz to A.size().
+   ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
    apply1(A, [&](size_type i) { elem[i] /= A[i]; });
    return *this;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> void Array<T>::swap(Array<T> & A) noexcept
+template<RealType T>
+void Array<T>::swap(Array<T> & A) noexcept
 {
    std::swap(elem, A.elem);
    std::swap(sz, A.sz);
 }
 
-template<RealType T> void Array<T>::resize(size_type size)
+template<RealType T>
+void Array<T>::resize(size_type size)
 {
    Array<T> temp(size);
    std::copy(begin(), begin() + std::min(sz, size), temp.begin());
    swap(temp);
 }
 
-template<RealType T> void Array<T>::resize_and_assign(const Array<T> & A)
+template<RealType T>
+void Array<T>::resize_and_assign(const Array<T> & A)
 {
    resize(A.size());
    *this = A;
@@ -566,7 +580,7 @@ template<RealType T> void Array<T>::resize_and_assign(const Array<T> & A)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-inline StrictVal<T> & Array<T>::operator[](size_type i)
+[[nodiscard]] inline StrictVal<T> & Array<T>::operator[](size_type i)
 {
    #ifdef STRICT_DEBUG_ON
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
@@ -575,7 +589,7 @@ inline StrictVal<T> & Array<T>::operator[](size_type i)
 }
 
 template<RealType T>
-inline const StrictVal<T> & Array<T>::operator[](size_type i) const
+[[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](size_type i) const
 {
    #ifdef STRICT_DEBUG_ON
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
@@ -584,7 +598,7 @@ inline const StrictVal<T> & Array<T>::operator[](size_type i) const
 }
 
 template<RealType T>
-auto Array<T>::sl(size_type first, size_type last)
+[[nodiscard]] inline auto Array<T>::sl(size_type first, size_type last)
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -594,7 +608,7 @@ auto Array<T>::sl(size_type first, size_type last)
 }
 
 template<RealType T>
-auto Array<T>::sl(size_type first, size_type last) const
+[[nodiscard]] inline auto Array<T>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -605,7 +619,7 @@ auto Array<T>::sl(size_type first, size_type last) const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-std::vector<StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T> high)
+[[nodiscard]] std::vector<StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T> high)
 {
    ASSERT_STRICT_DEBUG(!empty());
    ASSERT_STRICT_DEBUG(high >= low);
@@ -617,7 +631,7 @@ std::vector<StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T>
 }
 
 template<RealType T>
-std::vector<const StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T> high) const
+[[nodiscard]] std::vector<const StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T> high) const
 {
    ASSERT_STRICT_DEBUG(!empty());
    ASSERT_STRICT_DEBUG(high >= low);
@@ -628,20 +642,22 @@ std::vector<const StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, Strict
    return v;
 }
 
-template<RealType T> void Array<T>::sort_decreasing()
+template<RealType T>
+void Array<T>::sort_decreasing()
 {
    ASSERT_STRICT_DEBUG(!empty());
    std::sort(begin(), end(), [](auto a, auto b) { return a > b; });
 }
 
-template<RealType T> void Array<T>::sort_increasing()
+template<RealType T>
+void Array<T>::sort_increasing()
 {
    ASSERT_STRICT_DEBUG(!empty());
    std::sort(begin(), end(), [](auto a, auto b) { return a < b; });
 }
 
 template<RealType T>
-Array<T> Array<T>::sub_array(size_type first, size_type last)
+[[nodiscard]] Array<T> Array<T>::sub_array(size_type first, size_type last)
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -653,7 +669,7 @@ Array<T> Array<T>::sub_array(size_type first, size_type last)
 }
 
 template<RealType T> template<RealType U>
-Array<U> Array<T>::convert() const
+[[nodiscard]] Array<U> Array<T>::convert() const
 {
    Array<U> A(size());
    for(size_type i = 0; i < size(); ++i)
@@ -687,7 +703,7 @@ void Array<T>::apply1(const ArrayType & A, F f)
 }
 
 template<IntegerType T>
-Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
+[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
    ASSERT_STRICT_DEBUG(size > 0);
    ASSERT_STRICT_DEBUG(high >= low);
@@ -700,7 +716,7 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 }
 
 template<FloatingType T>
-Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
+[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
    ASSERT_STRICT_DEBUG(size > 0);
    ASSERT_STRICT_DEBUG(high >= low);
@@ -713,7 +729,7 @@ Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, Stric
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
-SliceArray<BaseT>::SliceArray(BaseT & A, Slice<size_type> slice) : A{&A}, slice{slice}
+inline SliceArray<BaseT>::SliceArray(BaseT & A, Slice<size_type> slice) : A{&A}, slice{slice}
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(A, slice.start()));
    ASSERT_STRICT_DEBUG(internal::valid_index(A, slice.start() + slice.stride() * (slice.size()-1)));
@@ -756,7 +772,7 @@ SliceArray<BaseT> & SliceArray<BaseT>::operator=(std::initializer_list<StrictVal
 }
 
 template<BaseType BaseT>
-auto SliceArray<BaseT>::sl(size_type first, size_type last)
+[[nodiscard]] inline auto SliceArray<BaseT>::sl(size_type first, size_type last)
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -766,7 +782,7 @@ auto SliceArray<BaseT>::sl(size_type first, size_type last)
 }
 
 template<BaseType BaseT>
-auto SliceArray<BaseT>::sl(size_type first, size_type last) const
+[[nodiscard]] inline auto SliceArray<BaseT>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -860,7 +876,7 @@ void SliceArray<BaseT>::apply1(const SliceArrayType & A, F f)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
-ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, Slice<size_type> slice) : A{&A}, slice{slice}
+inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, Slice<size_type> slice) : A{&A}, slice{slice}
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(A, slice.start()));
    ASSERT_STRICT_DEBUG(internal::valid_index(A, slice.start() + slice.stride() * (slice.size()-1)));
@@ -871,7 +887,7 @@ ConstSliceArray<BaseT>::ConstSliceArray(const ConstSliceArray<BaseT> & cs) : A{c
 {}
 
 template<BaseType BaseT>
-auto ConstSliceArray<BaseT>::sl(size_type first, size_type last) const
+[[nodiscard]] inline auto ConstSliceArray<BaseT>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -946,7 +962,7 @@ public:
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i]); }
-   [[nodiscard]] auto sl(size_type first, size_type last) const;
+   [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -966,7 +982,7 @@ private:
 };
 
 template<BaseType T, UnaryOperationType Op>
-auto UnaryExpr<T, Op>::sl(size_type first, size_type last) const
+[[nodiscard]] inline auto UnaryExpr<T, Op>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -999,7 +1015,7 @@ public:
    BinExpr & operator=(const BinExpr &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], B[i]); }
-   [[nodiscard]] auto sl(size_type first, size_type last) const;
+   [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -1020,7 +1036,7 @@ private:
 };
 
 template<ArrayBaseType T1, ArrayBaseType T2, BinaryOperationType Op>
-auto BinExpr<T1, T2, Op>::sl(size_type first, size_type last) const
+[[nodiscard]] inline auto BinExpr<T1, T2, Op>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -1049,7 +1065,7 @@ public:
    BinExprValLeft & operator=(const BinExprValLeft &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(val, B[i]); }
-   [[nodiscard]] auto sl(size_type first, size_type last) const;
+   [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return B.size(); }
    [[nodiscard]] bool empty() const { return B.empty(); }
 
@@ -1070,7 +1086,7 @@ private:
 };
 
 template<ArrayBaseType T1, RealType T2, BinaryOperationType Op>
-auto BinExprValLeft<T1, T2, Op>::sl(size_type first, size_type last) const
+[[nodiscard]] inline auto BinExprValLeft<T1, T2, Op>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -1099,7 +1115,7 @@ public:
    BinExprValRight & operator=(const BinExprValRight &) = delete;
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], val); }
-   [[nodiscard]] auto sl(size_type first, size_type last) const;
+   [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -1120,7 +1136,7 @@ private:
 };
 
 template<ArrayBaseType T1, RealType T2, BinaryOperationType Op>
-auto BinExprValRight<T1, T2, Op>::sl(size_type first, size_type last) const
+[[nodiscard]] inline auto BinExprValRight<T1, T2, Op>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -1131,198 +1147,198 @@ auto BinExprValRight<T1, T2, Op>::sl(size_type first, size_type last) const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T1, SliceArrayBaseType T2>
-auto operator+(const T1 & A, const T2 & B)
+[[nodiscard]] auto operator+(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Plus{}); }
 
 template<SliceArrayBaseType T1, SliceArrayBaseType T2>
-auto operator-(const T1 & A, const T2 & B)
+[[nodiscard]] auto operator-(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Minus{}); }
 
 template<SliceArrayBaseType T1, SliceArrayBaseType T2>
-auto operator*(const T1 & A, const T2 & B)
+[[nodiscard]] auto operator*(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Mult{}); }
 
 template<SliceArrayBaseType T1, SliceArrayBaseType T2>
-auto operator/(const T1 & A, const T2 & B)
+[[nodiscard]] auto operator/(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T, RealType U>
-auto operator+(StrictVal<U> val, const T & B)
+[[nodiscard]] auto operator+(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Plus{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator-(StrictVal<U> val, const T & B)
+[[nodiscard]] auto operator-(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Minus{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator*(StrictVal<U> val, const T & B)
+[[nodiscard]] auto operator*(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Mult{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator/(StrictVal<U> val, const T & B)
+[[nodiscard]] auto operator/(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T, RealType U>
-auto operator+(const T & A, StrictVal<U> val)
+[[nodiscard]] auto operator+(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Plus{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator-(const T & A, StrictVal<U> val)
+[[nodiscard]] auto operator-(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Minus{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator*(const T & A, StrictVal<U> val)
+[[nodiscard]] auto operator*(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Mult{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator/(const T & A, StrictVal<U> val)
+[[nodiscard]] auto operator/(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T, RealType U>
-auto operator+(U val, const T & B)
+[[nodiscard]] auto operator+(U val, const T & B)
 { return BinExprValLeft(B, val, Plus{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator-(U val, const T & B)
+[[nodiscard]] auto operator-(U val, const T & B)
 { return BinExprValLeft(B, val, Minus{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator*(U val, const T & B)
+[[nodiscard]] auto operator*(U val, const T & B)
 { return BinExprValLeft(B, val, Mult{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator/(U val, const T & B)
+[[nodiscard]] auto operator/(U val, const T & B)
 { return BinExprValLeft(B, val, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T, RealType U>
-auto operator+(const T & A, U val)
+[[nodiscard]] auto operator+(const T & A, U val)
 { return BinExprValRight(A, val, Plus{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator-(const T & A, U val)
+[[nodiscard]] auto operator-(const T & A, U val)
 { return BinExprValRight(A, val, Minus{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator*(const T & A, U val)
+[[nodiscard]] auto operator*(const T & A, U val)
 { return BinExprValRight(A, val, Mult{}); }
 
 template<SliceArrayBaseType T, RealType U>
-auto operator/(const T & A, U val)
+[[nodiscard]] auto operator/(const T & A, U val)
 { return BinExprValRight(A, val, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<SliceArrayBaseType T>
-const auto & operator+(const T & A)
+[[nodiscard]] const auto & operator+(const T & A)
 { return A; }
 
 template<SliceArrayBaseType T>
-auto operator-(const T & A)
+[[nodiscard]] auto operator-(const T & A)
 { return UnaryExpr(A, UnaryMinus{}); }
 
 template<SliceArrayBaseType T>
-auto abs(const T & A)
+[[nodiscard]] auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T1, ArrayBaseType T2>
-auto operator+(const T1 & A, const T2 & B)
+[[nodiscard]] auto operator+(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Plus{}); }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
-auto operator-(const T1 & A, const T2 & B)
+[[nodiscard]] auto operator-(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Minus{}); }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
-auto operator*(const T1 & A, const T2 & B)
+[[nodiscard]] auto operator*(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Mult{}); }
 
 template<ArrayBaseType T1, ArrayBaseType T2>
-auto operator/(const T1 & A, const T2 & B)
+[[nodiscard]] auto operator/(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
-auto operator+(StrictVal<U> val, const T & B)
+[[nodiscard]] auto operator+(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Plus{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator-(StrictVal<U> val, const T & B)
+[[nodiscard]] auto operator-(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Minus{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator*(StrictVal<U> val, const T & B)
+[[nodiscard]] auto operator*(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Mult{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator/(StrictVal<U> val, const T & B)
+[[nodiscard]] auto operator/(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
-auto operator+(const T & A, StrictVal<U> val)
+[[nodiscard]] auto operator+(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Plus{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator-(const T & A, StrictVal<U> val)
+[[nodiscard]] auto operator-(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Minus{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator*(const T & A, StrictVal<U> val)
+[[nodiscard]] auto operator*(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Mult{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator/(const T & A, StrictVal<U> val)
+[[nodiscard]] auto operator/(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
-auto operator+(U val, const T & B)
+[[nodiscard]] auto operator+(U val, const T & B)
 { return BinExprValLeft(B, val, Plus{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator-(U val, const T & B)
+[[nodiscard]] auto operator-(U val, const T & B)
 { return BinExprValLeft(B, val, Minus{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator*(U val, const T & B)
+[[nodiscard]] auto operator*(U val, const T & B)
 { return BinExprValLeft(B, val, Mult{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator/(U val, const T & B)
+[[nodiscard]] auto operator/(U val, const T & B)
 { return BinExprValLeft(B, val, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T, RealType U>
-auto operator+(const T & A, U val)
+[[nodiscard]] auto operator+(const T & A, U val)
 { return BinExprValRight(A, val, Plus{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator-(const T & A, U val)
+[[nodiscard]] auto operator-(const T & A, U val)
 { return BinExprValRight(A, val, Minus{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator*(const T & A, U val)
+[[nodiscard]] auto operator*(const T & A, U val)
 { return BinExprValRight(A, val, Mult{}); }
 
 template<ArrayBaseType T, RealType U>
-auto operator/(const T & A, U val)
+[[nodiscard]] auto operator/(const T & A, U val)
 { return BinExprValRight(A, val, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T>
-const auto & operator+(const T & A)
+[[nodiscard]] const auto & operator+(const T & A)
 { return A; }
 
 template<ArrayBaseType T>
-auto operator-(const T & A)
+[[nodiscard]] auto operator-(const T & A)
 { return UnaryExpr(A, UnaryMinus{}); }
 
 template<ArrayBaseType T>
-auto abs(const T & A)
+[[nodiscard]] auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
 
 template<BaseType BaseT>
@@ -1347,7 +1363,7 @@ void print(const BaseT & A, const std::string & name)
 }
 
 template<FloatingBaseType FloatBaseT>
-auto sum(const FloatBaseT & A)
+[[nodiscard]] auto sum(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    using rv_T = typename FloatBaseT::real_type;
@@ -1364,7 +1380,7 @@ auto sum(const FloatBaseT & A)
 }
 
 template<IntegerBaseType IntBaseT>
-auto sum(const IntBaseT & A)
+[[nodiscard]] auto sum(const IntBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    auto sum = A[0];
@@ -1374,7 +1390,7 @@ auto sum(const IntBaseT & A)
 }
 
 template<BaseType BaseT>
-auto max(const BaseT & A)
+[[nodiscard]] auto max(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    auto max_elem = A[0];
@@ -1384,7 +1400,7 @@ auto max(const BaseT & A)
 }
 
 template<BaseType BaseT>
-auto min(const BaseT & A)
+[[nodiscard]] auto min(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    auto min_elem = A[0];
@@ -1394,7 +1410,7 @@ auto min(const BaseT & A)
 }
 
 template<BaseType BaseT>
-auto max_index(const BaseT & A)
+[[nodiscard]] auto max_index(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    using sz_T = typename BaseT::size_type;
@@ -1408,7 +1424,7 @@ auto max_index(const BaseT & A)
 }
 
 template<BaseType BaseT>
-auto min_index(const BaseT & A)
+[[nodiscard]] auto min_index(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    using sz_T = typename BaseT::size_type;
@@ -1422,7 +1438,7 @@ auto min_index(const BaseT & A)
 }
 
 template<FloatingBaseType FloatBaseT>
-bool all_finite(const FloatBaseT & A)
+[[nodiscard]] bool all_finite(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto x : A)
@@ -1431,7 +1447,7 @@ bool all_finite(const FloatBaseT & A)
 }
 
 template<FloatingBaseType FloatBaseT>
-auto norm_inf(const FloatBaseT & A)
+[[nodiscard]] auto norm_inf(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    auto max_abs = abss(A[0]);
@@ -1443,14 +1459,14 @@ auto norm_inf(const FloatBaseT & A)
 }
 
 template<FloatingBaseType FloatBaseT>
-auto norm2(const FloatBaseT & A)
+[[nodiscard]] auto norm2(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    return sqrts(dot_prod(A, A));
 }
 
 template<BaseType BType1, BaseType BType2>
-auto dot_prod(const BType1 & A1, const BType2 & A2)
+[[nodiscard]] auto dot_prod(const BType1 & A1, const BType2 & A2)
 {
    static_assert(SameType<typename BType1::base_type, typename BType2::base_type>);
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
@@ -1459,7 +1475,7 @@ auto dot_prod(const BType1 & A1, const BType2 & A2)
 }
 
 template<BaseType BaseT>
-bool does_contain_zero(const BaseT & A)
+[[nodiscard]] bool does_contain_zero(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    using T = typename BaseT::real_type;
@@ -1469,7 +1485,7 @@ bool does_contain_zero(const BaseT & A)
 }
 
 template<BaseType BaseT>
-bool all_positive(const BaseT & A)
+[[nodiscard]] bool all_positive(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    using T = typename BaseT::real_type;
@@ -1479,7 +1495,7 @@ bool all_positive(const BaseT & A)
 }
 
 template<BaseType BaseT>
-bool all_negative(const BaseT & A)
+[[nodiscard]] bool all_negative(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    using T = typename BaseT::real_type;
