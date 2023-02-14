@@ -31,9 +31,10 @@ public:
    using size_type = long long int;
    using value_type = StrictVal<T>;
    using real_type = T;
-   using expr_type = const Array<T> &;
    using base_type = ArrayBase;
    using expr_base_type = ArrayExpr;
+   using expr_type = const Array<T> &;
+   using slice_type = Array<T> &;
 
    explicit Array();
    explicit Array(size_type size);
@@ -229,23 +230,24 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BaseT>
+template<DirectType DirectT>
 class SliceArray : private SliceArrayBase
 {
 public:
-   using size_type = typename BaseT::size_type;
-   using value_type = typename BaseT::value_type;
-   using real_type = typename BaseT::real_type;
-   using expr_type = const SliceArray<BaseT>;
+   using size_type = typename DirectT::size_type;
+   using value_type = typename DirectT::value_type;
+   using real_type = typename DirectT::real_type;
    using base_type = SliceArrayBase;
    using expr_base_type = SliceArrayExpr;
+   using expr_type = const SliceArray<DirectT>;
+   using slice_type = SliceArray<DirectT>;
 
 private:
-   BaseT* const A;
+   typename DirectT::slice_type A;
    Slice<size_type> slice;
 
 public:
-   explicit inline SliceArray(BaseT & A, Slice<size_type> slice);
+   explicit inline SliceArray(DirectT & A, Slice<size_type> slice);
    SliceArray(const SliceArray & s);
 
    SliceArray & operator=(const SliceArray & s);
@@ -254,10 +256,10 @@ public:
    SliceArray & operator=(StrictVal<real_type> s);
    SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
 
-   [[nodiscard]] decltype(auto) operator[](size_type i)
-      { return (*A)[slice.start() + i*slice.stride()]; }
-   [[nodiscard]] decltype(auto) operator[](size_type i) const
-      { return (*A)[slice.start() + i*slice.stride()]; }
+   [[nodiscard]] auto & operator[](size_type i)
+      { return A[slice.start() + i*slice.stride()]; }
+   [[nodiscard]] const auto & operator[](size_type i) const
+      { return A[slice.start() + i*slice.stride()]; }
 
    [[nodiscard]] inline auto sl(size_type first, size_type last);
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
@@ -265,7 +267,7 @@ public:
    [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride) const;
 
    [[nodiscard]] size_type size() const { return slice.size(); }
-   [[nodiscard]] bool empty() const { return A->empty(); }
+   [[nodiscard]] bool empty() const { return A.empty(); }
 
    SliceArray & operator+=(StrictVal<real_type> val);
    SliceArray & operator-=(StrictVal<real_type> val);
@@ -305,12 +307,13 @@ public:
    using size_type = typename BaseT::size_type;
    using value_type = typename BaseT::value_type;
    using real_type = typename BaseT::real_type;
-   using expr_type = const ConstSliceArray<BaseT>;
    using base_type = SliceArrayBase;
    using expr_base_type = SliceArrayExpr;
+   using expr_type = const ConstSliceArray<BaseT>;
+   using slice_type = ConstSliceArray<BaseT>;
 
 private:
-   const BaseT* const A;
+   typename BaseT::expr_type A;
    Slice<size_type> slice;
 
 public:
@@ -319,13 +322,13 @@ public:
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
    [[nodiscard]] decltype(auto) operator[](size_type i) const
-      { return (*A)[slice.start()+i*slice.stride()]; }
+      { return A[slice.start()+i*slice.stride()]; }
 
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride) const;
 
    [[nodiscard]] size_type size() const { return slice.size(); }
-   [[nodiscard]] bool empty() const { return A->empty(); }
+   [[nodiscard]] bool empty() const { return A.empty(); }
 
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
@@ -763,24 +766,24 @@ template<FloatingType T>
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BaseT>
-inline SliceArray<BaseT>::SliceArray(BaseT & A, Slice<size_type> slice) : A{&A}, slice{slice}
+template<DirectType DirectT>
+inline SliceArray<DirectT>::SliceArray(DirectT & A, Slice<size_type> slice) : A{A}, slice{slice}
 { ASSERT_STRICT_DEBUG(internal::valid_slice(A, slice)); }
 
-template<BaseType BaseT>
-SliceArray<BaseT>::SliceArray(const SliceArray<BaseT> & s) : A{s.A}, slice{s.slice}
+template<DirectType DirectT>
+SliceArray<DirectT>::SliceArray(const SliceArray<DirectT> & s) : A{s.A}, slice{s.slice}
 {}
 
-template<BaseType BaseT>
-SliceArray<BaseT> & SliceArray<BaseT>::operator=(const SliceArray<BaseT> & s)
+template<DirectType DirectT>
+SliceArray<DirectT> & SliceArray<DirectT>::operator=(const SliceArray<DirectT> & s)
 {
    ASSERT_STRICT_DEBUG(size() == s.size());
    std::copy(s.begin(), s.end(), begin());
    return *this;
 }
 
-template<BaseType BaseT> template<SliceArrayBaseType SType>
-SliceArray<BaseT> & SliceArray<BaseT>::operator=(const SType & s)
+template<DirectType DirectT> template<SliceArrayBaseType SType>
+SliceArray<DirectT> & SliceArray<DirectT>::operator=(const SType & s)
 {
    static_assert(SameType<typename SType::real_type, real_type>);
    ASSERT_STRICT_DEBUG(size() == s.size());
@@ -788,23 +791,23 @@ SliceArray<BaseT> & SliceArray<BaseT>::operator=(const SType & s)
    return *this;
 }
 
-template<BaseType BaseT>
-SliceArray<BaseT> & SliceArray<BaseT>::operator=(StrictVal<real_type> val)
+template<DirectType DirectT>
+SliceArray<DirectT> & SliceArray<DirectT>::operator=(StrictVal<real_type> val)
 {
    std::fill(begin(), end(), val);
    return *this;
 }
 
-template<BaseType BaseT>
-SliceArray<BaseT> & SliceArray<BaseT>::operator=(std::initializer_list<StrictVal<real_type>> list)
+template<DirectType DirectT>
+SliceArray<DirectT> & SliceArray<DirectT>::operator=(std::initializer_list<StrictVal<real_type>> list)
 {
    ASSERT_STRICT_DEBUG(size() == static_cast<size_type>(list.size()));
    std::copy(list.begin(), list.end(), begin());
    return *this;
 }
 
-template<BaseType BaseT>
-[[nodiscard]] inline auto SliceArray<BaseT>::sl(size_type first, size_type last)
+template<DirectType DirectT>
+[[nodiscard]] inline auto SliceArray<DirectT>::sl(size_type first, size_type last)
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -813,8 +816,8 @@ template<BaseType BaseT>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
-template<BaseType BaseT>
-[[nodiscard]] inline auto SliceArray<BaseT>::sl(size_type first, size_type last) const
+template<DirectType DirectT>
+[[nodiscard]] inline auto SliceArray<DirectT>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -823,56 +826,56 @@ template<BaseType BaseT>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
-template<BaseType BaseT>
-[[nodiscard]] inline auto SliceArray<BaseT>::sl(size_type start, size_type size, size_type stride)
+template<DirectType DirectT>
+[[nodiscard]] inline auto SliceArray<DirectT>::sl(size_type start, size_type size, size_type stride)
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
    return SliceArray<std::remove_cvref_t<decltype(*this)>>
       {*this, Slice<size_type>{start, size, stride}};
 }
 
-template<BaseType BaseT>
-[[nodiscard]] inline auto SliceArray<BaseT>::sl(size_type start, size_type size, size_type stride) const
+template<DirectType DirectT>
+[[nodiscard]] inline auto SliceArray<DirectT>::sl(size_type start, size_type size, size_type stride) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
    return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
       {*this, Slice<size_type>{start, size, stride}};
 }
 
-template<BaseType BaseT>
-SliceArray<BaseT> & SliceArray<BaseT>::operator+=(StrictVal<real_type> val)
+template<DirectType DirectT>
+SliceArray<DirectT> & SliceArray<DirectT>::operator+=(StrictVal<real_type> val)
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { (*this)[i] += val; } );
    return *this;
 }
 
-template<BaseType BaseT>
-SliceArray<BaseT> & SliceArray<BaseT>::operator-=(StrictVal<real_type> val)
+template<DirectType DirectT>
+SliceArray<DirectT> & SliceArray<DirectT>::operator-=(StrictVal<real_type> val)
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { (*this)[i] -= val; } );
    return *this;
 }
 
-template<BaseType BaseT>
-SliceArray<BaseT> & SliceArray<BaseT>::operator*=(StrictVal<real_type> val)
+template<DirectType DirectT>
+SliceArray<DirectT> & SliceArray<DirectT>::operator*=(StrictVal<real_type> val)
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { (*this)[i] *= val; } );
    return *this;
 }
 
-template<BaseType BaseT>
-SliceArray<BaseT> & SliceArray<BaseT>::operator/=(StrictVal<real_type> val)
+template<DirectType DirectT>
+SliceArray<DirectT> & SliceArray<DirectT>::operator/=(StrictVal<real_type> val)
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { (*this)[i] /= val; } );
    return *this;
 }
 
-template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType>
-SliceArray<BaseT> & SliceArray<BaseT>::operator+=(const SliceArrayType & A)
+template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<DirectT> & SliceArray<DirectT>::operator+=(const SliceArrayType & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -880,8 +883,8 @@ SliceArray<BaseT> & SliceArray<BaseT>::operator+=(const SliceArrayType & A)
    return *this;
 }
 
-template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType>
-SliceArray<BaseT> & SliceArray<BaseT>::operator-=(const SliceArrayType & A)
+template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<DirectT> & SliceArray<DirectT>::operator-=(const SliceArrayType & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -889,8 +892,8 @@ SliceArray<BaseT> & SliceArray<BaseT>::operator-=(const SliceArrayType & A)
    return *this;
 }
 
-template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType>
-SliceArray<BaseT> & SliceArray<BaseT>::operator*=(const SliceArrayType & A)
+template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<DirectT> & SliceArray<DirectT>::operator*=(const SliceArrayType & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -898,8 +901,8 @@ SliceArray<BaseT> & SliceArray<BaseT>::operator*=(const SliceArrayType & A)
    return *this;
 }
 
-template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType>
-SliceArray<BaseT> & SliceArray<BaseT>::operator/=(const SliceArrayType & A)
+template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<DirectT> & SliceArray<DirectT>::operator/=(const SliceArrayType & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -907,15 +910,15 @@ SliceArray<BaseT> & SliceArray<BaseT>::operator/=(const SliceArrayType & A)
    return *this;
 }
 
-template<BaseType BaseT> template<typename F>
-void SliceArray<BaseT>::apply0(F f)
+template<DirectType DirectT> template<typename F>
+void SliceArray<DirectT>::apply0(F f)
 {
    for(size_type i = 0; i < size(); ++i)
       f(i);
 }
 
-template<BaseType BaseT> template<SliceArrayBaseType SliceArrayType, typename F>
-void SliceArray<BaseT>::apply1(const SliceArrayType & A, F f)
+template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType, typename F>
+void SliceArray<DirectT>::apply1(const SliceArrayType & A, F f)
 {
    (void)A;
    for(size_type i = 0; i < size(); ++i)
@@ -924,7 +927,7 @@ void SliceArray<BaseT>::apply1(const SliceArrayType & A, F f)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
-inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, Slice<size_type> slice) : A{&A}, slice{slice}
+inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, Slice<size_type> slice) : A{A}, slice{slice}
 { ASSERT_STRICT_DEBUG(internal::valid_slice(A, slice)); }
 
 template<BaseType BaseT>
@@ -1008,7 +1011,7 @@ public:
    using real_type = typename BaseT::real_type;
    using base_type = typename BaseT::base_type;
    using expr_base_type = typename BaseT::expr_base_type;
-   using expr_type = UnaryExpr<BaseT, Op>;
+   using expr_type = const UnaryExpr<BaseT, Op>;
 
    explicit UnaryExpr(const BaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
    UnaryExpr(const UnaryExpr &) = default;
@@ -1064,7 +1067,7 @@ public:
    using real_type = typename BaseT1::real_type;
    using base_type = typename BaseT1::base_type;
    using expr_base_type = typename BaseT1::expr_base_type;
-   using expr_type = BinExpr<BaseT1, BaseT2, Op>;
+   using expr_type = const BinExpr<BaseT1, BaseT2, Op>;
 
    explicit BinExpr(const BaseT1 & A, const BaseT2 & B, Op op) : A{A}, B{B}, op{op} {
       static_assert(SameType<typename BaseT1::size_type, typename BaseT2::size_type>);
@@ -1128,7 +1131,7 @@ public:
    using real_type = typename BaseT1::real_type;
    using base_type = typename BaseT1::base_type;
    using expr_base_type = typename BaseT1::expr_base_type;
-   using expr_type = BinExprValLeft<BaseT1, T2, Op>;
+   using expr_type = const BinExprValLeft<BaseT1, T2, Op>;
 
    explicit BinExprValLeft(const BaseT1 & B, T2 val, Op op) : B{B}, val{val}, op{op} {
       static_assert(SameType<typename BaseT1::real_type, T2>);
@@ -1188,7 +1191,7 @@ public:
    using real_type = typename BaseT1::real_type;
    using base_type = typename BaseT1::base_type;
    using expr_base_type = typename BaseT1::expr_base_type;
-   using expr_type = BinExprValRight<BaseT1, T2, Op>;
+   using expr_type = const BinExprValRight<BaseT1, T2, Op>;
 
    explicit BinExprValRight(const BaseT1 & A, T2 val, Op op) : A{A}, val{val}, op{op} {
       static_assert(SameType<typename BaseT1::real_type, T2>);
