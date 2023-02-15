@@ -310,7 +310,6 @@ public:
    using base_type = SliceArrayBase;
    using expr_base_type = SliceArrayExpr;
    using expr_type = const ConstSliceArray<BaseT>;
-   using slice_type = ConstSliceArray<BaseT>;
 
 private:
    typename BaseT::expr_type A;
