@@ -164,8 +164,11 @@ int main()
    // 10. Non-contiguous slices.
 
    Array<double> M{1., 2., 3., 4., 5., 6.};
-   M.sl({0, M.size()/2, 2}) = -1.;                             // set every even element of M to -1
-   M.sl({0, M.size()/2, 2}) = 100. * M.sl({1, M.size()/2, 2}); // even entries are set to 100 times odd entries
+   auto even_elem = M.sl({0, M.size()/2, 2});
+   even_elem = -1.;                             // set every even element of M to -1
+   even_elem = 100. * M.sl({1, M.size()/2, 2}); // even entries are set to 100 times odd entries
+   even_elem = {1., 3., 5.};
+   auto ns = norm2(even_elem);
 
    return EXIT_SUCCESS;
 }
