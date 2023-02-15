@@ -132,7 +132,7 @@ int main()
    H.sl(0, 2) = 2 * H.sl(3, 5) + 10 * H.sl(6, 8);
    H.sl(0, 2) = 1 + J.sl(6, 8);
 
-   auto first_five = H.sl(0 , 4);        // first_five refers to the first 5 entries of H
+   auto first_five = H.sl(0, 4);         // first_five refers to the first 5 entries of H
    first_five = 1;                       // set first five entries to 1
    first_five = {1, 2, 3, 4, 5};         // set them to 1, 2, 3, 4, 5
    for(auto & x : first_five) x = x*x*x; // raise them to the power 3
@@ -164,8 +164,8 @@ int main()
    // 10. Non-contiguous slices.
 
    Array<double> M{1., 2., 3., 4., 5., 6.};
-   M.sl(0, M.size()/2, 2) = -1.;                           // set every even element of M to -1
-   M.sl(0, M.size()/2, 2) = 100. * M.sl(1, M.size()/2, 2); // even entries are set to 100 times odd entries
+   M.sl({0, M.size()/2, 2}) = -1.;                             // set every even element of M to -1
+   M.sl({0, M.size()/2, 2}) = 100. * M.sl({1, M.size()/2, 2}); // even entries are set to 100 times odd entries
 
    return EXIT_SUCCESS;
 }

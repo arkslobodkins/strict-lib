@@ -23,6 +23,8 @@
 
 namespace strict_array {
 
+class Slice;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 class Array : private ArrayBase
@@ -76,8 +78,8 @@ public:
    [[nodiscard]] inline auto sl(size_type first, size_type last);
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
 
-   [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride);
-   [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride) const;
+   [[nodiscard]] inline auto sl(const Slice & slice);
+   [[nodiscard]] inline auto sl(const Slice & slice) const;
 
    [[nodiscard]] StrictVal<T> & front() { return elem[0]; }
    [[nodiscard]] StrictVal<T> & back() { return elem[sz-1]; }
@@ -207,11 +209,10 @@ template<BaseType BaseT>
 [[nodiscard]] auto unique_blas_array(const BaseT & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<IntegerType size_type>
 class Slice
 {
 public:
-   explicit Slice(size_type start, size_type size, size_type stride)
+   Slice(long long int start, long long int size, long long int stride)
       : m_start{start}, m_size{size}, m_stride{stride}
    {
       ASSERT_STRICT_DEBUG(start > -1);
@@ -219,14 +220,14 @@ public:
       ASSERT_STRICT_DEBUG(stride > 0);
    }
 
-   [[nodiscard]] size_type start() const { return m_start; }
-   [[nodiscard]] size_type size() const { return m_size; }
-   [[nodiscard]] size_type stride() const { return m_stride; }
+   [[nodiscard]] long long int start() const { return m_start; }
+   [[nodiscard]] long long int size() const { return m_size; }
+   [[nodiscard]] long long int stride() const { return m_stride; }
 
 private:
-   size_type m_start;
-   size_type m_size;
-   size_type m_stride;
+   long long int m_start;
+   long long int m_size;
+   long long int m_stride;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -244,10 +245,10 @@ public:
 
 private:
    typename DirectT::slice_type A;
-   Slice<size_type> slice;
+   Slice slice;
 
 public:
-   explicit inline SliceArray(DirectT & A, Slice<size_type> slice);
+   explicit inline SliceArray(DirectT & A, const Slice & slice);
    SliceArray(const SliceArray & s);
 
    SliceArray & operator=(const SliceArray & s);
@@ -263,8 +264,8 @@ public:
 
    [[nodiscard]] inline auto sl(size_type first, size_type last);
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride);
-   [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride) const;
+   [[nodiscard]] inline auto sl(const Slice & slice);
+   [[nodiscard]] inline auto sl(const Slice & slice) const;
 
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -313,10 +314,10 @@ public:
 
 private:
    typename BaseT::expr_type A;
-   Slice<size_type> slice;
+   Slice slice;
 
 public:
-   explicit inline ConstSliceArray(const BaseT & A, Slice<size_type> slice);
+   explicit inline ConstSliceArray(const BaseT & A, const Slice & slice);
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
@@ -324,7 +325,7 @@ public:
       { return A[slice.start()+i*slice.stride()]; }
 
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride) const;
+   [[nodiscard]] inline auto sl(const Slice & slice) const;
 
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -625,7 +626,7 @@ template<RealType T>
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
    return SliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{first, last-first+1, size_type{1}}};
+      {*this, Slice{first, last-first+1, size_type{1}}};
 }
 
 template<RealType T>
@@ -635,23 +636,21 @@ template<RealType T>
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
    return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{first, last-first+1, size_type{1}}};
+      {*this, Slice{first, last-first+1, size_type{1}}};
 }
 
 template<RealType T>
-[[nodiscard]] inline auto Array<T>::sl(size_type start, size_type size, size_type stride)
+[[nodiscard]] inline auto Array<T>::sl(const Slice & slice)
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
-   return SliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{start, size, stride}};
+   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   return SliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 template<RealType T>
-[[nodiscard]] inline auto Array<T>::sl(size_type start, size_type size, size_type stride) const
+[[nodiscard]] inline auto Array<T>::sl(const Slice & slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{start, size, stride}};
+   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -766,7 +765,7 @@ template<FloatingType T>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectType DirectT>
-inline SliceArray<DirectT>::SliceArray(DirectT & A, Slice<size_type> slice) : A{A}, slice{slice}
+inline SliceArray<DirectT>::SliceArray(DirectT & A, const Slice & slice) : A{A}, slice{slice}
 { ASSERT_STRICT_DEBUG(internal::valid_slice(A, slice)); }
 
 template<DirectType DirectT>
@@ -826,19 +825,17 @@ template<DirectType DirectT>
 }
 
 template<DirectType DirectT>
-[[nodiscard]] inline auto SliceArray<DirectT>::sl(size_type start, size_type size, size_type stride)
+[[nodiscard]] inline auto SliceArray<DirectT>::sl(const Slice & slice)
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
-   return SliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{start, size, stride}};
+   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   return SliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 template<DirectType DirectT>
-[[nodiscard]] inline auto SliceArray<DirectT>::sl(size_type start, size_type size, size_type stride) const
+[[nodiscard]] inline auto SliceArray<DirectT>::sl(const Slice & slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{start, size, stride}};
+   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 template<DirectType DirectT>
@@ -926,7 +923,7 @@ void SliceArray<DirectT>::apply1(const SliceArrayType & A, F f)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
-inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, Slice<size_type> slice) : A{A}, slice{slice}
+inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, const Slice & slice) : A{A}, slice{slice}
 { ASSERT_STRICT_DEBUG(internal::valid_slice(A, slice)); }
 
 template<BaseType BaseT>
@@ -944,11 +941,10 @@ template<BaseType BaseT>
 }
 
 template<BaseType BaseT>
-[[nodiscard]] inline auto ConstSliceArray<BaseT>::sl(size_type start, size_type size, size_type stride) const
+[[nodiscard]] inline auto ConstSliceArray<BaseT>::sl(const Slice & slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{start, size, stride}};
+   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1018,7 +1014,7 @@ public:
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride) const;
+   [[nodiscard]] inline auto sl(const Slice & sl) const;
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -1049,11 +1045,10 @@ template<BaseType BaseT, UnaryOperationType Op>
 }
 
 template<BaseType BaseT, UnaryOperationType Op>
-[[nodiscard]] inline auto UnaryExpr<BaseT, Op>::sl(size_type start, size_type size, size_type stride) const
+[[nodiscard]] inline auto UnaryExpr<BaseT, Op>::sl(const Slice & slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{start, size, stride}};
+   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1081,7 +1076,7 @@ public:
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride) const;
+   [[nodiscard]] inline auto sl(const Slice & slice) const;
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -1113,11 +1108,10 @@ template<ArrayBaseType BaseT1, ArrayBaseType BaseT2, BinaryOperationType Op>
 }
 
 template<ArrayBaseType BaseT1, ArrayBaseType BaseT2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExpr<BaseT1, BaseT2, Op>::sl(size_type start, size_type size, size_type stride) const
+[[nodiscard]] inline auto BinExpr<BaseT1, BaseT2, Op>::sl(const Slice & slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{start, size, stride}};
+   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1141,7 +1135,7 @@ public:
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride) const;
+   [[nodiscard]] inline auto sl(const Slice & slice) const;
 
    [[nodiscard]] size_type size() const { return B.size(); }
    [[nodiscard]] bool empty() const { return B.empty(); }
@@ -1173,11 +1167,10 @@ template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
 }
 
 template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExprValLeft<BaseT1, T2, Op>::sl(size_type start, size_type size, size_type stride) const
+[[nodiscard]] inline auto BinExprValLeft<BaseT1, T2, Op>::sl(const Slice & slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{start, size, stride}};
+   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1201,7 +1194,7 @@ public:
 
    [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(size_type start, size_type size, size_type stride) const;
+   [[nodiscard]] inline auto sl(const Slice & slice) const;
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -1233,11 +1226,10 @@ template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
 }
 
 template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExprValRight<BaseT1, T2, Op>::sl(size_type start, size_type size, size_type stride) const
+[[nodiscard]] inline auto BinExprValRight<BaseT1, T2, Op>::sl(const Slice & slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, Slice<size_type>{start, size, stride}));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
-      {*this, Slice<size_type>{start, size, stride}};
+   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
