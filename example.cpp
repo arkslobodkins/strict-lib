@@ -169,6 +169,9 @@ int main()
    even_elem = 100. * M.sl({1, M.size()/2, 2}); // even entries are set to 100 times odd entries
    even_elem = {1., 3., 5.};
    auto ns = norm2(even_elem);
+   auto ms = max(M.sl({2, M.size()/2-1, 2}));   // maximum of 2nd, 4th, and 6th elements
+   for(auto & x : even_elem)                    // iterate over even elements and apply exponential function
+      x = exps(x);
 
    return EXIT_SUCCESS;
 }

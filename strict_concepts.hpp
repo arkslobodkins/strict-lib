@@ -61,10 +61,12 @@ class BinaryOperation {};
 class Base {};
 class ArrayBase : private Base {};
 class SliceArrayBase : private Base {};
+class Array2DBase : private Base {};
 
 class Expr {};
 class ArrayExpr : private Expr{};
 class SliceArrayExpr : private Expr{};
+class Array2DExpr : private Expr{};
 
 template<typename T> concept UnaryOperationType = BaseOf<UnaryOperation, T>;
 template<typename T> concept BinaryOperationType = BaseOf<BinaryOperation, T>;

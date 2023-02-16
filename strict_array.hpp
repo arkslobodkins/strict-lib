@@ -7,6 +7,7 @@
 #else
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <ctime>
 #include <initializer_list>
@@ -126,6 +127,36 @@ private:
       void apply1(const ArrayType & A, F f);
 };
 
+template<RealType T>
+class Array2D : private Array2DBase
+{
+public:
+   using size_type = Array<T>::size_type;
+   using value_type = Array<T>::value_type;
+   using real_type = Array<T>::real_type;
+   using base_type = Array2DBase;
+   using expr_base_type = Array2DExpr;
+   using expr_type = const Array2D<T> &;
+   using slice_type = Array2D<T> &;
+
+   Array2D(size_type sz1, size_type sz2);
+   Array2D(const Array2D & A2D);
+   Array2D(Array2D && A2D);
+   Array2D & operator=(const Array2D & A2D) &;
+   Array2D & operator=(Array2D && A2D) &;
+
+private:
+   Array<T> A;
+   std::array<size_type, 2> dims;
+};
+
+template<RealType T>
+Array2D<T>::Array2D(size_type sz1, size_type sz2) : A(sz1*sz2), dims{sz1, sz2}
+{
+   ASSERT_STRICT_DEBUG(sz1 > -1);
+   ASSERT_STRICT_DEBUG(sz2 > -1);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
 template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator-(const T1 & A, const T2 & B);
@@ -154,10 +185,10 @@ template<ArrayBaseType T> [[nodiscard]] auto abs(const T & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<IntegerType T>
-[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
+[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low = T{0}, StrictVal<T> high = T{1});
 
 template<FloatingType T>
-[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high);
+[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low = T{0}, StrictVal<T> high = T{1});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
@@ -173,10 +204,10 @@ template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto sum(const FloatBaseT & A);
 
 template<BaseType BaseT>
-[[nodiscard]] auto max(const BaseT & A);
+[[nodiscard]] auto min(const BaseT & A);
 
 template<BaseType BaseT>
-[[nodiscard]] auto min(const BaseT & A);
+[[nodiscard]] auto max(const BaseT & A);
 
 template<BaseType BaseT>
 [[nodiscard]] auto min_index(const BaseT & A);  // returns std::pair<size_type, StrictVal<real_type>>
@@ -193,6 +224,9 @@ template<FloatingBaseType FloatBaseT>
 template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm2(const FloatBaseT & A);
 
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm_lp(const FloatBaseT & A, int p);
+
 template<BaseType BType1, BaseType BType2>
 [[nodiscard]] auto dot_prod(const BType1 & A1, const BType2 & A2);
 
@@ -206,7 +240,7 @@ template<BaseType BaseT>
 [[nodiscard]] bool all_negative(const BaseT & A);
 
 template<BaseType BaseT>
-[[nodiscard]] auto unique_blas_array(const BaseT & A);
+[[nodiscard]] std::unique_ptr<typename BaseT::real_type[]> unique_blas_array(const BaseT & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Slice
@@ -280,6 +314,11 @@ public:
    template<SliceArrayBaseType SliceArrayType> SliceArray & operator*=(const SliceArrayType & A);
    template<SliceArrayBaseType SliceArrayType> SliceArray & operator/=(const SliceArrayType & A);
 
+   [[nodiscard]] auto & front() { return A[0]; }
+   [[nodiscard]] auto & back() { return A[A.size()-1]; }
+   [[nodiscard]] auto & front() const { return A[0]; }
+   [[nodiscard]] auto & back() const { return A[A.size()-1]; }
+
    [[nodiscard]] auto begin() { return iterator{*this, 0}; }
    [[nodiscard]] auto end() { return iterator{*this, size()}; }
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
@@ -329,6 +368,9 @@ public:
 
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
+
+   [[nodiscard]] decltype(auto) front() const { return A[0]; }
+   [[nodiscard]] decltype(auto) back() const { return A[A.size()-1]; }
 
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
@@ -1012,12 +1054,15 @@ public:
    UnaryExpr(const UnaryExpr &) = default;
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
-   [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i]); }
+   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] inline auto sl(const Slice & sl) const;
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
+
+   [[nodiscard]] value_type front() const { return (*this)[0]; }
+   [[nodiscard]] value_type back() const { return (*this)[size()-1]; }
 
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
@@ -1074,12 +1119,15 @@ public:
    BinExpr(const BinExpr &) = default;
    BinExpr & operator=(const BinExpr &) = delete;
 
-   [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], B[i]); }
+   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] inline auto sl(const Slice & slice) const;
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
+
+   [[nodiscard]] value_type front() const { return (*this)[0]; }
+   [[nodiscard]] value_type back() const { return (*this)[size()-1]; }
 
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
@@ -1133,12 +1181,15 @@ public:
    BinExprValLeft(const BinExprValLeft &) = default;
    BinExprValLeft & operator=(const BinExprValLeft &) = delete;
 
-   [[nodiscard]] const value_type operator[](size_type i) const { return op(val, B[i]); }
+   [[nodiscard]] value_type operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] inline auto sl(const Slice & slice) const;
 
    [[nodiscard]] size_type size() const { return B.size(); }
    [[nodiscard]] bool empty() const { return B.empty(); }
+
+   [[nodiscard]] value_type front() const { return (*this)[0]; }
+   [[nodiscard]] value_type back() const { return (*this)[size()-1]; }
 
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
@@ -1192,12 +1243,15 @@ public:
    BinExprValRight(const BinExprValRight &) = default;
    BinExprValRight & operator=(const BinExprValRight &) = delete;
 
-   [[nodiscard]] const value_type operator[](size_type i) const { return op(A[i], val); }
+   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
    [[nodiscard]] inline auto sl(const Slice & slice) const;
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
+
+   [[nodiscard]] value_type front() const { return (*this)[0]; }
+   [[nodiscard]] value_type back() const { return (*this)[size()-1]; }
 
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
@@ -1449,6 +1503,16 @@ void print(const BaseT & A, const std::string & name)
    }
 }
 
+template<IntegerBaseType IntBaseT>
+[[nodiscard]] auto sum(const IntBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   auto sum = A[0];
+   for(decltype(A.size()) i = 1; i < A.size(); ++i)
+      sum += A[i];
+   return sum;
+}
+
 template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto sum(const FloatBaseT & A)
 {
@@ -1466,26 +1530,6 @@ template<FloatingBaseType FloatBaseT>
    return StrictVal<rv_T>{sum};
 }
 
-template<IntegerBaseType IntBaseT>
-[[nodiscard]] auto sum(const IntBaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   auto sum = A[0];
-   for(decltype(A.size()) i = 1; i < A.size(); ++i)
-      sum += A[i];
-   return sum;
-}
-
-template<BaseType BaseT>
-[[nodiscard]] auto max(const BaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   auto max_elem = A[0];
-   for(decltype(A.size()) i = 1; i < A.size(); ++i)
-      max_elem = maxs(A[i], max_elem);
-   return max_elem;
-}
-
 template<BaseType BaseT>
 [[nodiscard]] auto min(const BaseT & A)
 {
@@ -1497,17 +1541,13 @@ template<BaseType BaseT>
 }
 
 template<BaseType BaseT>
-[[nodiscard]] auto max_index(const BaseT & A)
+[[nodiscard]] auto max(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using sz_T = typename BaseT::size_type;
-   using sv_T = typename BaseT::value_type;
-
-   std::pair<sz_T, sv_T> max = {0, A[0]};
-   for(sz_T i = 1; i < A.size(); ++i)
-      if(A[i] > max.second)
-         max = {i, A[i]};
-   return max;
+   auto max_elem = A[0];
+   for(decltype(A.size()) i = 1; i < A.size(); ++i)
+      max_elem = maxs(A[i], max_elem);
+   return max_elem;
 }
 
 template<BaseType BaseT>
@@ -1522,6 +1562,20 @@ template<BaseType BaseT>
       if(A[i] < min.second)
          min = {i, A[i]};
    return min;
+}
+
+template<BaseType BaseT>
+[[nodiscard]] auto max_index(const BaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   using sz_T = typename BaseT::size_type;
+   using sv_T = typename BaseT::value_type;
+
+   std::pair<sz_T, sv_T> max = {0, A[0]};
+   for(sz_T i = 1; i < A.size(); ++i)
+      if(A[i] > max.second)
+         max = {i, A[i]};
+   return max;
 }
 
 template<FloatingBaseType FloatBaseT>
@@ -1550,6 +1604,17 @@ template<FloatingBaseType FloatBaseT>
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    return sqrts(dot_prod(A, A));
+}
+
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm_lp(const FloatBaseT & A, int p)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   using T = typename FloatBaseT::real_type;
+   T sum{};
+   for(auto x : A)
+      sum += abss(pows_int(x, p));
+   return pows<T>(sum, T(1)/T(p));
 }
 
 template<BaseType BType1, BaseType BType2>
@@ -1592,7 +1657,7 @@ template<BaseType BaseT>
 }
 
 template<BaseType BaseT>
-[[nodiscard]] auto unique_blas_array(const BaseT & A)
+[[nodiscard]] std::unique_ptr<typename BaseT::real_type[]> unique_blas_array(const BaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    using real_type = typename BaseT::real_type;

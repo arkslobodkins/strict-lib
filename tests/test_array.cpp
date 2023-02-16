@@ -78,5 +78,22 @@ int main(int argc, char *argv[])
    assert_float_ops<double>();
    assert_float_ops<long double>();
 
+   int n = 1.e6;
+   auto a = array_random<double>(n);
+   auto b = array_random<double>(n);
+   auto c = Array<double>(n);
+   std::valarray<double> x(n), y(n), z(n);
+   for(int i = 0; i < n; ++i) {
+      x[i] = a[i];
+      y[i] = b[i];
+   }
+
+   double m1{}, m2{};
+   STRICT_TIME(m1 = sum(2.*a + 3.*b));
+   STRICT_TIME(m2 = (2.*x + 3.*y).sum());
+   std::cout << m1 << " " << m2 << std::endl;
+   auto expr = x + y;
+   expr[0] = 0;
+
    return EXIT_SUCCESS;
 }
