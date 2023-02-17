@@ -57,30 +57,16 @@ template<typename T> concept RealType = FloatingType<T> || IntegerType<T>;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class UnaryOperation {};
 class BinaryOperation {};
-
-class Base {};
-class ArrayBase : private Base {};
-class SliceArrayBase : private Base {};
-class Array2DBase : private Base {};
-
-class Expr {};
-class ArrayExpr : private Expr{};
-class SliceArrayExpr : private Expr{};
-class Array2DExpr : private Expr{};
-
 template<typename T> concept UnaryOperationType = BaseOf<UnaryOperation, T>;
 template<typename T> concept BinaryOperationType = BaseOf<BinaryOperation, T>;
 
+class Base {};
+class Expr {};
 template<typename T> concept BaseType = BaseOf<Base, T>;
-template<typename T> concept ArrayBaseType = BaseOf<ArrayBase, T>;
-template<typename T> concept SliceArrayBaseType = BaseOf<SliceArrayBase, T>;
-
 template<typename T> concept ExprType = BaseOf<Expr, T>;
-template<typename T> concept ArrayExprType = BaseOf<ArrayExpr, T>;
-template<typename T> concept SliceArrayExprType = BaseOf<SliceArrayExpr, T>;
 
 template<typename T>
-concept DirectType = requires(T a)
+concept DirectBaseType = BaseType<T> && requires(T a)
 { requires std::is_lvalue_reference_v<decltype(a[0])>; };
 
 template<typename T> concept IntegerBaseType = BaseType<T> && IntegerType<typename T::real_type>;
@@ -88,13 +74,19 @@ template<typename T> concept StandardFloatingBaseType = BaseType<T> && StandardF
 template<typename T> concept FloatingBaseType = BaseType<T> && FloatingType<typename T::real_type>;
 #ifdef STRICT_QUADRUPLE_PRECISION
 template<typename T> concept QuadFloatingBaseType = BaseType<T> && QuadType<typename T::real_type>;
-#endif
-
-#ifdef STRICT_QUADRUPLE_PRECISION
 template<typename T> concept NotQuadFloatingBaseType = BaseType<T> && !QuadType<typename T::real_type>;
 #else
 template<typename T> concept NotQuadFloatingBaseType = BaseType<T>;
 #endif
+
+template<BaseType T>
+using RealTypeOf = typename T::real_type;
+
+template<BaseType T>
+using SizeTypeOf = typename T::size_type;
+
+template<BaseType T>
+using ValueTypeOf = typename T::value_type;
 
 }
 

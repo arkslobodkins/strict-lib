@@ -15,19 +15,19 @@
 namespace strict_array {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<DirectType DirectT>
+template<DirectBaseType DirectBaseT>
 class iterator
 {
 public:
-   using size_type = typename DirectT::size_type;
+   using size_type = SizeTypeOf<DirectBaseT>;
    using difference_type = size_type;
-   using value_type = typename DirectT::value_type;
+   using value_type = ValueTypeOf<DirectBaseT>;
    using pointer = value_type*;
    using reference = value_type &;
    using iterator_category = std::random_access_iterator_tag;
 
    inline iterator();
-   inline iterator(DirectT & A, size_type pos);
+   inline iterator(DirectBaseT & A, size_type pos);
    inline iterator & operator++();
    inline iterator & operator--();
    inline iterator operator++(int);
@@ -56,101 +56,101 @@ public:
    [[nodiscard]] inline bool operator>=(const iterator & it) const;
 
 private:
-   DirectT* A_ptr;
+   DirectBaseT* A_ptr;
    size_type pos;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<DirectType DirectT>
-[[nodiscard]] inline iterator<DirectT> operator+(typename iterator<DirectT>::difference_type incr, const iterator<DirectT> & it)
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] inline iterator<DirectBaseT> operator+(typename iterator<DirectBaseT>::difference_type incr, const iterator<DirectBaseT> & it)
 { return it + incr; }
 
-template<DirectType DirectT>
-[[nodiscard]] inline iterator<DirectT> operator-(typename iterator<DirectT>::difference_type incr, const iterator<DirectT> & it)
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] inline iterator<DirectBaseT> operator-(typename iterator<DirectBaseT>::difference_type incr, const iterator<DirectBaseT> & it)
 { return it + incr; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<DirectType DirectT>
-inline iterator<DirectT>::iterator() : A_ptr{nullptr}, pos{0}
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT>::iterator() : A_ptr{nullptr}, pos{0}
 {}
 
-template<DirectType DirectT>
-inline iterator<DirectT>::iterator(DirectT & A, size_type pos) :
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT>::iterator(DirectBaseT & A, size_type pos) :
    A_ptr{&A},
    pos{pos}
 {
    ASSERT_STRICT_DEBUG(pos > -1 && pos <= (*A_ptr).size()); // iterator to one past the last is allowed
 }
 
-template<DirectType DirectT>
-inline iterator<DirectT> & iterator<DirectT>::operator++()
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT> & iterator<DirectBaseT>::operator++()
 {
    ++pos;
    return *this;
 }
 
-template<DirectType DirectT>
-inline iterator<DirectT> & iterator<DirectT>::operator--()
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT> & iterator<DirectBaseT>::operator--()
 {
    --pos;
    return *this;
 }
 
-template<DirectType DirectT>
-inline iterator<DirectT> iterator<DirectT>::operator++(int)
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT> iterator<DirectBaseT>::operator++(int)
 {
    auto old = *this;
    ++*this;
    return old;
 }
 
-template<DirectType DirectT>
-inline iterator<DirectT> iterator<DirectT>::operator--(int)
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT> iterator<DirectBaseT>::operator--(int)
 {
    auto old = *this;
    --*this;
    return old;
 }
 
-template<DirectType DirectT>
-inline iterator<DirectT> & iterator<DirectT>::operator+=(difference_type incr)
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT> & iterator<DirectBaseT>::operator+=(difference_type incr)
 {
    pos += incr;
    return *this;
 }
 
-template<DirectType DirectT>
-inline iterator<DirectT> & iterator<DirectT>::operator-=(difference_type incr)
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT> & iterator<DirectBaseT>::operator-=(difference_type incr)
 {
    pos -= incr;
    return *this;
 }
 
-template<DirectType DirectT>
-inline iterator<DirectT> iterator<DirectT>::operator+(difference_type incr) const
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT> iterator<DirectBaseT>::operator+(difference_type incr) const
 {
    auto new_it = *this;
    new_it += incr;
    return new_it;
 }
 
-template<DirectType DirectT>
-inline iterator<DirectT> iterator<DirectT>::operator-(difference_type incr) const
+template<DirectBaseType DirectBaseT>
+inline iterator<DirectBaseT> iterator<DirectBaseT>::operator-(difference_type incr) const
 {
    auto new_it = *this;
    new_it -= incr;
    return new_it;
 }
 
-template<DirectType DirectT>
-inline auto iterator<DirectT>::operator-(const iterator & it) const -> difference_type
+template<DirectBaseType DirectBaseT>
+inline auto iterator<DirectBaseT>::operator-(const iterator & it) const -> difference_type
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos - it.pos;
 }
 
-template<DirectType DirectT>
-inline auto iterator<DirectT>::operator[](difference_type n) const -> reference
+template<DirectBaseType DirectBaseT>
+inline auto iterator<DirectBaseT>::operator[](difference_type n) const -> reference
 {
    #ifdef STRICT_DEBUG_ON
    if(pos + n < 0 || pos + n > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
@@ -158,8 +158,8 @@ inline auto iterator<DirectT>::operator[](difference_type n) const -> reference
    return (*A_ptr)[pos + n];
 }
 
-template<DirectType DirectT>
-inline auto iterator<DirectT>::operator*() const -> reference
+template<DirectBaseType DirectBaseT>
+inline auto iterator<DirectBaseT>::operator*() const -> reference
 {
    #ifdef STRICT_DEBUG_ON
    if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
@@ -167,8 +167,8 @@ inline auto iterator<DirectT>::operator*() const -> reference
    return (*A_ptr)[pos];
 }
 
-template<DirectType DirectT>
-[[nodiscard]] inline auto iterator<DirectT>::operator->() const -> pointer
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] inline auto iterator<DirectBaseT>::operator->() const -> pointer
 {
    #ifdef STRICT_DEBUG_ON
    if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
@@ -176,43 +176,43 @@ template<DirectType DirectT>
    return &((*A_ptr)[pos]);
 }
 
-template<DirectType DirectT>
-inline bool iterator<DirectT>::operator==(const iterator<DirectT> & it) const
+template<DirectBaseType DirectBaseT>
+inline bool iterator<DirectBaseT>::operator==(const iterator<DirectBaseT> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos == it.pos;
 }
 
-template<DirectType DirectT>
-inline bool iterator<DirectT>::operator!=(const iterator<DirectT> & it) const
+template<DirectBaseType DirectBaseT>
+inline bool iterator<DirectBaseT>::operator!=(const iterator<DirectBaseT> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos != it.pos;
 }
 
-template<DirectType DirectT>
-inline bool iterator<DirectT>::operator<(const iterator<DirectT> & it) const
+template<DirectBaseType DirectBaseT>
+inline bool iterator<DirectBaseT>::operator<(const iterator<DirectBaseT> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos < it.pos;
 }
 
-template<DirectType DirectT>
-inline bool iterator<DirectT>::operator<=(const iterator<DirectT> & it) const
+template<DirectBaseType DirectBaseT>
+inline bool iterator<DirectBaseT>::operator<=(const iterator<DirectBaseT> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos <= it.pos;
 }
 
-template<DirectType DirectT>
-inline bool iterator<DirectT>::operator>(const iterator<DirectT> & it) const
+template<DirectBaseType DirectBaseT>
+inline bool iterator<DirectBaseT>::operator>(const iterator<DirectBaseT> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos > it.pos;
 }
 
-template<DirectType DirectT>
-inline bool iterator<DirectT>::operator>=(const iterator<DirectT> & it) const
+template<DirectBaseType DirectBaseT>
+inline bool iterator<DirectBaseT>::operator>=(const iterator<DirectBaseT> & it) const
 {
    ASSERT_STRICT_DEBUG(A_ptr == it.A_ptr);
    return pos >= it.pos;
@@ -223,9 +223,9 @@ template<BaseType BaseT>
 class const_iterator
 {
 public:
-   using size_type = typename BaseT::size_type;
+   using size_type = SizeTypeOf<BaseT>;
    using difference_type = size_type;
-   using value_type = typename BaseT::value_type;
+   using value_type = ValueTypeOf<BaseT>;
    using pointer = value_type*;
    using const_pointer = const value_type*;
    using reference = value_type &;

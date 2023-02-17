@@ -7,12 +7,9 @@
 #else
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <ctime>
 #include <initializer_list>
-#include <memory>
-#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -21,8 +18,20 @@
 #include "strict_error.hpp"
 #include "strict_iterator.hpp"
 #include "strict_val.hpp"
+#include "strict_array_ops.hpp"
 
 namespace strict_array {
+
+class ArrayBase : private Base {};
+class ArrayExpr : private Expr{};
+template<typename T> concept ArrayBaseType = BaseOf<ArrayBase, T>;
+template<typename T> concept ArrayExprType = BaseOf<ArrayExpr, T>;
+
+class SliceArrayBase : private Base {};
+class SliceArrayExpr : private Expr{};
+template<typename T> concept SliceArrayBaseType = BaseOf<SliceArrayBase, T>;
+template<typename T> concept SliceArrayExprType = BaseOf<SliceArrayExpr, T>;
+template<typename T> concept OneDimBaseType = ArrayBaseType<T> || SliceArrayBaseType<T>;
 
 class Slice;
 
@@ -127,35 +136,35 @@ private:
       void apply1(const ArrayType & A, F f);
 };
 
-template<RealType T>
-class Array2D : private Array2DBase
-{
-public:
-   using size_type = Array<T>::size_type;
-   using value_type = Array<T>::value_type;
-   using real_type = Array<T>::real_type;
-   using base_type = Array2DBase;
-   using expr_base_type = Array2DExpr;
-   using expr_type = const Array2D<T> &;
-   using slice_type = Array2D<T> &;
-
-   Array2D(size_type sz1, size_type sz2);
-   Array2D(const Array2D & A2D);
-   Array2D(Array2D && A2D);
-   Array2D & operator=(const Array2D & A2D) &;
-   Array2D & operator=(Array2D && A2D) &;
-
-private:
-   Array<T> A;
-   std::array<size_type, 2> dims;
-};
-
-template<RealType T>
-Array2D<T>::Array2D(size_type sz1, size_type sz2) : A(sz1*sz2), dims{sz1, sz2}
-{
-   ASSERT_STRICT_DEBUG(sz1 > -1);
-   ASSERT_STRICT_DEBUG(sz2 > -1);
-}
+//template<RealType T>
+//class Array2D : private Array2DBase
+//{
+//public:
+//   using size_type = Array<T>::size_type;
+//   using value_type = Array<T>::value_type;
+//   using real_type = Array<T>::real_type;
+//   using base_type = Array2DBase;
+//   using expr_base_type = Array2DExpr;
+//   using expr_type = const Array2D<T> &;
+//   using slice_type = Array2D<T> &;
+//
+//   Array2D(size_type sz1, size_type sz2);
+//   Array2D(const Array2D & A2D);
+//   Array2D(Array2D && A2D);
+//   Array2D & operator=(const Array2D & A2D) &;
+//   Array2D & operator=(Array2D && A2D) &;
+//
+//private:
+//   Array<T> A;
+//   std::array<size_type, 2> dims;
+//};
+//
+//template<RealType T>
+//Array2D<T>::Array2D(size_type sz1, size_type sz2) : A(sz1*sz2), dims{sz1, sz2}
+//{
+//   ASSERT_STRICT_DEBUG(sz1 > -1);
+//   ASSERT_STRICT_DEBUG(sz2 > -1);
+//}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
@@ -191,58 +200,6 @@ template<FloatingType T>
 [[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low = T{0}, StrictVal<T> high = T{1});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BaseT>
-std::ostream & operator<<(std::ostream & os, const BaseT & A);
-
-template<BaseType BaseT>
-void print(const BaseT & A, const std::string & name);
-
-template<IntegerBaseType IntBaseT>
-[[nodiscard]] auto sum(const IntBaseT & A);
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] auto sum(const FloatBaseT & A);
-
-template<BaseType BaseT>
-[[nodiscard]] auto min(const BaseT & A);
-
-template<BaseType BaseT>
-[[nodiscard]] auto max(const BaseT & A);
-
-template<BaseType BaseT>
-[[nodiscard]] auto min_index(const BaseT & A);  // returns std::pair<size_type, StrictVal<real_type>>
-
-template<BaseType BaseT>
-[[nodiscard]] auto max_index(const BaseT & A);  // returns std::pair<size_type, StrictVal<real_type>>
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] bool all_finite(const FloatBaseT & A);
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] auto norm_inf(const FloatBaseT & A);
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] auto norm2(const FloatBaseT & A);
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] auto norm_lp(const FloatBaseT & A, int p);
-
-template<BaseType BType1, BaseType BType2>
-[[nodiscard]] auto dot_prod(const BType1 & A1, const BType2 & A2);
-
-template<BaseType BaseT>
-[[nodiscard]] bool does_contain_zero(const BaseT & A);
-
-template<BaseType BaseT>
-[[nodiscard]] bool all_positive(const BaseT & A);
-
-template<BaseType BaseT>
-[[nodiscard]] bool all_negative(const BaseT & A);
-
-template<BaseType BaseT>
-[[nodiscard]] std::unique_ptr<typename BaseT::real_type[]> unique_blas_array(const BaseT & A);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Slice
 {
 public:
@@ -265,24 +222,24 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<DirectType DirectT>
+template<DirectBaseType DirectBaseT>
 class SliceArray : private SliceArrayBase
 {
 public:
-   using size_type = typename DirectT::size_type;
-   using value_type = typename DirectT::value_type;
-   using real_type = typename DirectT::real_type;
+   using size_type = typename DirectBaseT::size_type;
+   using value_type = typename DirectBaseT::value_type;
+   using real_type = typename DirectBaseT::real_type;
    using base_type = SliceArrayBase;
    using expr_base_type = SliceArrayExpr;
-   using expr_type = const SliceArray<DirectT>;
-   using slice_type = SliceArray<DirectT>;
+   using expr_type = const SliceArray<DirectBaseT>;
+   using slice_type = SliceArray<DirectBaseT>;
 
 private:
-   typename DirectT::slice_type A;
+   typename DirectBaseT::slice_type A;
    Slice slice;
 
 public:
-   explicit inline SliceArray(DirectT & A, const Slice & slice);
+   explicit inline SliceArray(DirectBaseT & A, const Slice & slice);
    SliceArray(const SliceArray & s);
 
    SliceArray & operator=(const SliceArray & s);
@@ -411,20 +368,6 @@ template<SliceArrayBaseType T> [[nodiscard]] auto abs(const T & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
-   template<RealType T>
-   std::string smart_spaces(typename Array<T>::size_type max_ind, typename Array<T>::size_type ind)
-   {
-      using sz_T = typename Array<T>::size_type;
-      auto count_digit = [](sz_T number) -> sz_T {
-         if(!number) return 1;
-         return static_cast<sz_T>(std::log10(number)) + 1;
-      };
-
-      sz_T max_digits = count_digit(max_ind);
-      sz_T ind_digits = count_digit(ind);
-      return std::string(static_cast<std::basic_string<char>::size_type>(1+max_digits-ind_digits), 32);
-   }
-
    template<BaseType BaseT>
    bool valid_index(const BaseT & A, typename BaseT::size_type index)
    {
@@ -806,24 +749,24 @@ template<FloatingType T>
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<DirectType DirectT>
-inline SliceArray<DirectT>::SliceArray(DirectT & A, const Slice & slice) : A{A}, slice{slice}
+template<DirectBaseType DirectBaseT>
+inline SliceArray<DirectBaseT>::SliceArray(DirectBaseT & A, const Slice & slice) : A{A}, slice{slice}
 { ASSERT_STRICT_DEBUG(internal::valid_slice(A, slice)); }
 
-template<DirectType DirectT>
-SliceArray<DirectT>::SliceArray(const SliceArray<DirectT> & s) : A{s.A}, slice{s.slice}
+template<DirectBaseType DirectBaseT>
+SliceArray<DirectBaseT>::SliceArray(const SliceArray<DirectBaseT> & s) : A{s.A}, slice{s.slice}
 {}
 
-template<DirectType DirectT>
-SliceArray<DirectT> & SliceArray<DirectT>::operator=(const SliceArray<DirectT> & s)
+template<DirectBaseType DirectBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(const SliceArray<DirectBaseT> & s)
 {
    ASSERT_STRICT_DEBUG(size() == s.size());
    std::copy(s.begin(), s.end(), begin());
    return *this;
 }
 
-template<DirectType DirectT> template<SliceArrayBaseType SType>
-SliceArray<DirectT> & SliceArray<DirectT>::operator=(const SType & s)
+template<DirectBaseType DirectBaseT> template<SliceArrayBaseType SType>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(const SType & s)
 {
    static_assert(SameType<typename SType::real_type, real_type>);
    ASSERT_STRICT_DEBUG(size() == s.size());
@@ -831,23 +774,23 @@ SliceArray<DirectT> & SliceArray<DirectT>::operator=(const SType & s)
    return *this;
 }
 
-template<DirectType DirectT>
-SliceArray<DirectT> & SliceArray<DirectT>::operator=(StrictVal<real_type> val)
+template<DirectBaseType DirectBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(StrictVal<real_type> val)
 {
    std::fill(begin(), end(), val);
    return *this;
 }
 
-template<DirectType DirectT>
-SliceArray<DirectT> & SliceArray<DirectT>::operator=(std::initializer_list<StrictVal<real_type>> list)
+template<DirectBaseType DirectBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(std::initializer_list<StrictVal<real_type>> list)
 {
    ASSERT_STRICT_DEBUG(size() == static_cast<size_type>(list.size()));
    std::copy(list.begin(), list.end(), begin());
    return *this;
 }
 
-template<DirectType DirectT>
-[[nodiscard]] inline auto SliceArray<DirectT>::sl(size_type first, size_type last)
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(size_type first, size_type last)
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -856,8 +799,8 @@ template<DirectType DirectT>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
-template<DirectType DirectT>
-[[nodiscard]] inline auto SliceArray<DirectT>::sl(size_type first, size_type last) const
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -866,54 +809,54 @@ template<DirectType DirectT>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
-template<DirectType DirectT>
-[[nodiscard]] inline auto SliceArray<DirectT>::sl(const Slice & slice)
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(const Slice & slice)
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return SliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
-template<DirectType DirectT>
-[[nodiscard]] inline auto SliceArray<DirectT>::sl(const Slice & slice) const
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
-template<DirectType DirectT>
-SliceArray<DirectT> & SliceArray<DirectT>::operator+=(StrictVal<real_type> val)
+template<DirectBaseType DirectBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator+=(StrictVal<real_type> val)
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { (*this)[i] += val; } );
    return *this;
 }
 
-template<DirectType DirectT>
-SliceArray<DirectT> & SliceArray<DirectT>::operator-=(StrictVal<real_type> val)
+template<DirectBaseType DirectBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator-=(StrictVal<real_type> val)
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { (*this)[i] -= val; } );
    return *this;
 }
 
-template<DirectType DirectT>
-SliceArray<DirectT> & SliceArray<DirectT>::operator*=(StrictVal<real_type> val)
+template<DirectBaseType DirectBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator*=(StrictVal<real_type> val)
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { (*this)[i] *= val; } );
    return *this;
 }
 
-template<DirectType DirectT>
-SliceArray<DirectT> & SliceArray<DirectT>::operator/=(StrictVal<real_type> val)
+template<DirectBaseType DirectBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator/=(StrictVal<real_type> val)
 {
    ASSERT_STRICT_DEBUG(!empty());
    apply0([&](size_type i) { (*this)[i] /= val; } );
    return *this;
 }
 
-template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType>
-SliceArray<DirectT> & SliceArray<DirectT>::operator+=(const SliceArrayType & A)
+template<DirectBaseType DirectBaseT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator+=(const SliceArrayType & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -921,8 +864,8 @@ SliceArray<DirectT> & SliceArray<DirectT>::operator+=(const SliceArrayType & A)
    return *this;
 }
 
-template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType>
-SliceArray<DirectT> & SliceArray<DirectT>::operator-=(const SliceArrayType & A)
+template<DirectBaseType DirectBaseT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator-=(const SliceArrayType & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -930,8 +873,8 @@ SliceArray<DirectT> & SliceArray<DirectT>::operator-=(const SliceArrayType & A)
    return *this;
 }
 
-template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType>
-SliceArray<DirectT> & SliceArray<DirectT>::operator*=(const SliceArrayType & A)
+template<DirectBaseType DirectBaseT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator*=(const SliceArrayType & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -939,8 +882,8 @@ SliceArray<DirectT> & SliceArray<DirectT>::operator*=(const SliceArrayType & A)
    return *this;
 }
 
-template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType>
-SliceArray<DirectT> & SliceArray<DirectT>::operator/=(const SliceArrayType & A)
+template<DirectBaseType DirectBaseT> template<SliceArrayBaseType SliceArrayType>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator/=(const SliceArrayType & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -948,15 +891,15 @@ SliceArray<DirectT> & SliceArray<DirectT>::operator/=(const SliceArrayType & A)
    return *this;
 }
 
-template<DirectType DirectT> template<typename F>
-void SliceArray<DirectT>::apply0(F f)
+template<DirectBaseType DirectBaseT> template<typename F>
+void SliceArray<DirectBaseT>::apply0(F f)
 {
    for(size_type i = 0; i < size(); ++i)
       f(i);
 }
 
-template<DirectType DirectT> template<SliceArrayBaseType SliceArrayType, typename F>
-void SliceArray<DirectT>::apply1(const SliceArrayType & A, F f)
+template<DirectBaseType DirectBaseT> template<SliceArrayBaseType SliceArrayType, typename F>
+void SliceArray<DirectBaseT>::apply1(const SliceArrayType & A, F f)
 {
    (void)A;
    for(size_type i = 0; i < size(); ++i)
@@ -1039,18 +982,18 @@ struct Divide : private BinaryOperation
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BaseT, UnaryOperationType Op>
-class UnaryExpr : private BaseT::base_type, private BaseT::expr_base_type
+template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
+class UnaryExpr : private OneDimeBaseT::base_type, private OneDimeBaseT::expr_base_type
 {
 public:
-   using size_type = typename BaseT::size_type;
-   using value_type = typename BaseT::value_type;
-   using real_type = typename BaseT::real_type;
-   using base_type = typename BaseT::base_type;
-   using expr_base_type = typename BaseT::expr_base_type;
-   using expr_type = const UnaryExpr<BaseT, Op>;
+   using size_type = typename OneDimeBaseT::size_type;
+   using value_type = typename OneDimeBaseT::value_type;
+   using real_type = typename OneDimeBaseT::real_type;
+   using base_type = typename OneDimeBaseT::base_type;
+   using expr_base_type = typename OneDimeBaseT::expr_base_type;
+   using expr_type = const UnaryExpr<OneDimeBaseT, Op>;
 
-   explicit UnaryExpr(const BaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
+   explicit UnaryExpr(const OneDimeBaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
    UnaryExpr(const UnaryExpr &) = default;
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
@@ -1075,12 +1018,12 @@ public:
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
-   typename BaseT::expr_type A;
+   typename OneDimeBaseT::expr_type A;
    Op op;
 };
 
-template<BaseType BaseT, UnaryOperationType Op>
-[[nodiscard]] inline auto UnaryExpr<BaseT, Op>::sl(size_type first, size_type last) const
+template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
+[[nodiscard]] inline auto UnaryExpr<OneDimeBaseT, Op>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -1089,30 +1032,30 @@ template<BaseType BaseT, UnaryOperationType Op>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
-template<BaseType BaseT, UnaryOperationType Op>
-[[nodiscard]] inline auto UnaryExpr<BaseT, Op>::sl(const Slice & slice) const
+template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
+[[nodiscard]] inline auto UnaryExpr<OneDimeBaseT, Op>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BaseT1, BaseType BaseT2, BinaryOperationType Op>
-class BinExpr : private BaseT1::base_type, private BaseT1::expr_base_type
+template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperationType Op>
+class BinExpr : private OneDimBaseT1::base_type, private OneDimBaseT1::expr_base_type
 {
 public:
-   using size_type = typename BaseT1::size_type;
-   using value_type = typename BaseT1::value_type;
-   using real_type = typename BaseT1::real_type;
-   using base_type = typename BaseT1::base_type;
-   using expr_base_type = typename BaseT1::expr_base_type;
-   using expr_type = const BinExpr<BaseT1, BaseT2, Op>;
+   using size_type = typename OneDimBaseT1::size_type;
+   using value_type = typename OneDimBaseT1::value_type;
+   using real_type = typename OneDimBaseT1::real_type;
+   using base_type = typename OneDimBaseT1::base_type;
+   using expr_base_type = typename OneDimBaseT1::expr_base_type;
+   using expr_type = const BinExpr<OneDimBaseT1, OneDimBaseT2, Op>;
 
-   explicit BinExpr(const BaseT1 & A, const BaseT2 & B, Op op) : A{A}, B{B}, op{op} {
-      static_assert(SameType<typename BaseT1::size_type, typename BaseT2::size_type>);
-      static_assert(SameType<typename BaseT1::value_type, typename BaseT2::value_type>);
-      static_assert(SameType<typename BaseT1::real_type, typename BaseT2::real_type>);
-      static_assert(SameType<typename BaseT1::base_type, typename BaseT2::base_type>);
+   explicit BinExpr(const OneDimBaseT1 & A, const OneDimBaseT2 & B, Op op) : A{A}, B{B}, op{op} {
+      static_assert(SameType<typename OneDimBaseT1::size_type, typename OneDimBaseT2::size_type>);
+      static_assert(SameType<typename OneDimBaseT1::value_type, typename OneDimBaseT2::value_type>);
+      static_assert(SameType<typename OneDimBaseT1::real_type, typename OneDimBaseT2::real_type>);
+      static_assert(SameType<typename OneDimBaseT1::base_type, typename OneDimBaseT2::base_type>);
       ASSERT_STRICT_DEBUG(!A.empty());
       ASSERT_STRICT_DEBUG(A.size() == B.size());
    }
@@ -1140,13 +1083,13 @@ public:
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
-   typename BaseT1::expr_type A;
-   typename BaseT2::expr_type B;
+   typename OneDimBaseT1::expr_type A;
+   typename OneDimBaseT2::expr_type B;
    Op op;
 };
 
-template<ArrayBaseType BaseT1, ArrayBaseType BaseT2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExpr<BaseT1, BaseT2, Op>::sl(size_type first, size_type last) const
+template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperationType Op>
+[[nodiscard]] inline auto BinExpr<OneDimBaseT1, OneDimBaseT2, Op>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -1155,27 +1098,27 @@ template<ArrayBaseType BaseT1, ArrayBaseType BaseT2, BinaryOperationType Op>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
-template<ArrayBaseType BaseT1, ArrayBaseType BaseT2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExpr<BaseT1, BaseT2, Op>::sl(const Slice & slice) const
+template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperationType Op>
+[[nodiscard]] inline auto BinExpr<OneDimBaseT1, OneDimBaseT2, Op>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BaseT1, RealType T2, BinaryOperationType Op>
-class BinExprValLeft : private BaseT1::base_type, private BaseT1::expr_base_type
+template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
+class BinExprValLeft : private OneDimBaseT1::base_type, private OneDimBaseT1::expr_base_type
 {
 public:
-   using size_type = typename BaseT1::size_type;
-   using value_type = typename BaseT1::value_type;
-   using real_type = typename BaseT1::real_type;
-   using base_type = typename BaseT1::base_type;
-   using expr_base_type = typename BaseT1::expr_base_type;
-   using expr_type = const BinExprValLeft<BaseT1, T2, Op>;
+   using size_type = typename OneDimBaseT1::size_type;
+   using value_type = typename OneDimBaseT1::value_type;
+   using real_type = typename OneDimBaseT1::real_type;
+   using base_type = typename OneDimBaseT1::base_type;
+   using expr_base_type = typename OneDimBaseT1::expr_base_type;
+   using expr_type = const BinExprValLeft<OneDimBaseT1, T2, Op>;
 
-   explicit BinExprValLeft(const BaseT1 & B, T2 val, Op op) : B{B}, val{val}, op{op} {
-      static_assert(SameType<typename BaseT1::real_type, T2>);
+   explicit BinExprValLeft(const OneDimBaseT1 & B, T2 val, Op op) : B{B}, val{val}, op{op} {
+      static_assert(SameType<typename OneDimBaseT1::real_type, T2>);
       ASSERT_STRICT_DEBUG(!B.empty());
    }
    BinExprValLeft(const BinExprValLeft &) = default;
@@ -1202,13 +1145,13 @@ public:
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
-   typename BaseT1::expr_type B;
+   typename OneDimBaseT1::expr_type B;
    StrictVal<T2> val;
    Op op;
 };
 
-template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExprValLeft<BaseT1, T2, Op>::sl(size_type first, size_type last) const
+template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
+[[nodiscard]] inline auto BinExprValLeft<OneDimBaseT1, T2, Op>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -1217,27 +1160,27 @@ template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
-template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExprValLeft<BaseT1, T2, Op>::sl(const Slice & slice) const
+template<ArrayBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
+[[nodiscard]] inline auto BinExprValLeft<OneDimBaseT1, T2, Op>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<BaseType BaseT1, RealType T2, BinaryOperationType Op>
-class BinExprValRight : private BaseT1::base_type, private BaseT1::expr_base_type
+template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
+class BinExprValRight : private OneDimBaseT1::base_type, private OneDimBaseT1::expr_base_type
 {
 public:
-   using size_type = typename BaseT1::size_type;
-   using value_type = typename BaseT1::value_type;
-   using real_type = typename BaseT1::real_type;
-   using base_type = typename BaseT1::base_type;
-   using expr_base_type = typename BaseT1::expr_base_type;
-   using expr_type = const BinExprValRight<BaseT1, T2, Op>;
+   using size_type = typename OneDimBaseT1::size_type;
+   using value_type = typename OneDimBaseT1::value_type;
+   using real_type = typename OneDimBaseT1::real_type;
+   using base_type = typename OneDimBaseT1::base_type;
+   using expr_base_type = typename OneDimBaseT1::expr_base_type;
+   using expr_type = const BinExprValRight<OneDimBaseT1, T2, Op>;
 
-   explicit BinExprValRight(const BaseT1 & A, T2 val, Op op) : A{A}, val{val}, op{op} {
-      static_assert(SameType<typename BaseT1::real_type, T2>);
+   explicit BinExprValRight(const OneDimBaseT1 & A, T2 val, Op op) : A{A}, val{val}, op{op} {
+      static_assert(SameType<typename OneDimBaseT1::real_type, T2>);
       ASSERT_STRICT_DEBUG(!A.empty());
    }
    BinExprValRight(const BinExprValRight &) = default;
@@ -1264,13 +1207,13 @@ public:
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
-   typename BaseT1::expr_type A;
+   typename OneDimBaseT1::expr_type A;
    StrictVal<T2> val;
    Op op;
 };
 
-template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExprValRight<BaseT1, T2, Op>::sl(size_type first, size_type last) const
+template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
+[[nodiscard]] inline auto BinExprValRight<OneDimBaseT1, T2, Op>::sl(size_type first, size_type last) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
@@ -1279,8 +1222,8 @@ template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
-template<ArrayBaseType BaseT1, RealType T2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExprValRight<BaseT1, T2, Op>::sl(const Slice & slice) const
+template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
+[[nodiscard]] inline auto BinExprValRight<OneDimBaseT1, T2, Op>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
@@ -1481,190 +1424,6 @@ template<ArrayBaseType T>
 template<ArrayBaseType T>
 [[nodiscard]] auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
-
-template<BaseType BaseT>
-std::ostream & operator<<(std::ostream & os, const BaseT & A)
-{
-   using T = typename BaseT::real_type;
-   for(decltype(A.size()) i = 0; i < A.size(); ++i) {
-      os << "[" << i << "] ="
-         << internal::smart_spaces<T>(A.size(), i) << A[i] << std::endl;
-   }
-   return os;
-}
-
-template<BaseType BaseT>
-void print(const BaseT & A, const std::string & name)
-{
-   using T = typename BaseT::real_type;
-   for(decltype(A.size()) i = 0; i < A.size(); ++i) {
-      std::cout << name << "[" << i << "] ="
-         << internal::smart_spaces<T>(A.size(), i) << A[i] << std::endl;
-   }
-}
-
-template<IntegerBaseType IntBaseT>
-[[nodiscard]] auto sum(const IntBaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   auto sum = A[0];
-   for(decltype(A.size()) i = 1; i < A.size(); ++i)
-      sum += A[i];
-   return sum;
-}
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] auto sum(const FloatBaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   using rv_T = typename FloatBaseT::real_type;
-
-   volatile rv_T sum{};
-   volatile rv_T c{};
-   for(decltype(A.size()) i = 0; i < A.size(); ++i) {
-      volatile rv_T y = A[i] - c;
-      volatile rv_T t = sum + y;
-      c = (t - sum) - y;
-      sum = t;
-   }
-   return StrictVal<rv_T>{sum};
-}
-
-template<BaseType BaseT>
-[[nodiscard]] auto min(const BaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   auto min_elem = A[0];
-   for(decltype(A.size()) i = 1; i < A.size(); ++i)
-      min_elem = mins(A[i], min_elem);
-   return min_elem;
-}
-
-template<BaseType BaseT>
-[[nodiscard]] auto max(const BaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   auto max_elem = A[0];
-   for(decltype(A.size()) i = 1; i < A.size(); ++i)
-      max_elem = maxs(A[i], max_elem);
-   return max_elem;
-}
-
-template<BaseType BaseT>
-[[nodiscard]] auto min_index(const BaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   using sz_T = typename BaseT::size_type;
-   using sv_T = typename BaseT::value_type;
-
-   std::pair<sz_T, sv_T> min = {0, A[0]};
-   for(sz_T i = 1; i < A.size(); ++i)
-      if(A[i] < min.second)
-         min = {i, A[i]};
-   return min;
-}
-
-template<BaseType BaseT>
-[[nodiscard]] auto max_index(const BaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   using sz_T = typename BaseT::size_type;
-   using sv_T = typename BaseT::value_type;
-
-   std::pair<sz_T, sv_T> max = {0, A[0]};
-   for(sz_T i = 1; i < A.size(); ++i)
-      if(A[i] > max.second)
-         max = {i, A[i]};
-   return max;
-}
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] bool all_finite(const FloatBaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   for(auto x : A)
-      if(!isfinites(x)) return false;
-   return true;
-}
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] auto norm_inf(const FloatBaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   auto max_abs = abss(A[0]);
-   for(decltype(A.size()) i = 1; i < A.size(); ++i) {
-      auto abs_i = abss(A[i]);
-      max_abs  = maxs(abs_i, max_abs);
-   }
-   return max_abs;
-}
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] auto norm2(const FloatBaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   return sqrts(dot_prod(A, A));
-}
-
-template<FloatingBaseType FloatBaseT>
-[[nodiscard]] auto norm_lp(const FloatBaseT & A, int p)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   using T = typename FloatBaseT::real_type;
-   T sum{};
-   for(auto x : A)
-      sum += abss(pows_int(x, p));
-   return pows<T>(sum, T(1)/T(p));
-}
-
-template<BaseType BType1, BaseType BType2>
-[[nodiscard]] auto dot_prod(const BType1 & A1, const BType2 & A2)
-{
-   static_assert(SameType<typename BType1::base_type, typename BType2::base_type>);
-   ASSERT_STRICT_DEBUG(A1.size() == A2.size());
-   ASSERT_STRICT_DEBUG(!A1.empty());
-   return sum(A1 * A2);
-}
-
-template<BaseType BaseT>
-[[nodiscard]] bool does_contain_zero(const BaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   using T = typename BaseT::real_type;
-   for(auto x : A)
-      if(x == T{0}) return true;
-   return false;
-}
-
-template<BaseType BaseT>
-[[nodiscard]] bool all_positive(const BaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   using T = typename BaseT::real_type;
-   for(auto x : A)
-      if(x <= T{0}) return false;
-   return true;
-}
-
-template<BaseType BaseT>
-[[nodiscard]] bool all_negative(const BaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   using T = typename BaseT::real_type;
-   for(auto x : A)
-      if(x >= T{0}) return false;
-   return true;
-}
-
-template<BaseType BaseT>
-[[nodiscard]] std::unique_ptr<typename BaseT::real_type[]> unique_blas_array(const BaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   using real_type = typename BaseT::real_type;
-   auto blas_array = std::make_unique<real_type[]>(static_cast<std::size_t>(A.size()));
-   std::copy(A.begin(), A.end(), blas_array.get());
-   return blas_array;
-}
 
 }
 
