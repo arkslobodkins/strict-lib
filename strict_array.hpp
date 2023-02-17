@@ -397,9 +397,7 @@ template<RealType T>
 Array<T>::Array(size_type size) :
    elem{new StrictVal<T>[static_cast<std::size_t>(size)]},
    sz{size}
-{
-   ASSERT_STRICT_DEBUG(sz > -1);
-}
+{ ASSERT_STRICT_DEBUG(sz > -1); }
 
 template<RealType T>
 Array<T>::Array(size_type size, StrictVal<T> val) :
@@ -412,15 +410,11 @@ Array<T>::Array(size_type size, StrictVal<T> val) :
 template<RealType T>
 Array<T>::Array(std::initializer_list<StrictVal<T>> list) :
    Array(static_cast<size_type>(list.size()))
-{
-   std::copy(list.begin(), list.end(), begin());
-}
+{ std::copy(list.begin(), list.end(), begin()); }
 
 template<RealType T> Array<T>::Array(const Array<T> & A) :
    Array(A.size())
-{
-   std::copy(A.begin(), A.end(), begin());
-}
+{ std::copy(A.begin(), A.end(), begin()); }
 
 template<RealType T>
 Array<T>::Array(Array<T> && A) noexcept :
@@ -476,9 +470,7 @@ Array<T> & Array<T>::Assign(const BType & A) &
 template<RealType T> template<ArrayExprType ArrExpr>
 Array<T>::Array(const ArrExpr & expr) :
    Array(expr.size())
-{
-   std::copy(expr.begin(), expr.end(), begin());
-}
+{ std::copy(expr.begin(), expr.end(), begin()); }
 
 template<RealType T> template<ArrayExprType ArrExpr>
 const Array<T> & Array<T>::operator=(const ArrExpr & expr) &
