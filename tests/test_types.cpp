@@ -18,6 +18,8 @@ void assert_real()
    static_assert(!RealType<unsigned int>);
    static_assert(!RealType<const int>);
    static_assert(!RealType<int &>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_int()
@@ -27,6 +29,8 @@ void assert_int()
    static_assert(IntegerType<long int>);
    static_assert(IntegerType<long long int>);
    static_assert(!IntegerType<double>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_floating()
@@ -38,6 +42,8 @@ void assert_floating()
    static_assert(FloatingType<float128>);
    #endif
    static_assert(!FloatingType<int>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_standard_floating()
@@ -49,6 +55,8 @@ void assert_standard_floating()
    static_assert(!StandardFloatingType<float128>);
    #endif
    static_assert(!StandardFloatingType<int>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_quad_floating()
@@ -60,6 +68,8 @@ void assert_quad_floating()
    static_assert(!QuadType<double>);
    static_assert(!QuadType<long double>);
    static_assert(!QuadType<int>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_not_quad_floating()
@@ -71,6 +81,8 @@ void assert_not_quad_floating()
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(!NotQuadType<float128>);
    #endif
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_int_base()
@@ -81,6 +93,11 @@ void assert_int_base()
    static_assert(IntegerBaseType<Array<long long int>>);
    static_assert(!IntegerBaseType<Array<double>>);
    static_assert(!IntegerBaseType<int>);
+
+   static_assert(IntegerBaseType<const Array<int>>);
+   static_assert(!IntegerBaseType<Array<int>&>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_floating_base()
@@ -93,6 +110,11 @@ void assert_floating_base()
    #endif
    static_assert(!FloatingBaseType<Array<int>>);
    static_assert(!FloatingBaseType<int>);
+
+   static_assert(FloatingBaseType<const Array<float>>);
+   static_assert(!FloatingBaseType<Array<float> &>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_standard_floating_base()
@@ -105,6 +127,11 @@ void assert_standard_floating_base()
    static_assert(!StandardFloatingBaseType<Array<float128>>);
    #endif
    static_assert(!StandardFloatingBaseType<int>);
+
+   static_assert(StandardFloatingBaseType<const Array<float>>);
+   static_assert(!StandardFloatingBaseType<Array<float> &>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_quad_base()
@@ -117,6 +144,8 @@ void assert_quad_base()
    static_assert(!QuadFloatingBaseType<Array<double>>);
    static_assert(!QuadFloatingBaseType<Array<long double>>);
    static_assert(!QuadFloatingBaseType<int>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 void assert_not_quad_base()
@@ -129,9 +158,50 @@ void assert_not_quad_base()
    static_assert(!NotQuadFloatingBaseType<Array<float128>>);
    #endif
    static_assert(!NotQuadFloatingBaseType<int>);
+
+   std::cout << "passed " << __func__ << std::endl;
+}
+
+void assert_direct()
+{
+   static_assert(DirectBaseType<Array<double>>);
+   static_assert(DirectBaseType<SliceArray<Array<double>>>);
+   static_assert(DirectBaseType<ConstSliceArray<Array<double>>>);
+   static_assert(DirectBaseType<SliceArray<SliceArray<Array<double>>>>);
+   static_assert(DirectBaseType<ConstSliceArray<SliceArray<Array<double>>>>);
+   static_assert(DirectBaseType<ConstSliceArray<ConstSliceArray<Array<double>>>>);
+
+   Array<double> A{}, B{};
+   static_assert(!DirectBaseType<decltype(1. + A)>);
+   static_assert(!DirectBaseType<decltype(1. * A)>);
+   static_assert(!DirectBaseType<decltype(A + 1.)>);
+   static_assert(!DirectBaseType<decltype(A * 1.)>);
+   static_assert(!DirectBaseType<decltype(A + B)>);
+   static_assert(!DirectBaseType<decltype(A * B)>);
+
+   static_assert(!DirectBaseType<decltype((-A).sl(0, 0))>);
+   static_assert(!DirectBaseType<decltype((A + B).sl(0, 0))>);
+   static_assert(!DirectBaseType<decltype((A * B).sl(0, 0))>);
+   static_assert(!DirectBaseType<decltype(A.sl(0, 0) * B.sl(0, 0))>);
+
+   std::cout << "passed " << __func__ << std::endl;
 }
 
 int main(int argc, char *argv[])
 {
+   assert_real();
+   assert_int();
+   assert_floating();
+   assert_standard_floating();
+   assert_quad_floating();
+   assert_not_quad_floating();
+
+   assert_int_base();
+   assert_floating_base();
+   assert_standard_floating_base();
+   assert_quad_base();
+   assert_not_quad_base();
+
+   assert_direct();
    return EXIT_SUCCESS;
 }

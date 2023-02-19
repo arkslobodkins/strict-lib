@@ -172,7 +172,6 @@ int main()
    auto ms = max(M.sl({2, M.size()/2-1, 2}));   // maximum of 2nd, 4th, and 6th elements
    for(auto & x : even_elem)                    // iterate over even elements and apply exponential function
       x = exps(x);
-
 }
 
 #endif
