@@ -17,7 +17,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
-#include <numeric>
 
 #include "strict_array.hpp"
 #include "strict_util.hpp"
@@ -71,8 +70,7 @@ int main()
    // sum every second element of 0, 2, 4, .., i.e.
    // sum of 0, 4, 8 ...
 
-   Array<int> C(9);
-   std::iota(C.begin(), C.end(), 0);
+   Array<int> C = array_iota<int>(9);
    StrictVal<int> s{};
    auto expr = 2 * C;
    for(auto it = expr.begin(); it < expr.end(); it += 2)
@@ -106,8 +104,8 @@ int main()
    // must be enabled via -std=gnu++20.
 
    #ifdef STRICT_QUADRUPLE_PRECISION
-   const Array<float128> F1{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
-   const Array<float128> F2{1.Q, 2.Q, 3.Q, 4.Q, 5.Q};
+   const Array<float128> F1 = array_iota<float128>(5, 1.Q);
+   const Array<float128> F2 = array_iota<float128>(5, 1.Q);
    cout << F1 + F2 << endl;
    #endif
 
@@ -145,7 +143,7 @@ int main()
    // 9. Just like for expression templates of Array, non-member functions
    // can be used for SliceArray and expression templates of SliceArray.
 
-   Array<double> K{1., 2., 3., 4., 5., 6.};
+   Array<float64> K = array_iota<float64>(6, 1.);
    auto m = max(K.sl(0, 3));
    auto n1 = norm2(K.sl(0, 2));
    auto n2 = norm2(K.sl(0, 2) + K.sl(3, 5));
@@ -163,7 +161,7 @@ int main()
 
    // 10. Non-contiguous slices.
 
-   Array<double> M{1., 2., 3., 4., 5., 6.};
+   Array<float64> M = array_iota<float64>(6, 1.);
    auto even_elem = M.sl({0, M.size()/2, 2});
    even_elem = -1.;                             // set every even element of M to -1
    even_elem = 100. * M.sl({1, M.size()/2, 2}); // even entries are set to 100 times odd entries

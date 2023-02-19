@@ -162,7 +162,7 @@ void assert_not_quad_base()
    std::cout << "passed " << __func__ << std::endl;
 }
 
-void assert_direct()
+void assert_direct_base_type()
 {
    static_assert(DirectBaseType<Array<double>>);
    static_assert(DirectBaseType<SliceArray<Array<double>>>);
@@ -171,7 +171,7 @@ void assert_direct()
    static_assert(DirectBaseType<ConstSliceArray<SliceArray<Array<double>>>>);
    static_assert(DirectBaseType<ConstSliceArray<ConstSliceArray<Array<double>>>>);
 
-   Array<double> A{}, B{};
+   Array<double> A(1), B(1);
    static_assert(!DirectBaseType<decltype(1. + A)>);
    static_assert(!DirectBaseType<decltype(1. * A)>);
    static_assert(!DirectBaseType<decltype(A + 1.)>);
@@ -184,6 +184,48 @@ void assert_direct()
    static_assert(!DirectBaseType<decltype((A * B).sl(0, 0))>);
    static_assert(!DirectBaseType<decltype(A.sl(0, 0) * B.sl(0, 0))>);
 
+   std::cout << "passed " << __func__ << std::endl;
+}
+
+void assert_array_base_type()
+{
+   Array<double> A(1), B(1);
+   static_assert(ArrayBaseType1D<decltype(A)>);
+   static_assert(ArrayBaseType1D<decltype(-A)>);
+   static_assert(ArrayBaseType1D<decltype(1. + A)>);
+   static_assert(ArrayBaseType1D<decltype(1. * A)>);
+   static_assert(ArrayBaseType1D<decltype(A + 1.)>);
+   static_assert(ArrayBaseType1D<decltype(A * 1.)>);
+   static_assert(ArrayBaseType1D<decltype(A + B)>);
+   static_assert(ArrayBaseType1D<decltype(A * B)>);
+
+   static_assert(!ArrayBaseType1D<decltype((-A).sl(0, 0))>);
+   static_assert(!ArrayBaseType1D<decltype((A + B).sl(0, 0))>);
+   static_assert(!ArrayBaseType1D<decltype((A * B).sl(0, 0))>);
+   static_assert(!ArrayBaseType1D<decltype(A.sl(0, 0) * B.sl(0, 0))>);
+   static_assert(!ArrayBaseType1D<decltype((A.sl(0, 0) * B.sl(0, 0)).sl(0, 0))>);
+   std::cout << "passed " << __func__ << std::endl;
+}
+
+void assert_array_expr_type()
+{
+   Array<double> A(1);
+   const Array<double> B(1);
+   static_assert(ArrayExprType1D<decltype(abs(A))>);
+   static_assert(ArrayExprType1D<decltype(-A)>);
+   static_assert(ArrayExprType1D<decltype(1. + A)>);
+   static_assert(ArrayExprType1D<decltype(1. * A)>);
+   static_assert(ArrayExprType1D<decltype(A + 1.)>);
+   static_assert(ArrayExprType1D<decltype(A * 1.)>);
+   static_assert(ArrayExprType1D<decltype(A + B)>);
+   static_assert(ArrayExprType1D<decltype(A * B)>);
+
+   static_assert(!ArrayExprType1D<decltype(A)>);
+   static_assert(!ArrayExprType1D<decltype(B)>);
+   static_assert(!ArrayExprType1D<decltype(A.sl(0, 0))>);
+   static_assert(!ArrayExprType1D<decltype(A.sl(0, 0) + B.sl(0, 0))>);
+   static_assert(!ArrayExprType1D<decltype(A.sl(0, 0) + 1.)>);
+   static_assert(!ArrayExprType1D<decltype(1. + A.sl(0, 0))>);
    std::cout << "passed " << __func__ << std::endl;
 }
 
@@ -202,6 +244,8 @@ int main(int argc, char *argv[])
    assert_quad_base();
    assert_not_quad_base();
 
-   assert_direct();
+   assert_direct_base_type();
+   assert_array_base_type();
+   assert_array_expr_type();
    return EXIT_SUCCESS;
 }

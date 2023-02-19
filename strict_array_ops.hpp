@@ -53,6 +53,9 @@ template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm2(const FloatBaseT & A);
 
 template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm1(const FloatBaseT & A);
+
+template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm_lp(const FloatBaseT & A, int p);
 
 template<BaseType BType1, BaseType BType2>
@@ -209,6 +212,13 @@ template<FloatingBaseType FloatBaseT>
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    return sqrts(dot_prod(A, A));
+}
+
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm1(const FloatBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   return sum(abs(A));
 }
 
 template<FloatingBaseType FloatBaseT>
