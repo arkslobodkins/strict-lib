@@ -34,6 +34,7 @@ void assert_inf_norm()
    assert(within_tol_abs<T>(norm_inf(B.sl(0, 2) + B.sl(1, 3)), T{14}));
    assert(within_tol_abs<T>(norm_inf(B.sl(0, 4).sl(3, 4)), T{4}));
    assert(within_tol_abs<T>(norm_inf(T{4}*B.sl(3, 4)), T{16}));
+   std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 
 template<FloatingType T>
@@ -45,6 +46,7 @@ void assert_max()
    A = {T{-1}, T{-2}, T{-3}, T{-4}, T{-5}};
    assert(within_tol_abs<T>(max(A), T{-1}));
    assert(within_tol_abs<T>(max(T{-1} * A), T{5}));
+   std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 
 template<IntegerType T>
@@ -56,6 +58,7 @@ void assert_max()
    A = {T{-1}, T{-2}, T{-3}, T{-4}, T{-5}};
    assert(max(A) == T{-1});
    assert(max(T{-1} * A) == T{5});
+   std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 
 int main(int argc, char *argv[])

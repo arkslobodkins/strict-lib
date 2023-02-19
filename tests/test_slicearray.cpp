@@ -66,6 +66,7 @@ void assert_float_ops()
    v3 = T{2} + v1 - v2 - T{3}; s3.sl(0, n-1) = T{2} + s1.sl(0, n-1) - s2.sl(0, n-1) - T{3}; assert_slicearray(v3, s3_slice);
    v3 = T{2} + v1 * v2 - T{3}; s3.sl(0, n-1) = T{2} + s1.sl(0, n-1) * s2.sl(0, n-1) - T{3}; assert_slicearray(v3, s3_slice);
    v3 = T{2} + v1 / v2 - T{3}; s3.sl(0, n-1) = T{2} + s1.sl(0, n-1) / s2.sl(0, n-1) - T{3}; assert_slicearray(v3, s3_slice);
+   std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 
 int main(int argc, char *argv[])

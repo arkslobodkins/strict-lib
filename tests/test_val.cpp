@@ -38,6 +38,7 @@ void assert_floats()
    z = std::sqrt(T{2}); zs = sqrts<T>(T{2}); assert(z == zs);
    z = std::sin(T{2}); zs = sins<T>(T{2}); assert(z == zs);
    z = std::cos(T{2}); zs = coss<T>(T{2}); assert(z == zs);
+   std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 
 int main(int argc, char *argv[])

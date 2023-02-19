@@ -61,13 +61,11 @@ template<typename T> concept UnaryOperationType = BaseOf<UnaryOperation, T>;
 template<typename T> concept BinaryOperationType = BaseOf<BinaryOperation, T>;
 
 class Base {};
-class Expr {};
-template<typename T> concept BaseType = BaseOf<Base, T>;
-template<typename T> concept ExprType = BaseOf<Expr, T>;
-
-template<typename T>
-concept DirectBaseType = BaseType<T> && requires(T a)
-{ requires std::is_lvalue_reference_v<decltype(a[0])>; };
+class Expr : private Base {};
+template<typename T> concept BaseType = BaseOf<Base, T>;               // BaseType will always be either DirectBaseType or ExprType
+template<typename T> concept ExprType = BaseOf<Expr, T>;               // all types of expression templates
+template<typename T> concept DirectBaseType = BaseType<T> &&           // Objects of type Array or slices of Array.
+   requires(T A) { requires std::is_lvalue_reference_v<decltype(A[0])>; };
 
 template<typename T> concept IntegerBaseType = BaseType<T> && IntegerType<typename T::real_type>;
 template<typename T> concept StandardFloatingBaseType = BaseType<T> && StandardFloatingType<typename T::real_type>;

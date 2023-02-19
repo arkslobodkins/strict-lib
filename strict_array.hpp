@@ -8,8 +8,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <ctime>
 #include <initializer_list>
+#include <iterator>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -61,7 +63,7 @@ public:
    Array & operator=(Array && A) & noexcept;
 
    // assign either Array, SliceArray, or their expression template
-   template<BaseType BType> Array & Assign(const BType & A) &;
+   template<BaseType BaseT> Array & Assign(const BaseT & A) &;
 
    template<ArrayExprType ArrExpr> Array(const ArrExpr & expr);
    template<ArrayExprType ArrExpr> const Array & operator=(const ArrExpr & expr) &;
@@ -135,36 +137,6 @@ private:
    template<ArrayBaseType ArrayType, typename F>
       void apply1(const ArrayType & A, F f);
 };
-
-//template<RealType T>
-//class Array2D : private Array2DBase
-//{
-//public:
-//   using size_type = Array<T>::size_type;
-//   using value_type = Array<T>::value_type;
-//   using real_type = Array<T>::real_type;
-//   using base_type = Array2DBase;
-//   using expr_base_type = Array2DExpr;
-//   using expr_type = const Array2D<T> &;
-//   using slice_type = Array2D<T> &;
-//
-//   Array2D(size_type sz1, size_type sz2);
-//   Array2D(const Array2D & A2D);
-//   Array2D(Array2D && A2D);
-//   Array2D & operator=(const Array2D & A2D) &;
-//   Array2D & operator=(Array2D && A2D) &;
-//
-//private:
-//   Array<T> A;
-//   std::array<size_type, 2> dims;
-//};
-//
-//template<RealType T>
-//Array2D<T>::Array2D(size_type sz1, size_type sz2) : A(sz1*sz2), dims{sz1, sz2}
-//{
-//   ASSERT_STRICT_DEBUG(sz1 > -1);
-//   ASSERT_STRICT_DEBUG(sz2 > -1);
-//}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType T1, ArrayBaseType T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
@@ -247,6 +219,9 @@ public:
                                                                                // expression template of SliceArray.
    SliceArray & operator=(StrictVal<real_type> s);
    SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
+
+   // assign either Array, SliceArray, or their expression template
+   template<BaseType BaseT> SliceArray & Assign(const BaseT & A) &;
 
    [[nodiscard]] auto & operator[](size_type i)
       { return A[slice.start() + i*slice.stride()]; }
@@ -458,8 +433,8 @@ Array<T> & Array<T>::operator=(Array<T> && A) & noexcept
    return *this;
 }
 
-template<RealType T> template<BaseType BType>
-Array<T> & Array<T>::Assign(const BType & A) &
+template<RealType T> template<BaseType BaseT>
+Array<T> & Array<T>::Assign(const BaseT & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    std::copy(A.begin(), A.end(), begin());
@@ -602,7 +577,7 @@ template<RealType T>
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
-   return SliceArray<std::remove_cvref_t<decltype(*this)>>
+   return SliceArray<std::decay_t<decltype(*this)>>
       {*this, Slice{first, last-first+1, size_type{1}}};
 }
 
@@ -612,7 +587,7 @@ template<RealType T>
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
+   return ConstSliceArray<std::decay_t<decltype(*this)>>
       {*this, Slice{first, last-first+1, size_type{1}}};
 }
 
@@ -620,14 +595,14 @@ template<RealType T>
 [[nodiscard]] inline auto Array<T>::sl(const Slice & slice)
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
-   return SliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
+   return SliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 template<RealType T>
 [[nodiscard]] inline auto Array<T>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
+   return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -752,8 +727,10 @@ SliceArray<DirectBaseT>::SliceArray(const SliceArray<DirectBaseT> & s) : A{s.A},
 template<DirectBaseType DirectBaseT>
 SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(const SliceArray<DirectBaseT> & s)
 {
-   ASSERT_STRICT_DEBUG(size() == s.size());
-   std::copy(s.begin(), s.end(), begin());
+   if(this != &s) {
+      ASSERT_STRICT_DEBUG(size() == s.size());
+      std::copy(s.begin(), s.end(), begin());
+   }
    return *this;
 }
 
@@ -781,13 +758,21 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(std::initializer_li
    return *this;
 }
 
+template<DirectBaseType DirectBaseT> template<BaseType BaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::Assign(const BaseT & A) &
+{
+   ASSERT_STRICT_DEBUG(size() == A.size());
+   std::copy(A.begin(), A.end(), begin());
+   return *this;
+}
+
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(size_type first, size_type last)
 {
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
-   return SliceArray<std::remove_cvref_t<decltype(*this)>>
+   return SliceArray<std::decay_t<decltype(*this)>>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
@@ -797,7 +782,7 @@ template<DirectBaseType DirectBaseT>
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
+   return ConstSliceArray<std::decay_t<decltype(*this)>>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
@@ -805,14 +790,14 @@ template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(const Slice & slice)
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
-   return SliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
+   return SliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
+   return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 template<DirectBaseType DirectBaseT>
@@ -913,7 +898,7 @@ template<BaseType BaseT>
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
+   return ConstSliceArray<std::decay_t<decltype(*this)>>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
@@ -921,7 +906,7 @@ template<BaseType BaseT>
 [[nodiscard]] inline auto ConstSliceArray<BaseT>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
+   return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1020,7 +1005,7 @@ template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
+   return ConstSliceArray<std::decay_t<decltype(*this)>>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
@@ -1028,7 +1013,7 @@ template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
 [[nodiscard]] inline auto UnaryExpr<OneDimeBaseT, Op>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
+   return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1086,7 +1071,7 @@ template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperati
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
+   return ConstSliceArray<std::decay_t<decltype(*this)>>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
@@ -1094,7 +1079,7 @@ template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperati
 [[nodiscard]] inline auto BinExpr<OneDimBaseT1, OneDimBaseT2, Op>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
+   return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1148,15 +1133,15 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
+   return ConstSliceArray<std::decay_t<decltype(*this)>>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
-template<ArrayBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
+template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 [[nodiscard]] inline auto BinExprValLeft<OneDimBaseT1, T2, Op>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
+   return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1210,7 +1195,7 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
    ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
    ASSERT_STRICT_DEBUG(last >= first);
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>>
+   return ConstSliceArray<std::decay_t<decltype(*this)>>
       {*this, Slice(first, last-first+1, size_type{1})};
 }
 
@@ -1218,7 +1203,7 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 [[nodiscard]] inline auto BinExprValRight<OneDimBaseT1, T2, Op>::sl(const Slice & slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
-   return ConstSliceArray<std::remove_cvref_t<decltype(*this)>> {*this, slice};
+   return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////

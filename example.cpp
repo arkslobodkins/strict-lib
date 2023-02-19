@@ -173,7 +173,6 @@ int main()
    for(auto & x : even_elem)                    // iterate over even elements and apply exponential function
       x = exps(x);
 
-   return EXIT_SUCCESS;
 }
 
 #endif

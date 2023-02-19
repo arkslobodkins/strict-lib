@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
 #include <valarray>
 
 #include "../strict_array.hpp"
@@ -70,6 +71,8 @@ void assert_float_ops()
 
    v3 = v1.max(); s3 = max(s1); assert_array(v3, s3);
    v3 = v1.min(); s3 = min(s1); assert_array(v3, s3);
+
+   std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -77,23 +80,5 @@ int main(int argc, char *argv[])
    assert_float_ops<float>();
    assert_float_ops<double>();
    assert_float_ops<long double>();
-
-   int n = 1.e6;
-   auto a = array_random<double>(n);
-   auto b = array_random<double>(n);
-   auto c = Array<double>(n);
-   std::valarray<double> x(n), y(n), z(n);
-   for(int i = 0; i < n; ++i) {
-      x[i] = a[i];
-      y[i] = b[i];
-   }
-
-   double m1{}, m2{};
-   STRICT_TIME(m1 = sum(2.*a + 3.*b));
-   STRICT_TIME(m2 = (2.*x + 3.*y).sum());
-   std::cout << m1 << " " << m2 << std::endl;
-   auto expr = x + y;
-   expr[0] = 0;
-
    return EXIT_SUCCESS;
 }
