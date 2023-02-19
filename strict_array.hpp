@@ -64,7 +64,7 @@ public:
    Array & operator=(Array && A) & noexcept;
 
    // assign either Array, SliceArray, or their expression template
-   template<OneDimBaseType BaseT> Array & Assign(const BaseT & A) &;
+   template<OneDimBaseType OneDimBaseT> Array & Assign(const OneDimBaseT & A) &;
 
    template<ArrayExprType1D ArrayExprT1D> Array(const ArrayExprT1D & expr);
    template<ArrayExprType1D ArrayExprT1D> const Array & operator=(const ArrayExprT1D & expr) &;
@@ -138,6 +138,9 @@ private:
    template<ArrayBaseType1D ArrayBaseT1D, typename F>
       void apply1(const ArrayBaseT1D & A, F f);
 };
+
+template<OneDimBaseType OneDimBaseT>
+[[nodiscard]] auto ConstructArray(const OneDimBaseT & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType1D T1, ArrayBaseType1D T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
@@ -224,7 +227,7 @@ public:
    SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
 
    // assign either Array, SliceArray, or their expression template
-   template<OneDimBaseType BaseT> SliceArray & Assign(const BaseT & A) &;
+   template<OneDimBaseType OneDimBaseT> SliceArray & Assign(const OneDimBaseT & A) &;
 
    [[nodiscard]] auto & operator[](size_type i)
       { return A[slice.start() + i*slice.stride()]; }
@@ -348,19 +351,13 @@ template<SliceArrayBaseType1D T> [[nodiscard]] auto abs(const T & A);
 namespace internal {
    template<BaseType BaseT>
    bool valid_index(const BaseT & A, typename BaseT::size_type index)
-   {
-      if(index < 0 || index > A.size()-1)
-         return false;
-      return true;
-   }
+   { return index > -1 && index < A.size(); }
 
    template<BaseType BaseT, typename SliceType>
    bool valid_slice(const BaseT & A, const SliceType & slice)
    {
-      if( !internal::valid_index(A, slice.start()) ||
-          !internal::valid_index(A, slice.start() + slice.stride() * (slice.size()-1)) )
-            return false;
-      return true;
+      return internal::valid_index(A, slice.start()) &&
+         internal::valid_index(A, slice.start() + slice.stride() * (slice.size()-1));
    }
 }
 
@@ -436,8 +433,8 @@ Array<T> & Array<T>::operator=(Array<T> && A) & noexcept
    return *this;
 }
 
-template<RealType T> template<OneDimBaseType BaseT>
-Array<T> & Array<T>::Assign(const BaseT & A) &
+template<RealType T> template<OneDimBaseType OneDimBaseT>
+Array<T> & Array<T>::Assign(const OneDimBaseT & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    std::copy(A.begin(), A.end(), begin());
@@ -693,6 +690,14 @@ void Array<T>::apply1(const ArrayBaseT1D & A, F f)
       f(i);
 }
 
+template<OneDimBaseType OneDimBaseT>
+[[nodiscard]] auto ConstructArray(const OneDimBaseT & A)
+{
+   Array<RealTypeOf<OneDimBaseT>> C(A.size());
+   C.Assign(A);
+   return C;
+}
+
 template<IntegerType T>
 [[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
 {
@@ -770,8 +775,8 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(std::initializer_li
    return *this;
 }
 
-template<DirectBaseType DirectBaseT> template<OneDimBaseType BaseT>
-SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::Assign(const BaseT & A) &
+template<DirectBaseType DirectBaseT> template<OneDimBaseType OneDimBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::Assign(const OneDimBaseT & A) &
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    std::copy(A.begin(), A.end(), begin());
