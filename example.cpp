@@ -19,7 +19,6 @@
 #include <iostream>
 
 #include "strict_array.hpp"
-#include "strict_util.hpp"
 using namespace strict_array;
 
 template<typename F>
@@ -171,7 +170,9 @@ int main()
    for(auto & x : even_elem)                    // iterate over even elements and apply exponential function
       x = exps(x);
 
-   Array<float64> N = 10. * e_unit<float64>(0, 100); // e_i unit vector is an expression template as well
+   // 11. Other operations
+
+   Array<float64> N = 10. * e_unit<float64>(0, 10000); // e_i unit vector is an expression template as well
 
    return EXIT_SUCCESS;
 }
