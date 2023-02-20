@@ -67,7 +67,7 @@ public:
    template<OneDimBaseType OneDimBaseT> Array & Assign(const OneDimBaseT & A) &;
 
    template<ArrayExprType1D ArrayExprT1D> Array(const ArrayExprT1D & expr);
-   template<ArrayExprType1D ArrayExprT1D> const Array & operator=(const ArrayExprT1D & expr) &;
+   template<ArrayExprType1D ArrayExprT1D> Array & operator=(const ArrayExprT1D & expr) &;
 
    ~Array();
 
@@ -167,6 +167,7 @@ template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(const T & A
 template<ArrayBaseType1D T> [[nodiscard]] const auto & operator+(const T & A);
 template<ArrayBaseType1D T> [[nodiscard]] auto operator-(const T & A);
 template<ArrayBaseType1D T> [[nodiscard]] auto abs(const T & A);
+template<RealType T> [[nodiscard]] auto e_unit(long long int j, long long int size);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<IntegerType T>
@@ -448,7 +449,7 @@ Array<T>::Array(const ArrayExprT1D & expr) :
 { std::copy(expr.begin(), expr.end(), begin()); }
 
 template<RealType T> template<ArrayExprType1D ArrayExprT1D>
-const Array<T> & Array<T>::operator=(const ArrayExprT1D & expr) &
+Array<T> & Array<T>::operator=(const ArrayExprT1D & expr) &
 {
    ASSERT_STRICT_DEBUG(sz == expr.size());
    std::copy(expr.begin(), expr.end(), begin());
@@ -975,6 +976,43 @@ struct Divide : private BinaryOperation
    }
 };
 
+template<typename T>
+class StandardUnitVector : private ArrayBase1D, private ArrayExpr1D
+{
+public:
+   using size_type = long long int;
+   using value_type = StrictVal<T>;
+   using real_type = T;
+   using base_type = ArrayBase1D;
+   using expr_base_type = ArrayExpr1D;
+   using expr_type = const StandardUnitVector<T>;
+
+   explicit StandardUnitVector(long long int j, long long int size) : j{j}, sz{size}
+   { ASSERT_STRICT_DEBUG(j > -1); ASSERT_STRICT_DEBUG(size > j); }
+
+   StandardUnitVector(const StandardUnitVector &) = default;
+   // assignment is deleted to stay consistent with other expression templates
+   StandardUnitVector & operator=(const StandardUnitVector &) = delete;
+
+   value_type operator[](long long int i) const { return j == i ? T{1} : T{0}; }
+   long long int size() const { return sz; }
+   bool empty() const { return false; }
+
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
+private:
+   const long long int j;
+   const long long int sz;
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
 class UnaryExpr : private OneDimeBaseT::base_type, private OneDimeBaseT::expr_base_type
@@ -1418,6 +1456,10 @@ template<ArrayBaseType1D T>
 template<ArrayBaseType1D T>
 [[nodiscard]] auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
+
+template<RealType T>
+[[nodiscard]] auto e_unit(long long int j, long long int size)
+{ return StandardUnitVector<T>(j, size); }
 
 }
 

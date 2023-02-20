@@ -171,7 +171,7 @@ int main()
    for(auto & x : even_elem)                    // iterate over even elements and apply exponential function
       x = exps(x);
 
-   auto pow_expr = pow(M);
+   Array<float64> N = 10. * e_unit<float64>(0, 100); // e_i unit vector is an expression template as well
 
    return EXIT_SUCCESS;
 }
