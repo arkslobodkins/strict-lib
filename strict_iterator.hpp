@@ -26,8 +26,8 @@ public:
    using reference = value_type &;
    using iterator_category = std::random_access_iterator_tag;
 
-   inline iterator();
-   inline iterator(DirectBaseT & A, size_type pos);
+   inline explicit iterator();
+   inline explicit iterator(DirectBaseT & A, size_type pos);
    inline iterator & operator++();
    inline iterator & operator--();
    inline iterator operator++(int);
@@ -232,8 +232,8 @@ public:
    using const_reference = const value_type &;
    using iterator_category = std::random_access_iterator_tag;
 
-   inline const_iterator();
-   inline const_iterator(const BaseT & A, size_type pos);
+   inline explicit const_iterator();
+   inline explicit const_iterator(const BaseT & A, size_type pos);
    inline const_iterator & operator++();
    inline const_iterator & operator--();
    inline const_iterator operator++(int);

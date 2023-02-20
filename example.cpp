@@ -171,11 +171,9 @@ int main()
    for(auto & x : even_elem)                    // iterate over even elements and apply exponential function
       x = exps(x);
 
-   Array<double> Y = ConstructArray(M.sl(0, 0));
-   Array<double> YY = ConstructArray(M + 1.);
-   cout << YY << endl;
-   cout << Y << endl;
-   cout << M << endl;
+   auto pow_expr = pow(M);
+
+   return EXIT_SUCCESS;
 }
 
 #endif

@@ -38,6 +38,24 @@ template<FloatingType T>
 bool within_tol_abs(StrictVal<T> val1, StrictVal<T> val2, T tol = T{1.e-14})
 { return abss(val1 - val2) < tol; }
 
+template<FloatingType T>
+bool within_tol_rel(StrictVal<T> val1, StrictVal<T> val2, T tol = T{1.e-14})
+{
+   auto abs1 = abss(val1);
+   auto abs2 = abss(val2);
+   return abss(val1 - val2) / maxs(abs1, abs2) < tol;
+}
+
+template<FloatingType T>
+bool within_tol_rel_balanced(StrictVal<T> val1, StrictVal<T> val2, T tol = T{1.e-14}, T bal = T{1.e-14})
+{
+   auto abs1 = abss(val1);
+   auto abs2 = abss(val2);
+   if(maxs(abs1, abs2) < bal)
+      return within_tol_abs(val1, val2, tol);
+   return abss(val1 - val2) / maxs(abs1, abs2) < tol;
+}
+
 }
 
 #endif
