@@ -59,7 +59,7 @@ int main()
 
    auto n = 100'000LL;
    Array B = array_random<float32>(n, -1.F, 1.F);
-   auto half_range = B.within_range(-0.5F, 0.5F);
+   auto half_range = in_range(B, -0.5F, 0.5F);
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
    for(auto x : B) assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
 

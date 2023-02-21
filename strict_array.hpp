@@ -120,10 +120,7 @@ public:
    [[nodiscard]] StrictVal<T>* data() & { return !empty() ? &elem[0] : nullptr; }
    [[nodiscard]] const StrictVal<T>* data() const & { return !empty() ? &elem[0] : nullptr; }
 
-   [[nodiscard]] std::vector<StrictVal<T>*> within_range(StrictVal<T> low, StrictVal<T> high);
-   [[nodiscard]] std::vector<const StrictVal<T>*> within_range(StrictVal<T> low, StrictVal<T> high) const;
 
-   [[nodiscard]] Array sub_array(size_type first, size_type last);
    template<RealType U> [[nodiscard]] Array<U> convert() const; // conversion chosen by the user;
 
    void sort_increasing();
@@ -582,31 +579,7 @@ template<RealType T>
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-[[nodiscard]] std::vector<StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T> high)
-{
-   ASSERT_STRICT_DEBUG(!empty());
-   ASSERT_STRICT_DEBUG(high >= low);
-   std::vector<StrictVal<T>*> v{};
-   for(auto & x : *this)
-      if(x >= low && x <= high)
-         v.push_back(&x);
-   return v;
-}
-
-template<RealType T>
-[[nodiscard]] std::vector<const StrictVal<T>*> Array<T>::within_range(StrictVal<T> low, StrictVal<T> high) const
-{
-   ASSERT_STRICT_DEBUG(!empty());
-   ASSERT_STRICT_DEBUG(high >= low);
-   std::vector<const StrictVal<T>*> v{};
-   for(auto & x : *this)
-      if(x >= low && x <= high)
-         v.push_back(&x);
-   return v;
-}
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 void Array<T>::sort_decreasing()
 {
@@ -619,18 +592,6 @@ void Array<T>::sort_increasing()
 {
    ASSERT_STRICT_DEBUG(!empty());
    std::sort(begin(), end(), [](auto a, auto b) { return a < b; });
-}
-
-template<RealType T>
-[[nodiscard]] Array<T> Array<T>::sub_array(size_type first, size_type last)
-{
-   ASSERT_STRICT_DEBUG(internal::valid_index(*this, first));
-   ASSERT_STRICT_DEBUG(internal::valid_index(*this, last));
-   ASSERT_STRICT_DEBUG(last >= first);
-   Array s(last-first+1);
-   for(size_type i = 0; i < s.size(); ++i)
-      s.elem[i] = elem[first+i];
-   return s;
 }
 
 template<RealType T> template<RealType U>

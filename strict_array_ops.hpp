@@ -85,6 +85,14 @@ template<BaseType BaseT, typename F>
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool all(const BaseT & A, F f);
 
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
+in_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
+
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
+in_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
+
 template<BaseType BaseT>
 [[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
 
@@ -319,6 +327,32 @@ template<BaseType BaseT, typename F>
       if(!f(x))
          return false;
    return true;
+}
+
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
+in_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   ASSERT_STRICT_DEBUG(high >= low);
+   std::vector<ValueTypeOf<DirectBaseT>*> v{};
+   for(auto & x : A)
+      if(x >= low && x <= high)
+         v.push_back(&x);
+   return v;
+}
+
+template<DirectBaseType DirectBaseT>
+[[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
+in_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   ASSERT_STRICT_DEBUG(high >= low);
+   std::vector<const ValueTypeOf<DirectBaseT>*> v{};
+   for(const auto & x : A)
+      if(x >= low && x <= high)
+         v.push_back(&x);
+   return v;
 }
 
 template<BaseType BaseT>
