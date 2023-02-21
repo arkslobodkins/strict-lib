@@ -82,6 +82,9 @@ template<BaseType BaseT, typename F>
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool all(const BaseT & A, F f);
 
+template<BaseType BaseT, typename F>
+[[nodiscard]] bool all(const BaseT & A, F f);
+
 template<BaseType BaseT>
 [[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
 

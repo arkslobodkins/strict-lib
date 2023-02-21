@@ -26,14 +26,15 @@
 namespace strict_array {
 
 class ArrayBase1D : private Base {};
-class ArrayExpr1D : private Expr{};
+class ArrayExpr1D : private Expr, protected ArrayBase1D {};
 template<typename T> concept ArrayBaseType1D = BaseOf<ArrayBase1D, T>;
 template<typename T> concept ArrayExprType1D = BaseOf<ArrayExpr1D, T>;
 
 class SliceArrayBase1D : private Base {};
-class SliceArrayExpr1D : private Expr{};
+class SliceArrayExpr1D : private Expr, protected SliceArrayBase1D {};
 template<typename T> concept SliceArrayBaseType1D = BaseOf<SliceArrayBase1D, T>;
 template<typename T> concept SliceArrayExprType1D = BaseOf<SliceArrayExpr1D, T>;
+
 template<typename T> concept OneDimBaseType = ArrayBaseType1D<T> || SliceArrayBaseType1D<T>;
 
 class Slice;
@@ -143,31 +144,32 @@ template<OneDimBaseType OneDimBaseT>
 [[nodiscard]] auto ConstructArray(const OneDimBaseT & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType1D T1, ArrayBaseType1D T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
-template<ArrayBaseType1D T1, ArrayBaseType1D T2> [[nodiscard]] auto operator-(const T1 & A, const T2 & B);
-template<ArrayBaseType1D T1, ArrayBaseType1D T2> [[nodiscard]] auto operator*(const T1 & A, const T2 & B);
-template<ArrayBaseType1D T1, ArrayBaseType1D T2> [[nodiscard]] auto operator/(const T1 & A, const T2 & B);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator+(StrictVal<U> val, const T & B);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator-(StrictVal<U> val, const T & B);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator*(StrictVal<U> val, const T & B);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(StrictVal<U> val, const T & B);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator+(const T & A, StrictVal<U> val);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator-(const T & A, StrictVal<U> val);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator*(const T & A, StrictVal<U> val);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(const T & A, StrictVal<U> val);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator+(U val, const T & B);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator-(U val, const T & B);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator*(U val, const T & B);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(U val, const T & B);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator+(const T & A, U val);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator-(const T & A, U val);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
-template<ArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
+template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
+template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator-(const T1 & A, const T2 & B);
+template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator*(const T1 & A, const T2 & B);
+template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator/(const T1 & A, const T2 & B);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator+(StrictVal<U> val, const T & B);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(StrictVal<U> val, const T & B);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(StrictVal<U> val, const T & B);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(StrictVal<U> val, const T & B);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator+(const T & A, StrictVal<U> val);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A, StrictVal<U> val);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, StrictVal<U> val);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, StrictVal<U> val);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator+(U val, const T & B);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(U val, const T & B);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(U val, const T & B);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(U val, const T & B);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator+(const T & A, U val);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A, U val);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
+template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
 
-template<ArrayBaseType1D T> [[nodiscard]] const auto & operator+(const T & A);
-template<ArrayBaseType1D T> [[nodiscard]] auto operator-(const T & A);
-template<ArrayBaseType1D T> [[nodiscard]] auto abs(const T & A);
+template<OneDimBaseType T> [[nodiscard]] const auto & operator+(const T & A);
+template<OneDimBaseType T> [[nodiscard]] auto operator-(const T & A);
+template<OneDimBaseType T> [[nodiscard]] auto abs(const T & A);
 template<RealType T> [[nodiscard]] auto e_unit(long long int j, long long int size);
+template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<IntegerType T>
@@ -321,33 +323,6 @@ public:
    [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 };
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<SliceArrayBaseType1D T1, SliceArrayBaseType1D T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
-template<SliceArrayBaseType1D T1, SliceArrayBaseType1D T2> [[nodiscard]] auto operator-(const T1 & A, const T2 & B);
-template<SliceArrayBaseType1D T1, SliceArrayBaseType1D T2> [[nodiscard]] auto operator*(const T1 & A, const T2 & B);
-template<SliceArrayBaseType1D T1, SliceArrayBaseType1D T2> [[nodiscard]] auto operator/(const T1 & A, const T2 & B);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator+(StrictVal<U> val, const T & B);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator-(StrictVal<U> val, const T & B);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator*(StrictVal<U> val, const T & B);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(StrictVal<U> val, const T & B);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator+(const T & A, StrictVal<U> val);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator-(const T & A, StrictVal<U> val);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator*(const T & A, StrictVal<U> val);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(const T & A, StrictVal<U> val);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator+(U val, const T & B);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator-(U val, const T & B);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator*(U val, const T & B);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(U val, const T & B);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator+(const T & A, U val);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator-(const T & A, U val);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
-template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
-
-template<SliceArrayBaseType1D T> [[nodiscard]] const auto & operator+(const T & A);
-template<SliceArrayBaseType1D T> [[nodiscard]] auto operator-(const T & A);
-template<SliceArrayBaseType1D T> [[nodiscard]] auto abs(const T & A);
-template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
@@ -969,7 +944,7 @@ struct Divide : private BinaryOperation
 };
 
 template<typename T>
-class StandardUnitVector : private ArrayBase1D, private ArrayExpr1D
+class StandardUnitVector : private ArrayExpr1D
 {
 public:
    using size_type = long long int;
@@ -1006,7 +981,7 @@ private:
 };
 
 template<typename T>
-class StandardSliceUnitVector : private SliceArrayBase1D, private SliceArrayExpr1D
+class StandardSliceUnitVector : private SliceArrayExpr1D
 {
 public:
    using size_type = long long int;
@@ -1044,7 +1019,7 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
-class UnaryExpr : private OneDimeBaseT::base_type, private OneDimeBaseT::expr_base_type
+class UnaryExpr : private OneDimeBaseT::expr_base_type
 {
 public:
    using size_type = typename OneDimeBaseT::size_type;
@@ -1102,7 +1077,7 @@ template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperationType Op>
-class BinExpr : private OneDimBaseT1::base_type, private OneDimBaseT1::expr_base_type
+class BinExpr : private OneDimBaseT1::expr_base_type
 {
 public:
    using size_type = typename OneDimBaseT1::size_type;
@@ -1168,7 +1143,7 @@ template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperati
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
-class BinExprValLeft : private OneDimBaseT1::base_type, private OneDimBaseT1::expr_base_type
+class BinExprValLeft : private OneDimBaseT1::expr_base_type
 {
 public:
    using size_type = typename OneDimBaseT1::size_type;
@@ -1230,7 +1205,7 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
-class BinExprValRight : private OneDimBaseT1::base_type, private OneDimBaseT1::expr_base_type
+class BinExprValRight : private OneDimBaseT1::expr_base_type
 {
 public:
    using size_type = typename OneDimBaseT1::size_type;
@@ -1291,208 +1266,111 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<SliceArrayBaseType1D T1, SliceArrayBaseType1D T2>
+template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator+(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Plus{}); }
 
-template<SliceArrayBaseType1D T1, SliceArrayBaseType1D T2>
+template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator-(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Minus{}); }
 
-template<SliceArrayBaseType1D T1, SliceArrayBaseType1D T2>
+template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator*(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Mult{}); }
 
-template<SliceArrayBaseType1D T1, SliceArrayBaseType1D T2>
+template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator/(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Plus{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Minus{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Mult{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(StrictVal<U> val, const T & B)
 { return BinExprValLeft(B, U{val}, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Plus{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Minus{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Mult{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(const T & A, StrictVal<U> val)
 { return BinExprValRight(A, U{val}, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(U val, const T & B)
 { return BinExprValLeft(B, val, Plus{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(U val, const T & B)
 { return BinExprValLeft(B, val, Minus{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(U val, const T & B)
 { return BinExprValLeft(B, val, Mult{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(U val, const T & B)
 { return BinExprValLeft(B, val, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(const T & A, U val)
 { return BinExprValRight(A, val, Plus{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(const T & A, U val)
 { return BinExprValRight(A, val, Minus{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(const T & A, U val)
 { return BinExprValRight(A, val, Mult{}); }
 
-template<SliceArrayBaseType1D T, RealType U>
+template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(const T & A, U val)
 { return BinExprValRight(A, val, Divide{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<SliceArrayBaseType1D T>
+template<OneDimBaseType T>
 [[nodiscard]] const auto & operator+(const T & A)
 { return A; }
 
-template<SliceArrayBaseType1D T>
+template<OneDimBaseType T>
 [[nodiscard]] auto operator-(const T & A)
 { return UnaryExpr(A, UnaryMinus{}); }
 
-template<SliceArrayBaseType1D T>
+template<OneDimBaseType T>
 [[nodiscard]] auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<RealType T>
+[[nodiscard]] auto e_unit(long long int j, long long int size)
+{ return StandardUnitVector<T>(j, size); }
 
 template<RealType T>
 [[nodiscard]] auto e_slice_unit(long long int j, long long int size)
 { return StandardSliceUnitVector<T>(j, size); }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType1D T1, ArrayBaseType1D T2>
-[[nodiscard]] auto operator+(const T1 & A, const T2 & B)
-{ return BinExpr(A, B, Plus{}); }
-
-template<ArrayBaseType1D T1, ArrayBaseType1D T2>
-[[nodiscard]] auto operator-(const T1 & A, const T2 & B)
-{ return BinExpr(A, B, Minus{}); }
-
-template<ArrayBaseType1D T1, ArrayBaseType1D T2>
-[[nodiscard]] auto operator*(const T1 & A, const T2 & B)
-{ return BinExpr(A, B, Mult{}); }
-
-template<ArrayBaseType1D T1, ArrayBaseType1D T2>
-[[nodiscard]] auto operator/(const T1 & A, const T2 & B)
-{ return BinExpr(A, B, Divide{}); }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator+(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U{val}, Plus{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator-(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U{val}, Minus{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator*(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U{val}, Mult{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator/(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U{val}, Divide{}); }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator+(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U{val}, Plus{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator-(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U{val}, Minus{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator*(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U{val}, Mult{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator/(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U{val}, Divide{}); }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator+(U val, const T & B)
-{ return BinExprValLeft(B, val, Plus{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator-(U val, const T & B)
-{ return BinExprValLeft(B, val, Minus{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator*(U val, const T & B)
-{ return BinExprValLeft(B, val, Mult{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator/(U val, const T & B)
-{ return BinExprValLeft(B, val, Divide{}); }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator+(const T & A, U val)
-{ return BinExprValRight(A, val, Plus{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator-(const T & A, U val)
-{ return BinExprValRight(A, val, Minus{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator*(const T & A, U val)
-{ return BinExprValRight(A, val, Mult{}); }
-
-template<ArrayBaseType1D T, RealType U>
-[[nodiscard]] auto operator/(const T & A, U val)
-{ return BinExprValRight(A, val, Divide{}); }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<ArrayBaseType1D T>
-[[nodiscard]] const auto & operator+(const T & A)
-{ return A; }
-
-template<ArrayBaseType1D T>
-[[nodiscard]] auto operator-(const T & A)
-{ return UnaryExpr(A, UnaryMinus{}); }
-
-template<ArrayBaseType1D T>
-[[nodiscard]] auto abs(const T & A)
-{ return UnaryExpr(A, UnaryAbs{}); }
-
-template<RealType T>
-[[nodiscard]] auto e_unit(long long int j, long long int size)
-{ return StandardUnitVector<T>(j, size); }
 
 }
 

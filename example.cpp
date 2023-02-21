@@ -180,10 +180,17 @@ int main()
    apply_if(N, [](auto & x) { x *= x; },                                 // square entries that are greater than zero
                [](auto x) { return x > 0.; } );
 
-   bool all_greater_1 = all(N, [](auto x) { return x > 1.; } );
-   bool all_greater_1_expr = all(2. + abs(N), [](auto x) { return x > 1.; } );
-   bool any_greater_1 = any(N, [](auto x) { return x > 1.; } );
-   bool any_greater_1_sl = any(N.sl(0, 3), [](auto x) { return x > 1.; } );
+   bool all_greater_1 =
+      all(N, [](auto x) { return x > 1.; } );
+
+   bool all_greater_1_expr =
+      all(2. + abs(N), [](auto x) { return x > 1.; } );
+
+   bool any_greater_1 =
+      any(N, [](auto x) { return x > 1.; } );
+
+   bool any_greater_1_sl =
+      any(N.sl(0, 3), [](auto x) { return x > 1.; } );
 
    return EXIT_SUCCESS;
 }
