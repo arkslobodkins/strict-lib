@@ -92,8 +92,8 @@ public:
    [[nodiscard]] inline auto sl(size_type first, size_type last);
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
 
-   [[nodiscard]] inline auto sl(const Slice & slice);
-   [[nodiscard]] inline auto sl(const Slice & slice) const;
+   [[nodiscard]] inline auto sl(Slice slice);
+   [[nodiscard]] inline auto sl(Slice slice) const;
 
    [[nodiscard]] StrictVal<T> & front() { return elem[0]; }
    [[nodiscard]] StrictVal<T> & back() { return elem[sz-1]; }
@@ -221,7 +221,7 @@ private:
    Slice slice;
 
 public:
-   explicit inline SliceArray(DirectBaseT & A, const Slice & slice);
+   explicit inline SliceArray(DirectBaseT & A, Slice slice);
    SliceArray(const SliceArray & s);
 
    SliceArray & operator=(const SliceArray & s);
@@ -239,8 +239,8 @@ public:
 
    [[nodiscard]] inline auto sl(size_type first, size_type last);
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(const Slice & slice);
-   [[nodiscard]] inline auto sl(const Slice & slice) const;
+   [[nodiscard]] inline auto sl(Slice slice);
+   [[nodiscard]] inline auto sl(Slice slice) const;
 
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -297,7 +297,7 @@ private:
    Slice slice;
 
 public:
-   explicit inline ConstSliceArray(const BaseT & A, const Slice & slice);
+   explicit inline ConstSliceArray(const BaseT & A, Slice slice);
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
@@ -305,7 +305,7 @@ public:
       { return A[slice.start()+i*slice.stride()]; }
 
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(const Slice & slice) const;
+   [[nodiscard]] inline auto sl(Slice slice) const;
 
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -569,14 +569,14 @@ template<RealType T>
 }
 
 template<RealType T>
-[[nodiscard]] inline auto Array<T>::sl(const Slice & slice)
+[[nodiscard]] inline auto Array<T>::sl(Slice slice)
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return SliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 template<RealType T>
-[[nodiscard]] inline auto Array<T>::sl(const Slice & slice) const
+[[nodiscard]] inline auto Array<T>::sl(Slice slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
@@ -702,7 +702,7 @@ template<RealType T>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectBaseType DirectBaseT>
-inline SliceArray<DirectBaseT>::SliceArray(DirectBaseT & A, const Slice & slice) : A{A}, slice{slice}
+inline SliceArray<DirectBaseT>::SliceArray(DirectBaseT & A, Slice slice) : A{A}, slice{slice}
 { ASSERT_STRICT_DEBUG(internal::valid_slice(A, slice)); }
 
 template<DirectBaseType DirectBaseT>
@@ -772,14 +772,14 @@ template<DirectBaseType DirectBaseT>
 }
 
 template<DirectBaseType DirectBaseT>
-[[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(const Slice & slice)
+[[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(Slice slice)
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return SliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 template<DirectBaseType DirectBaseT>
-[[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(const Slice & slice) const
+[[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(Slice slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
@@ -870,7 +870,7 @@ void SliceArray<DirectBaseT>::apply1(const SliceArrayBaseT1D & A, F f)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
-inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, const Slice & slice) : A{A}, slice{slice}
+inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, Slice slice) : A{A}, slice{slice}
 { ASSERT_STRICT_DEBUG(internal::valid_slice(A, slice)); }
 
 template<BaseType BaseT>
@@ -888,7 +888,7 @@ template<BaseType BaseT>
 }
 
 template<BaseType BaseT>
-[[nodiscard]] inline auto ConstSliceArray<BaseT>::sl(const Slice & slice) const
+[[nodiscard]] inline auto ConstSliceArray<BaseT>::sl(Slice slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
@@ -1035,7 +1035,7 @@ public:
 
    [[nodiscard]] value_type operator[](size_type i) const { return op(A[i]); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(const Slice & sl) const;
+   [[nodiscard]] inline auto sl(Slice sl) const;
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -1069,7 +1069,7 @@ template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
 }
 
 template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
-[[nodiscard]] inline auto UnaryExpr<OneDimeBaseT, Op>::sl(const Slice & slice) const
+[[nodiscard]] inline auto UnaryExpr<OneDimeBaseT, Op>::sl(Slice slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
@@ -1100,7 +1100,7 @@ public:
 
    [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], B[i]); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(const Slice & slice) const;
+   [[nodiscard]] inline auto sl(Slice slice) const;
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -1135,7 +1135,7 @@ template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperati
 }
 
 template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExpr<OneDimBaseT1, OneDimBaseT2, Op>::sl(const Slice & slice) const
+[[nodiscard]] inline auto BinExpr<OneDimBaseT1, OneDimBaseT2, Op>::sl(Slice slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
@@ -1162,7 +1162,7 @@ public:
 
    [[nodiscard]] value_type operator[](size_type i) const { return op(val, B[i]); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(const Slice & slice) const;
+   [[nodiscard]] inline auto sl(Slice slice) const;
 
    [[nodiscard]] size_type size() const { return B.size(); }
    [[nodiscard]] bool empty() const { return B.empty(); }
@@ -1197,7 +1197,7 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 }
 
 template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExprValLeft<OneDimBaseT1, T2, Op>::sl(const Slice & slice) const
+[[nodiscard]] inline auto BinExprValLeft<OneDimBaseT1, T2, Op>::sl(Slice slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
@@ -1224,7 +1224,7 @@ public:
 
    [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], val); }
    [[nodiscard]] inline auto sl(size_type first, size_type last) const;
-   [[nodiscard]] inline auto sl(const Slice & slice) const;
+   [[nodiscard]] inline auto sl(Slice slice) const;
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -1259,7 +1259,7 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 }
 
 template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
-[[nodiscard]] inline auto BinExprValRight<OneDimBaseT1, T2, Op>::sl(const Slice & slice) const
+[[nodiscard]] inline auto BinExprValRight<OneDimBaseT1, T2, Op>::sl(Slice slice) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
