@@ -15,7 +15,6 @@
 #include <numeric>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "strict_concepts.hpp"
 #include "strict_error.hpp"

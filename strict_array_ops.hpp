@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "strict_concepts.hpp"
 #include "strict_error.hpp"
@@ -87,15 +88,24 @@ template<BaseType BaseT, typename F>
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
-in_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
+within_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
-in_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
+within_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
+
+template<DirectBaseType DirectBaseT, typename Cond>
+[[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
+within_cond(DirectBaseT & A, Cond c);
+
+template<DirectBaseType DirectBaseT, typename Cond>
+[[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
+within_cond(const DirectBaseT & A, Cond c);
 
 template<BaseType BaseT>
 [[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
    template<BaseType BaseT>
    std::string smart_spaces(SizeTypeOf<BaseT> max_ind, SizeTypeOf<BaseT> ind)
@@ -331,7 +341,7 @@ template<BaseType BaseT, typename F>
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
-in_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high)
+within_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    ASSERT_STRICT_DEBUG(high >= low);
@@ -344,7 +354,7 @@ in_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT>
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
-in_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high)
+within_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    ASSERT_STRICT_DEBUG(high >= low);
@@ -352,6 +362,28 @@ in_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<Direct
    for(const auto & x : A)
       if(x >= low && x <= high)
          v.push_back(&x);
+   return v;
+}
+
+template<DirectBaseType DirectBaseT, typename Cond>
+[[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
+within_cond(DirectBaseT & A, Cond c)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   std::vector<ValueTypeOf<DirectBaseT>*> v{};
+   for(auto & x : A)
+      if(c(x)) v.push_back(&x);
+   return v;
+}
+
+template<DirectBaseType DirectBaseT, typename Cond>
+[[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
+within_cond(const DirectBaseT & A, Cond c)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   std::vector<const ValueTypeOf<DirectBaseT>*> v{};
+   for(const auto & x : A)
+      if(c(x)) v.push_back(&x);
    return v;
 }
 

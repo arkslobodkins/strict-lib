@@ -59,7 +59,7 @@ int main()
 
    auto n = 100'000LL;
    Array B = array_random<float32>(n, -1.F, 1.F);
-   auto half_range = in_range(B, -0.5F, 0.5F);
+   auto half_range = within_range(B, -0.5F, 0.5F);
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
    for(auto x : B) assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
 
@@ -180,6 +180,10 @@ int main()
    apply_if(N, [](auto & x) { x *= x; },                                 // square entries that are greater than zero
                [](auto x) { return x > 0.; } );
 
+   auto above_0 = within_cond(N, [](auto x) { return x > 0.; } ); // store a vector of pointers to all positive elements;
+                                                                  // useful when more complicated action must be performed
+                                                                  // on elements than passing lambda
+
    bool all_greater_1 =
       all(N, [](auto x) { return x > 1.; } );
 
@@ -191,6 +195,7 @@ int main()
 
    bool any_greater_1_sl =
       any(N.sl(0, 3), [](auto x) { return x > 1.; } );
+
 
    return EXIT_SUCCESS;
 }
