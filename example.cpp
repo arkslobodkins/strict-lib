@@ -82,7 +82,7 @@ int main()
    // and sqt in the example below are not float32.
 
    Array<float32> D{1.F, 2.F, 3.F, 4.F, 5.F};
-   D.apply([](auto & x) {x = x*x;});
+   apply(D, [](auto & x) {x = x*x;});
    float64 prod = dot_prod(D, D).convert<float64>();
    for(auto it = D.begin(); it != D.end(); ++it) {
       float64 sqt = sqrt(it->convert<float64>());
@@ -172,7 +172,18 @@ int main()
 
    // 11. Other operations
 
-   Array<float64> N = 10. * e_unit<float64>(0, 10000); // e_i unit vector is an expression template as well
+   Array<float64> N = 10. * e_unit<float64>(0, 10000);                   // e_i unit vector is an expression template as well
+   N.resize_and_assign(e_unit<float64>(0, 10) + e_unit<float64>(1, 10)); // N is resized to 10 and assigned to e_1 + e_2
+
+   N.sl({0, 5, 2}) = e_slice_unit<float64>(3, 5);
+   N = array_iota<float64>(N.size(), -5.);
+   apply_if(N, [](auto & x) { x *= x; },                                 // square entries that are greater than zero
+               [](auto x) { return x > 0.; } );
+
+   bool all_greater_1 = all(N, [](auto x) { return x > 1.; } );
+   bool all_greater_1_expr = all(2. + abs(N), [](auto x) { return x > 1.; } );
+   bool any_greater_1 = any(N, [](auto x) { return x > 1.; } );
+   bool any_greater_1_sl = any(N.sl(0, 3), [](auto x) { return x > 1.; } );
 
    return EXIT_SUCCESS;
 }

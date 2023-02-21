@@ -70,10 +70,21 @@ template<BaseType BaseT>
 template<BaseType BaseT>
 [[nodiscard]] bool all_negative(const BaseT & A);
 
+template<DirectBaseType DirectBaseT, typename F>
+void apply(DirectBaseT & A, F f);
+
+template<DirectBaseType DirectBaseT, typename F, typename Cond>
+void apply_if(DirectBaseT & A, F f, Cond c);
+
+template<BaseType BaseT, typename F>
+[[nodiscard]] bool any(const BaseT & A, F f);
+
+template<BaseType BaseT, typename F>
+[[nodiscard]] bool all(const BaseT & A, F f);
+
 template<BaseType BaseT>
 [[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
    template<BaseType BaseT>
    std::string smart_spaces(SizeTypeOf<BaseT> max_ind, SizeTypeOf<BaseT> ind)
@@ -268,6 +279,42 @@ template<BaseType BaseT>
    using real_type = RealTypeOf<BaseT>;
    for(auto x : A)
       if(x >= real_type{0}) return false;
+   return true;
+}
+
+template<DirectBaseType DirectBaseT, typename F>
+void apply(DirectBaseT & A, F f)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   for(auto & x : A)
+      f(x);
+}
+
+template<DirectBaseType DirectBaseT, typename F, typename Cond>
+void apply_if(DirectBaseT & A, F f, Cond c)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   for(auto & x : A)
+      if(c(x)) f(x);
+}
+
+template<BaseType BaseT, typename F>
+[[nodiscard]] bool any(const BaseT & A, F f)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   for(auto x : A)
+      if(f(x))
+         return true;
+   return false;
+}
+
+template<BaseType BaseT, typename F>
+[[nodiscard]] bool all(const BaseT & A, F f)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   for(auto x : A)
+      if(!f(x))
+         return false;
    return true;
 }
 

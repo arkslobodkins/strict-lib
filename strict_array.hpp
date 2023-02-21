@@ -128,7 +128,7 @@ public:
    void sort_increasing();
    void sort_decreasing();
 
-   template<typename F> void apply(F f);
+   template<typename F, typename Cond> void apply_if(F f, Cond c);
 
 private:
    StrictVal<T>* elem;
@@ -347,6 +347,7 @@ template<SliceArrayBaseType1D T, RealType U> [[nodiscard]] auto operator/(const 
 template<SliceArrayBaseType1D T> [[nodiscard]] const auto & operator+(const T & A);
 template<SliceArrayBaseType1D T> [[nodiscard]] auto operator-(const T & A);
 template<SliceArrayBaseType1D T> [[nodiscard]] auto abs(const T & A);
+template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
@@ -668,15 +669,6 @@ template<RealType T> template<RealType U>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> template<typename F>
-void Array<T>::apply(F f)
-{
-   ASSERT_STRICT_DEBUG(!empty());
-   for(size_type i = 0; i < sz; ++i)
-      f(elem[i]);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> template<typename F>
 void Array<T>::apply0(F f)
 {
    for(size_type i = 0; i < sz; ++i)
@@ -993,6 +985,43 @@ public:
    StandardUnitVector(const StandardUnitVector &) = default;
    // assignment is deleted to stay consistent with other expression templates
    StandardUnitVector & operator=(const StandardUnitVector &) = delete;
+
+   value_type operator[](long long int i) const { return j == i ? T{1} : T{0}; }
+   long long int size() const { return sz; }
+   bool empty() const { return false; }
+
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
+private:
+   const long long int j;
+   const long long int sz;
+};
+
+template<typename T>
+class StandardSliceUnitVector : private SliceArrayBase1D, private SliceArrayExpr1D
+{
+public:
+   using size_type = long long int;
+   using value_type = StrictVal<T>;
+   using real_type = T;
+   using base_type = SliceArrayBase1D;
+   using expr_base_type = SliceArrayExpr1D;
+   using expr_type = const StandardSliceUnitVector<T>;
+
+   explicit StandardSliceUnitVector(long long int j, long long int size) : j{j}, sz{size}
+   { ASSERT_STRICT_DEBUG(j > -1); ASSERT_STRICT_DEBUG(size > j); }
+
+   StandardSliceUnitVector(const StandardSliceUnitVector &) = default;
+   // assignment is deleted to stay consistent with other expression templates
+   StandardSliceUnitVector & operator=(const StandardSliceUnitVector &) = delete;
 
    value_type operator[](long long int i) const { return j == i ? T{1} : T{0}; }
    long long int size() const { return sz; }
@@ -1358,6 +1387,10 @@ template<SliceArrayBaseType1D T>
 template<SliceArrayBaseType1D T>
 [[nodiscard]] auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
+
+template<RealType T>
+[[nodiscard]] auto e_slice_unit(long long int j, long long int size)
+{ return StandardSliceUnitVector<T>(j, size); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<ArrayBaseType1D T1, ArrayBaseType1D T2>
