@@ -169,6 +169,7 @@ int main()
    auto ms = max(M.sl({2, M.size()/2-1, 2}));   // maximum of 2nd, 4th, and 6th elements
    for(auto & x : even_elem)                    // iterate over even elements and apply exponential function
       x = exps(x);
+   even_elem = exp(even_elem);                  // or use exp function over the entire slice
 
    // 11. Other operations
 
@@ -195,7 +196,6 @@ int main()
 
    bool any_greater_1_sl =
       any(N.sl(0, 3), [](auto x) { return x > 1.; } );
-
 
    return EXIT_SUCCESS;
 }

@@ -164,6 +164,8 @@ template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A,
 template<OneDimBaseType T> [[nodiscard]] const auto & operator+(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto operator-(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto abs(const T & A);
+template<OneDimBaseType T> [[nodiscard]] auto exp(const T & A);
+template<OneDimBaseType T> [[nodiscard]] auto sqrt(const T & A);
 template<RealType T> [[nodiscard]] auto e_unit(long long int j, long long int size);
 template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
 
@@ -871,6 +873,22 @@ struct UnaryAbs : private UnaryOperation
    }
 };
 
+struct UnaryExp : private UnaryOperation
+{
+   template<RealType T>
+   StrictVal<T> operator()(StrictVal<T> strict_val) const {
+      return exps(strict_val);
+   }
+};
+
+struct UnarySqrt : private UnaryOperation
+{
+   template<RealType T>
+   StrictVal<T> operator()(StrictVal<T> strict_val) const {
+      return sqrts(strict_val);
+   }
+};
+
 struct Plus : private BinaryOperation
 {
    template<RealType T>
@@ -1322,6 +1340,14 @@ template<OneDimBaseType T>
 template<OneDimBaseType T>
 [[nodiscard]] auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
+
+template<OneDimBaseType T>
+[[nodiscard]] auto exp(const T & A)
+{ return UnaryExpr(A, UnaryExp{}); }
+
+template<OneDimBaseType T>
+[[nodiscard]] auto sqrt(const T & A)
+{ return UnaryExpr(A, UnarySqrt{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
