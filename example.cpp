@@ -196,8 +196,6 @@ int main()
 
    bool any_greater_1_sl =
       any(N.sl(0, 3), [](auto x) { return x > 1.; } );
-   cout << N << endl;
-   cout << log(N) << endl;
 
    return EXIT_SUCCESS;
 }
