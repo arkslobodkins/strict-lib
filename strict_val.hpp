@@ -129,6 +129,7 @@ template<RealType T> [[nodiscard]] constexpr inline StrictVal<T> maxs(StrictVal<
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v);
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> logs(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
@@ -141,6 +142,7 @@ template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T
 
 #ifdef STRICT_QUADRUPLE_PRECISION
 template<QuadType T> [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> logs(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
@@ -451,6 +453,10 @@ template<StandardFloatingType T>
 { return StrictVal<T>{std::exp(T{v})}; }
 
 template<StandardFloatingType T>
+[[nodiscard]] inline StrictVal<T> logs(StrictVal<T> v)
+{ return StrictVal<T>{std::log(T{v})}; }
+
+template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v)
 { return StrictVal<T>{std::sqrt(T{v})}; }
 
@@ -504,6 +510,10 @@ std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v)
 { return StrictVal<T>{expq(T{v})}; }
+
+template<QuadType T>
+[[nodiscard]] inline StrictVal<T> logs(StrictVal<T> v)
+{ return StrictVal<T>{logq(T{v})}; }
 
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v)

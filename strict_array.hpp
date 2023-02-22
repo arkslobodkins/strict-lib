@@ -24,13 +24,13 @@
 
 namespace strict_array {
 
-class ArrayBase1D : private Base {};
-class ArrayExpr1D : private Expr, protected ArrayBase1D {};
+class ArrayBase1D : protected Base {};
+class ArrayExpr1D : protected Expr, protected ArrayBase1D {};
 template<typename T> concept ArrayBaseType1D = BaseOf<ArrayBase1D, T>;
 template<typename T> concept ArrayExprType1D = BaseOf<ArrayExpr1D, T>;
 
-class SliceArrayBase1D : private Base {};
-class SliceArrayExpr1D : private Expr, protected SliceArrayBase1D {};
+class SliceArrayBase1D : protected Base {};
+class SliceArrayExpr1D : protected Expr, protected SliceArrayBase1D {};
 template<typename T> concept SliceArrayBaseType1D = BaseOf<SliceArrayBase1D, T>;
 template<typename T> concept SliceArrayExprType1D = BaseOf<SliceArrayExpr1D, T>;
 
@@ -165,6 +165,7 @@ template<OneDimBaseType T> [[nodiscard]] const auto & operator+(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto operator-(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto abs(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto exp(const T & A);
+template<OneDimBaseType T> [[nodiscard]] auto log(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto sqrt(const T & A);
 template<RealType T> [[nodiscard]] auto e_unit(long long int j, long long int size);
 template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
@@ -881,6 +882,14 @@ struct UnaryExp : private UnaryOperation
    }
 };
 
+struct UnaryLog : private UnaryOperation
+{
+   template<RealType T>
+   StrictVal<T> operator()(StrictVal<T> strict_val) const {
+      return logs(strict_val);
+   }
+};
+
 struct UnarySqrt : private UnaryOperation
 {
    template<RealType T>
@@ -1344,6 +1353,10 @@ template<OneDimBaseType T>
 template<OneDimBaseType T>
 [[nodiscard]] auto exp(const T & A)
 { return UnaryExpr(A, UnaryExp{}); }
+
+template<OneDimBaseType T>
+[[nodiscard]] auto log(const T & A)
+{ return UnaryExpr(A, UnaryLog{}); }
 
 template<OneDimBaseType T>
 [[nodiscard]] auto sqrt(const T & A)
