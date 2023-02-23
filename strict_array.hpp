@@ -125,8 +125,6 @@ public:
    void sort_increasing();
    void sort_decreasing();
 
-   template<typename F, typename Cond> void apply_if(F f, Cond c);
-
 private:
    StrictVal<T>* elem;
    size_type sz;
