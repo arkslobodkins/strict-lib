@@ -54,7 +54,7 @@ public:
    explicit Array();
    explicit Array(size_type size);
    explicit Array(size_type size, StrictVal<T> val);
-   Array(std::initializer_list<StrictVal<T>> list);
+   explicit Array(std::initializer_list<StrictVal<T>> list);
    Array(const Array & A);
    Array(Array && a) noexcept;
 
@@ -119,7 +119,6 @@ public:
    [[nodiscard]] StrictVal<T>* data() & { return !empty() ? &elem[0] : nullptr; }
    [[nodiscard]] const StrictVal<T>* data() const & { return !empty() ? &elem[0] : nullptr; }
 
-
    template<RealType U> [[nodiscard]] Array<U> convert() const; // conversion chosen by the user;
 
    void sort_increasing();
@@ -159,7 +158,7 @@ template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A,
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
 
-template<OneDimBaseType T> [[nodiscard]] const auto & operator+(const T & A);
+template<OneDimBaseType T> [[nodiscard]] auto operator+(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto operator-(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto abs(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto exp(const T & A);
@@ -200,6 +199,80 @@ private:
    long long int m_stride;
 };
 
+//template<DirectBaseType DirectBaseT>
+//class RandSliceArray : private SliceArrayBase1D
+//{
+//public:
+//   using size_type = typename DirectBaseT::size_type;
+//   using value_type = typename DirectBaseT::value_type;
+//   using real_type = typename DirectBaseT::real_type;
+//   using base_type = SliceArrayBase1D;
+//   using expr_base_type = SliceArrayExpr1D;
+//   using expr_type = const RandSliceArray<DirectBaseT>;
+//   using slice_type = RandSliceArray<DirectBaseT>;
+//
+//   explicit inline RandSliceArray(DirectBaseT & A, const Array<long long int> & index_array);
+//   RandSliceArray(const RandSliceArray & s);
+//
+//   RandSliceArray & operator=(const RandSliceArray & s);
+//   template<SliceArrayBaseType1D SliceArrayBaseT1D> RandSliceArray & operator=(const SliceArrayBaseT1D & s);
+//   RandSliceArray & operator=(StrictVal<real_type> s);
+//   RandSliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
+//
+//   // assign either Array, SliceArray, or their expression template
+//   template<OneDimBaseType OneDimBaseT> RandSliceArray & Assign(const OneDimBaseT & A) &;
+//
+//   [[nodiscard]] auto & operator[](size_type i)
+//      { return A[index_array[i]]; }
+//   [[nodiscard]] const auto & operator[](size_type i) const
+//      { return A[index_array[i]]; }
+//
+//   [[nodiscard]] inline auto sl(size_type first, size_type last);
+//   [[nodiscard]] inline auto sl(size_type first, size_type last) const;
+//   [[nodiscard]] inline auto sl(Slice slice);
+//   [[nodiscard]] inline auto sl(Slice slice) const;
+//
+//   [[nodiscard]] size_type size() const { return index_array.size(); }
+//   [[nodiscard]] bool empty() const { return A.empty(); }
+//
+//   RandSliceArray & operator+=(StrictVal<real_type> val);
+//   RandSliceArray & operator-=(StrictVal<real_type> val);
+//   RandSliceArray & operator*=(StrictVal<real_type> val);
+//   RandSliceArray & operator/=(StrictVal<real_type> val);
+//
+//   template<SliceArrayBaseType1D SliceArrayBaseT1D> RandSliceArray & operator+=(const SliceArrayBaseT1D & A);
+//   template<SliceArrayBaseType1D SliceArrayBaseT1D> RandSliceArray & operator-=(const SliceArrayBaseT1D & A);
+//   template<SliceArrayBaseType1D SliceArrayBaseT1D> RandSliceArray & operator*=(const SliceArrayBaseT1D & A);
+//   template<SliceArrayBaseType1D SliceArrayBaseT1D> RandSliceArray & operator/=(const SliceArrayBaseT1D & A);
+//
+//   [[nodiscard]] auto & front() { return (*this)[0]; }
+//   [[nodiscard]] auto & back() { return (*this)[index_array.size()-1]; }
+//   [[nodiscard]] auto & front() const { return (*this)[0]; }
+//   [[nodiscard]] auto & back() const { return (*this)[index_array.size()-1]; }
+//
+//   [[nodiscard]] auto begin() { return iterator{*this, 0}; }
+//   [[nodiscard]] auto end() { return iterator{*this, size()}; }
+//   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+//   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+//   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+//   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+//
+//   [[nodiscard]] auto rbegin() { return std::reverse_iterator{end()}; }
+//   [[nodiscard]] auto rend() { return std::reverse_iterator{begin()}; }
+//   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+//   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+//   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+//   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+//
+//private:
+//   typename DirectBaseT::slice_type A;
+//   Array<long long int> index_array;
+//
+//   template<typename F> void apply0(F f);
+//   template<SliceArrayBaseType1D SliceArrayBaseT1D, typename F>
+//      void apply1(const SliceArrayBaseT1D & A, F f);
+//};
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectBaseType DirectBaseT>
 class SliceArray : private SliceArrayBase1D
@@ -213,11 +286,6 @@ public:
    using expr_type = const SliceArray<DirectBaseT>;
    using slice_type = SliceArray<DirectBaseT>;
 
-private:
-   typename DirectBaseT::slice_type A;
-   Slice slice;
-
-public:
    explicit inline SliceArray(DirectBaseT & A, Slice slice);
    SliceArray(const SliceArray & s);
 
@@ -252,10 +320,10 @@ public:
    template<SliceArrayBaseType1D SliceArrayBaseT1D> SliceArray & operator*=(const SliceArrayBaseT1D & A);
    template<SliceArrayBaseType1D SliceArrayBaseT1D> SliceArray & operator/=(const SliceArrayBaseT1D & A);
 
-   [[nodiscard]] auto & front() { return A[0]; }
-   [[nodiscard]] auto & back() { return A[A.size()-1]; }
-   [[nodiscard]] auto & front() const { return A[0]; }
-   [[nodiscard]] auto & back() const { return A[A.size()-1]; }
+   [[nodiscard]] auto & front() { return (*this)[0]; }
+   [[nodiscard]] auto & back() { return (*this)[slice.size()-1]; }
+   [[nodiscard]] auto & front() const { return (*this)[0]; }
+   [[nodiscard]] auto & back() const { return (*this)[slice.size()-1]; }
 
    [[nodiscard]] auto begin() { return iterator{*this, 0}; }
    [[nodiscard]] auto end() { return iterator{*this, size()}; }
@@ -272,6 +340,9 @@ public:
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
+   typename DirectBaseT::slice_type A;
+   Slice slice;
+
    template<typename F> void apply0(F f);
    template<SliceArrayBaseType1D SliceArrayBaseT1D, typename F>
       void apply1(const SliceArrayBaseT1D & A, F f);
@@ -289,11 +360,6 @@ public:
    using expr_base_type = SliceArrayExpr1D;
    using expr_type = const ConstSliceArray<BaseT>;
 
-private:
-   typename BaseT::expr_type A;
-   Slice slice;
-
-public:
    explicit inline ConstSliceArray(const BaseT & A, Slice slice);
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
@@ -307,8 +373,8 @@ public:
    [[nodiscard]] size_type size() const { return slice.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
-   [[nodiscard]] decltype(auto) front() const { return A[0]; }
-   [[nodiscard]] decltype(auto) back() const { return A[A.size()-1]; }
+   [[nodiscard]] decltype(auto) front() const { return (*this)[0]; }
+   [[nodiscard]] decltype(auto) back() const { return (*this)[slice.size()-1]; }
 
    [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
    [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
@@ -319,6 +385,10 @@ public:
    [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
    [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
+private:
+   typename BaseT::expr_type A;
+   Slice slice;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -856,6 +926,14 @@ template<BaseType BaseT>
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct UnaryPlus : private UnaryOperation
+{
+   template<RealType T>
+   StrictVal<T> operator()(StrictVal<T> strict_val) const {
+      return strict_val;
+   }
+};
+
 struct UnaryMinus : private UnaryOperation
 {
    template<RealType T>
@@ -1337,8 +1415,8 @@ template<OneDimBaseType T, RealType U>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T>
-[[nodiscard]] const auto & operator+(const T & A)
-{ return A; }
+[[nodiscard]] auto operator+(const T & A)
+{ return UnaryExpr(A, UnaryPlus{}); }
 
 template<OneDimBaseType T>
 [[nodiscard]] auto operator-(const T & A)
