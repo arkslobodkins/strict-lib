@@ -181,6 +181,13 @@ template<RealType T>
 [[nodiscard]] Array<T> array_iota(typename Array<T>::size_type size, StrictVal<T> val = T{0});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace internal {
+   template<BaseType BaseT>
+   bool valid_index(const BaseT & A, typename BaseT::size_type index)
+   { return index > -1 && index < A.size(); }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Slice
 {
 public:
@@ -195,6 +202,13 @@ public:
    [[nodiscard]] long long int start() const { return m_start; }
    [[nodiscard]] long long int size() const { return m_size; }
    [[nodiscard]] long long int stride() const { return m_stride; }
+
+   template<BaseType BaseT>
+   bool valid(const BaseT & A) const
+   {
+      return internal::valid_index(A, m_start) &&
+         internal::valid_index(A, m_start + m_stride * (m_size-1));
+   }
 
 private:
    long long int m_start;
@@ -393,20 +407,6 @@ private:
    typename BaseT::expr_type A;
    Slice slice;
 };
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace internal {
-   template<BaseType BaseT>
-   bool valid_index(const BaseT & A, typename BaseT::size_type index)
-   { return index > -1 && index < A.size(); }
-
-   template<BaseType BaseT, typename SliceType>
-   bool valid_slice(const BaseT & A, const SliceType & slice)
-   {
-      return internal::valid_index(A, slice.start()) &&
-         internal::valid_index(A, slice.start() + slice.stride() * (slice.size()-1));
-   }
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -641,14 +641,14 @@ template<RealType T>
 template<RealType T>
 [[nodiscard]] inline auto Array<T>::sl(Slice slice)
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   ASSERT_STRICT_DEBUG(slice.valid(*this));
    return SliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 template<RealType T>
 [[nodiscard]] inline auto Array<T>::sl(Slice slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   ASSERT_STRICT_DEBUG(slice.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
@@ -737,7 +737,7 @@ template<RealType T>
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectBaseType DirectBaseT>
 inline SliceArray<DirectBaseT>::SliceArray(DirectBaseT & A, Slice slice) : A{A}, slice{slice}
-{ ASSERT_STRICT_DEBUG(internal::valid_slice(A, slice)); }
+{ ASSERT_STRICT_DEBUG(slice.valid(A)); }
 
 template<DirectBaseType DirectBaseT>
 SliceArray<DirectBaseT>::SliceArray(const SliceArray<DirectBaseT> & s) : A{s.A}, slice{s.slice}
@@ -808,14 +808,14 @@ template<DirectBaseType DirectBaseT>
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(Slice slice)
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   ASSERT_STRICT_DEBUG(slice.valid(*this));
    return SliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto SliceArray<DirectBaseT>::sl(Slice slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   ASSERT_STRICT_DEBUG(slice.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
@@ -905,7 +905,7 @@ void SliceArray<DirectBaseT>::apply1(const SliceArrayBaseT1D & A, F f)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
 inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, Slice slice) : A{A}, slice{slice}
-{ ASSERT_STRICT_DEBUG(internal::valid_slice(A, slice)); }
+{ ASSERT_STRICT_DEBUG(slice.valid(A)); }
 
 template<BaseType BaseT>
 ConstSliceArray<BaseT>::ConstSliceArray(const ConstSliceArray<BaseT> & cs) : A{cs.A}, slice{cs.slice}
@@ -924,7 +924,7 @@ template<BaseType BaseT>
 template<BaseType BaseT>
 [[nodiscard]] inline auto ConstSliceArray<BaseT>::sl(Slice slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   ASSERT_STRICT_DEBUG(slice.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
@@ -1161,7 +1161,7 @@ template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
 template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
 [[nodiscard]] inline auto UnaryExpr<OneDimeBaseT, Op>::sl(Slice slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   ASSERT_STRICT_DEBUG(slice.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
@@ -1227,7 +1227,7 @@ template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperati
 template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperationType Op>
 [[nodiscard]] inline auto BinExpr<OneDimBaseT1, OneDimBaseT2, Op>::sl(Slice slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   ASSERT_STRICT_DEBUG(slice.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
@@ -1289,7 +1289,7 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 [[nodiscard]] inline auto BinExprValLeft<OneDimBaseT1, T2, Op>::sl(Slice slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   ASSERT_STRICT_DEBUG(slice.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
@@ -1351,7 +1351,7 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 [[nodiscard]] inline auto BinExprValRight<OneDimBaseT1, T2, Op>::sl(Slice slice) const
 {
-   ASSERT_STRICT_DEBUG(internal::valid_slice(*this, slice));
+   ASSERT_STRICT_DEBUG(slice.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, slice};
 }
 
