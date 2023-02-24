@@ -35,6 +35,7 @@ template<typename T> concept SliceArrayBaseType1D = BaseOf<SliceArrayBase1D, T>;
 template<typename T> concept SliceArrayExprType1D = BaseOf<SliceArrayExpr1D, T>;
 
 template<typename T> concept OneDimBaseType = ArrayBaseType1D<T> || SliceArrayBaseType1D<T>;
+template<typename T> concept OneDimFloatingBaseType = OneDimBaseType<T> && FloatingBaseType<T>;
 
 class Slice;
 
@@ -161,9 +162,11 @@ template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A,
 template<OneDimBaseType T> [[nodiscard]] auto operator+(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto operator-(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto abs(const T & A);
-template<OneDimBaseType T> [[nodiscard]] auto exp(const T & A);
-template<OneDimBaseType T> [[nodiscard]] auto log(const T & A);
-template<OneDimBaseType T> [[nodiscard]] auto sqrt(const T & A);
+template<OneDimFloatingBaseType T> [[nodiscard]] auto pow(const T & A, ValueTypeOf<T> p);
+template<OneDimFloatingBaseType T> [[nodiscard]] auto pow_int(const T & A, StrictVal<int> p);
+template<OneDimFloatingBaseType T> [[nodiscard]] auto exp(const T & A);
+template<OneDimFloatingBaseType T> [[nodiscard]] auto log(const T & A);
+template<OneDimFloatingBaseType T> [[nodiscard]] auto sqrt(const T & A);
 template<RealType T> [[nodiscard]] auto e_unit(long long int j, long long int size);
 template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
 
@@ -930,7 +933,7 @@ struct UnaryPlus : private UnaryOperation
 {
    template<RealType T>
    StrictVal<T> operator()(StrictVal<T> strict_val) const {
-      return strict_val;
+      return +strict_val;
    }
 };
 
@@ -948,6 +951,30 @@ struct UnaryAbs : private UnaryOperation
    StrictVal<T> operator()(StrictVal<T> strict_val) const {
       return abss(strict_val);
    }
+};
+
+template<RealType T>
+struct UnaryPow : private UnaryOperation
+{
+   UnaryPow(StrictVal<T> p) : p{p} {}
+
+   StrictVal<T> operator()(StrictVal<T> strict_val) const {
+      return pows(strict_val, p);
+   }
+private:
+   StrictVal<T> p;
+};
+
+struct UnaryPowInt : private UnaryOperation
+{
+   UnaryPowInt(StrictVal<int> p) : p{p} {}
+
+   template<RealType T>
+   StrictVal<T> operator()(StrictVal<T> strict_val) const {
+      return pows_int(strict_val, p);
+   }
+private:
+   StrictVal<int> p;
 };
 
 struct UnaryExp : private UnaryOperation
@@ -1426,15 +1453,23 @@ template<OneDimBaseType T>
 [[nodiscard]] auto abs(const T & A)
 { return UnaryExpr(A, UnaryAbs{}); }
 
-template<OneDimBaseType T>
+template<OneDimFloatingBaseType T>
+[[nodiscard]] auto pow(const T & A, ValueTypeOf<T> p)
+{ return UnaryExpr(A, UnaryPow{p}); }
+
+template<OneDimFloatingBaseType T>
+[[nodiscard]] auto pow_int(const T & A, StrictVal<int> p)
+{ return UnaryExpr(A, UnaryPowInt{p}); }
+
+template<OneDimFloatingBaseType T>
 [[nodiscard]] auto exp(const T & A)
 { return UnaryExpr(A, UnaryExp{}); }
 
-template<OneDimBaseType T>
+template<OneDimFloatingBaseType T>
 [[nodiscard]] auto log(const T & A)
 { return UnaryExpr(A, UnaryLog{}); }
 
-template<OneDimBaseType T>
+template<OneDimFloatingBaseType T>
 [[nodiscard]] auto sqrt(const T & A)
 { return UnaryExpr(A, UnarySqrt{}); }
 

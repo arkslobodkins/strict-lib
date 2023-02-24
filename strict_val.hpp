@@ -135,7 +135,7 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> sins(StrictVa
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline bool isfinites(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> pows(StrictVal<T> v, StrictVal<T> p);
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, int p);
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, StrictVal<int> p);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3);
 
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
@@ -148,7 +148,7 @@ template<QuadType T> [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline bool isfinites(StrictVal<T> v);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> pows(StrictVal<T> v, StrictVal<T> p);
-template<QuadType T> [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, int p);
+template<QuadType T> [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, StrictVal<int> p);
 template<QuadType T> [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3);
 
 template<QuadType T> std::ostream & operator<<(std::ostream & os, T val);
@@ -482,10 +482,10 @@ template<StandardFloatingType T>
 
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> pows(StrictVal<T> v, StrictVal<T> p)
-{ return StrictVal<T>{std::pow(T{v}, p)}; }
+{ return StrictVal<T>{std::pow(T{v}, T{p})}; }
 
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, int p)
-{ return StrictVal<T>{std::pow(T{v}, p)}; }
+template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, StrictVal<int> p)
+{ return StrictVal<T>{ T(std::pow(T{v}, int{p})) }; }
 
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3)
@@ -529,11 +529,11 @@ template<QuadType T>
 
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> pows(StrictVal<T> v, StrictVal<T> p)
-{ return StrictVal<T>{powq(T{v})}; }
+{ return StrictVal<T>{powq(T{v}, T{p})}; }
 
 template<QuadType T>
-[[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, int p)
-{ return StrictVal<T>{powq(T{v})}; }
+[[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, StrictVal<int> p)
+{ return StrictVal<T>{powq(T{v}, int{p})}; }
 
 template<QuadType T>
 [[nodiscard]] inline bool isfinites(StrictVal<T> v)
