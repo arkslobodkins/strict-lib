@@ -19,6 +19,7 @@
 #include <iostream>
 
 #include "strict_array.hpp"
+#include "strict_util.hpp"
 using namespace strict_array;
 
 template<typename F>
@@ -193,9 +194,6 @@ int main()
 
    bool any_greater_1 =
       any(N, [](auto x) { return x > 1.; } );
-
-   bool any_greater_1_sl =
-      any(N.sl(0, 3), [](auto x) { return x > 1.; } );
 
    return EXIT_SUCCESS;
 }

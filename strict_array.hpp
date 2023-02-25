@@ -159,6 +159,8 @@ template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A,
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
 
+template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto two_prod(const T1 & A, const T2 & B);
+
 template<OneDimBaseType T> [[nodiscard]] auto operator+(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto operator-(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto abs(const T & A);
@@ -1033,6 +1035,22 @@ struct Divide : private BinaryOperation
    }
 };
 
+struct BinaryTwoProdFirst : private BinaryOperation
+{
+   template<RealType T>
+   StrictVal<T> operator()(StrictVal<T> left, StrictVal<T> right) const {
+      return two_prod(left, right).first;
+   }
+};
+
+struct BinaryTwoProdSecond : private BinaryOperation
+{
+   template<RealType T>
+   StrictVal<T> operator()(StrictVal<T> left, StrictVal<T> right) const {
+      return two_prod(left, right).second;
+   }
+};
+
 template<typename T>
 class StandardUnitVector : private ArrayExpr1D
 {
@@ -1371,6 +1389,10 @@ template<OneDimBaseType T1, OneDimBaseType T2>
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator/(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Divide{}); }
+
+template<OneDimBaseType T1, OneDimBaseType T2>
+[[nodiscard]] auto two_prod(const T1 & A, const T2 & B)
+{ return std::pair{BinExpr(A, B, BinaryTwoProdFirst{}), BinExpr(A, B, BinaryTwoProdSecond{})}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>

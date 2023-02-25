@@ -159,15 +159,21 @@ template<FloatingBaseType FloatBaseT>
    using real_type = RealTypeOf<FloatBaseT>;
    using value_type = ValueTypeOf<FloatBaseT>;
 
-   volatile real_type sum{};
-   volatile real_type c{};
+   real_type sum{};
+   real_type c{};
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
-      volatile real_type y = A[i] - c;
-      volatile real_type t = sum + y;
-      c = (t - sum) - y;
+      volatile real_type t = sum + A[i];
+      if(abss(value_type{sum}) >= abss(A[i])) {
+         volatile real_type z = sum - t;
+         c += z + A[i];
+      }
+      else {
+         volatile real_type z = A[i] - t;
+         c += z + sum;
+      }
       sum = t;
    }
-   return value_type{sum};
+   return value_type{sum + c};
 }
 
 template<BaseType BaseT>
@@ -270,7 +276,7 @@ template<BaseType BType1, BaseType BType2>
    static_assert(SameType<typename BType1::base_type, typename BType2::base_type>);
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_DEBUG(!A1.empty());
-   return sum(A1 * A2);
+   return sum(two_prod(A1, A2).first) + sum(two_prod(A1, A2).second);
 }
 
 template<BaseType BaseT>
