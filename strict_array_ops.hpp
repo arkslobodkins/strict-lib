@@ -32,6 +32,9 @@ template<IntegerBaseType IntBaseT>
 template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto sum(const FloatBaseT & A);
 
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto fast_sum(const FloatBaseT & A);
+
 template<BaseType BaseT>
 [[nodiscard]] auto min(const BaseT & A);
 
@@ -59,8 +62,14 @@ template<FloatingBaseType FloatBaseT>
 template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm_lp(const FloatBaseT & A, int p);
 
-template<BaseType BType1, BaseType BType2>
-[[nodiscard]] auto dot_prod(const BType1 & A1, const BType2 & A2);
+template<IntegerBaseType IntBaseT1, IntegerBaseType IntBaseT2>
+[[nodiscard]] auto dot_prod(const IntBaseT1 & A1, const IntBaseT1 & A2);
+
+template<FloatingBaseType FloatBaseT1, FloatingBaseType FloatBaseT2>
+[[nodiscard]] auto dot_prod(const FloatBaseT1 & A1, const FloatBaseT2 & A2);
+
+template<FloatingBaseType FloatBaseT1, FloatingBaseType FloatBaseT2>
+[[nodiscard]] auto fast_dot_prod(const FloatBaseT1 & A1, const FloatBaseT2 & A2);
 
 template<BaseType BaseT>
 [[nodiscard]] bool does_contain_zero(const BaseT & A);
@@ -176,6 +185,16 @@ template<FloatingBaseType FloatBaseT>
    return value_type{sum + c};
 }
 
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto fast_sum(const FloatBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   auto sum = A[0];
+   for(decltype(A.size()) i = 1; i < A.size(); ++i)
+      sum += A[i];
+   return sum;
+}
+
 template<BaseType BaseT>
 [[nodiscard]] auto min(const BaseT & A)
 {
@@ -270,13 +289,31 @@ template<FloatingBaseType FloatBaseT>
    return pows<real_type>(sum, real_type(1)/real_type(p));
 }
 
-template<BaseType BType1, BaseType BType2>
-[[nodiscard]] auto dot_prod(const BType1 & A1, const BType2 & A2)
+template<IntegerBaseType IntBaseT1, IntegerBaseType IntBaseT2>
+[[nodiscard]] auto dot_prod(const IntBaseT1 & A1, const IntBaseT1 & A2)
 {
-   static_assert(SameType<typename BType1::base_type, typename BType2::base_type>);
+   static_assert(SameType<typename IntBaseT1::base_type, typename IntBaseT2::base_type>);
+   ASSERT_STRICT_DEBUG(A1.size() == A2.size());
+   ASSERT_STRICT_DEBUG(!A1.empty());
+   return sum(A1 * A2);
+}
+
+template<FloatingBaseType FloatBaseT1, FloatingBaseType FloatBaseT2>
+[[nodiscard]] auto dot_prod(const FloatBaseT1 & A1, const FloatBaseT2 & A2)
+{
+   static_assert(SameType<typename FloatBaseT1::base_type, typename FloatBaseT2::base_type>);
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_DEBUG(!A1.empty());
    return sum(two_prod(A1, A2).first) + sum(two_prod(A1, A2).second);
+}
+
+template<FloatingBaseType FloatBaseT1, FloatingBaseType FloatBaseT2>
+[[nodiscard]] auto fast_dot_prod(const FloatBaseT1 & A1, const FloatBaseT2 & A2)
+{
+   static_assert(SameType<typename FloatBaseT1::base_type, typename FloatBaseT2::base_type>);
+   ASSERT_STRICT_DEBUG(A1.size() == A2.size());
+   ASSERT_STRICT_DEBUG(!A1.empty());
+   return fast_sum(A1 * A2);
 }
 
 template<BaseType BaseT>
