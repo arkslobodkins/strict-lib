@@ -19,7 +19,6 @@
 #include <iostream>
 
 #include "strict_array.hpp"
-#include "strict_util.hpp"
 using namespace strict_array;
 
 template<typename F>
@@ -179,13 +178,12 @@ int main()
 
    N.sl({0, 5, 2}) = e_slice_unit<float64>(3, 5);
    N = array_iota<float64>(N.size(), -5.);
-   apply_if(N, [](auto & x) { x *= x; },                                 // square entries that are greater than zero
+   apply_if(N, [](auto & x) { x *= x; },                           // square entries that are greater than zero
                [](auto x) { return x > 0.; } );
 
-   auto above_0 = within_cond(N, [](auto x) { return x > 0.; } ); // store a vector of pointers to all positive elements;
-                                                                  // useful when more complicated action must be performed
-                                                                  // on elements than passing lambda
-
+   auto above_0 = within_cond( N, [](auto x) { return x > 0.; } ); // store a vector of pointers to all positive elements;
+                                                                   // useful when more complicated action must be performed
+                                                                   // on elements than passing lambda
    bool all_greater_1 =
       all(N, [](auto x) { return x > 1.; } );
 
