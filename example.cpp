@@ -126,47 +126,47 @@ int main()
 
    Array<int> H = array_random<int>(9, 0, 5);
    const Array<int> J = array_random<int>(9, 0, 5);
-   H.sl(0, 2) = 2 * H.sl(3, 5) + 10 * H.sl(6, 8);
-   H.sl(0, 2) = 1 + J.sl(6, 8);
+   H.seq(0, 2) = 2 * H.seq(3, 5) + 10 * H.seq(6, 8);
+   H.seq(0, 2) = 1 + J.seq(6, 8);
 
-   auto first_five = H.sl(0, 4);         // first_five refers to the first 5 entries of H
+   auto first_five = H.seq(0, 4);        // first_five refers to the first 5 entries of H
    first_five = 1;                       // set first five entries to 1
    first_five = {1, 2, 3, 4, 5};         // set them to 1, 2, 3, 4, 5
-   for(auto & x : first_five) x = x*x*x; // raise them to the power 3
+   for(auto & x : first_five) x = x*x*x; // raise them to the 3rd power
 
-   cout << 100 * H.sl(0, 2) << endl;           // multiply SliceArray by 100
-   cout << (100 * H).sl(0, 2) << endl;         // slice the Array expression template produced by 100 * H
-   cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the slice and multiply by 100
-   cout << 100 * H.sl(0, 4).sl(0, 2) << endl;  // slice the SliceArray expression template produced by 100 * H.sl(0, 4)
+   cout << 100 * H.seq(0, 2) << endl;           // multiply SliceArray by 100
+   cout << (100 * H).seq(0, 2) << endl;         // slice the Array expression template produced by 100 * H
+   cout << 100 * H.seq(0, 4).seq(0, 2) << endl;  // slice the slice and multiply by 100
+   cout << 100 * H.seq(0, 4).seq(0, 2) << endl;  // slice the SliceArray expression template produced by 100 * H.seq(0, 4)
 
    // 9. Just like for expression templates of Array, non-member functions
    // can be used for SliceArray and expression templates of SliceArray.
 
    Array<float64> K = array_iota<float64>(6, 1.);
-   auto m = max(K.sl(0, 3));
-   auto n1 = norm2(K.sl(0, 2));
-   auto n2 = norm2(K.sl(0, 2) + K.sl(3, 5));
-   auto d = dot_prod(K.sl(0, 2), K.sl(3, 5) + 1.);
-   auto u_ptr = unique_blas_array(K.sl(0, 3) + 1.);
+   auto m = max(K.seq(0, 3));
+   auto n1 = norm2(K.seq(0, 2));
+   auto n2 = norm2(K.seq(0, 2) + K.seq(3, 5));
+   auto d = dot_prod(K.seq(0, 2), K.seq(3, 5) + 1.);
+   auto u_ptr = unique_blas_array(K.seq(0, 3) + 1.);
    bool k2_finite = all_finite(K * 2.);
-   bool pos = all_positive(K.sl(0, 2));
-   bool neg = all_negative(-K.sl(0, 2));
-   auto m_index = max_index(-1. * K.sl(1, 3)); // produces expression template containing -2, -3, -4
+   bool pos = all_positive(K.seq(0, 2));
+   bool neg = all_negative(-K.seq(0, 2));
+   auto m_index = max_index(-1. * K.seq(1, 3)); // produces expression template containing -2, -3, -4
                                                // 0 is the index of max value, -2 is the max value
    Array<double> L{-1., -2., -3., -4., -5., -6., -7.};
-   K.Assign(L.sl(1, 6)); // If type is not derived from ArrayBase,
-                         // Assign routine can be used to assign
-                         // other types of the same size.
+   K.Assign(L.seq(1, 6)); // If type is not derived from ArrayBase,
+                          // Assign routine can be used to assign
+                          // other types of the same size.
 
    // 10. Non-contiguous slices.
 
    Array<float64> M = array_iota<float64>(6, 1.);
-   auto even_elem = M.sl({0, M.size()/2, 2});
+   auto even_elem = M.seq(0, M.size()-1, 2);
    even_elem = -1.;                             // set every even element of M to -1
-   even_elem = 100. * M.sl({1, M.size()/2, 2}); // even entries are set to 100 times odd entries
+   even_elem = 100. * M.seq(1, M.size()-1, 2);  // even entries are set to 100 times odd entries
    even_elem = {1., 3., 5.};
    auto ns = norm2(even_elem);
-   auto ms = max(M.sl({2, M.size()/2-1, 2}));   // maximum of 2nd, 4th, and 6th elements
+   auto ms = max(M.seq(2, M.size()-1, 2));      // maximum of 2nd, 4th, and 6th elements
    for(auto & x : even_elem)                    // iterate over even elements and apply exponential function
       x = exps(x);
    even_elem = exp(even_elem);                  // or use exp function over the entire slice
@@ -176,7 +176,7 @@ int main()
    Array<float64> N = 10. * e_unit<float64>(0, 10000);                   // e_i unit vector is an expression template as well
    N.resize_and_assign(e_unit<float64>(0, 10) + e_unit<float64>(1, 10)); // N is resized to 10 and assigned to e_1 + e_2
 
-   N.sl({0, 5, 2}) = e_slice_unit<float64>(3, 5);
+   N.seq(0, 8, 2) = e_slice_unit<float64>(3, 5);
    N = array_iota<float64>(N.size(), -5.);
    apply_if(N, [](auto & x) { x *= x; },                           // square entries that are greater than zero
                [](auto x) { return x > 0.; } );
@@ -185,13 +185,13 @@ int main()
                                                                    // useful when more complicated action must be performed
                                                                    // on elements than passing lambda
    bool all_greater_1 =
-      all(N, [](auto x) { return x > 1.; } );
+      all_satisfy(N, [](auto x) { return x > 1.; } );
 
    bool all_greater_1_expr =
-      all(2. + abs(N), [](auto x) { return x > 1.; } );
+      all_satisfy(2. + abs(N), [](auto x) { return x > 1.; } );
 
    bool any_greater_1 =
-      any(N, [](auto x) { return x > 1.; } );
+      any_satisfy(N, [](auto x) { return x > 1.; } );
 
    return EXIT_SUCCESS;
 }

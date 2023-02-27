@@ -87,13 +87,10 @@ template<DirectBaseType DirectBaseT, typename F, typename Cond>
 void apply_if(DirectBaseT & A, F f, Cond c);
 
 template<BaseType BaseT, typename F>
-[[nodiscard]] bool any(const BaseT & A, F f);
+[[nodiscard]] bool any_satisfy(const BaseT & A, F f);
 
 template<BaseType BaseT, typename F>
-[[nodiscard]] bool all(const BaseT & A, F f);
-
-template<BaseType BaseT, typename F>
-[[nodiscard]] bool all(const BaseT & A, F f);
+[[nodiscard]] bool all_satisfy(const BaseT & A, F f);
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
@@ -356,7 +353,7 @@ void apply_if(DirectBaseT & A, F f, Cond c)
 }
 
 template<BaseType BaseT, typename F>
-[[nodiscard]] bool any(const BaseT & A, F f)
+[[nodiscard]] bool any_satisfy(const BaseT & A, F f)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto x : A)
@@ -366,7 +363,7 @@ template<BaseType BaseT, typename F>
 }
 
 template<BaseType BaseT, typename F>
-[[nodiscard]] bool all(const BaseT & A, F f)
+[[nodiscard]] bool all_satisfy(const BaseT & A, F f)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto x : A)
