@@ -29,7 +29,7 @@ template<typename T, typename U>
 concept SameType = std::is_same_v<T, U>;
 
 template<typename T>
-concept IntegerType = SameType<short, T> || SameType<T, int> ||
+concept IntegerType = SameType<T, short> || SameType<T, int> ||
                       SameType<T, long int> || SameType<T, long long int>;
 
 template<typename T>
