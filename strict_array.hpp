@@ -137,6 +137,7 @@ template<OneDimBaseType OneDimBaseT>
 [[nodiscard]] auto ConstructArray(const OneDimBaseT & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// binary operations
 template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator+(const T1 & A, const T2 & B);
 template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator-(const T1 & A, const T2 & B);
 template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator*(const T1 & A, const T2 & B);
@@ -158,8 +159,7 @@ template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A,
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
 
-template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto two_prod(const T1 & A, const T2 & B);
-
+// unary operations
 template<OneDimBaseType T> [[nodiscard]] auto operator+(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto operator-(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto abs(const T & A);
@@ -168,6 +168,8 @@ template<OneDimFloatingBaseType T> [[nodiscard]] auto pow_int(const T & A, Stric
 template<OneDimFloatingBaseType T> [[nodiscard]] auto exp(const T & A);
 template<OneDimFloatingBaseType T> [[nodiscard]] auto log(const T & A);
 template<OneDimFloatingBaseType T> [[nodiscard]] auto sqrt(const T & A);
+
+template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto two_prod(const T1 & A, const T2 & B);
 template<RealType T> [[nodiscard]] auto e_unit(long long int j, long long int size);
 template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
 
@@ -1006,7 +1008,7 @@ struct BinaryTwoProdSecond : private BinaryOperation
    }
 };
 
-template<typename T>
+template<RealType T>
 class StandardUnitVector : private ArrayExpr1D
 {
 public:
@@ -1043,7 +1045,7 @@ private:
    const long long int sz;
 };
 
-template<typename T>
+template<RealType T>
 class StandardSliceUnitVector : private SliceArrayExpr1D
 {
 public:
@@ -1081,18 +1083,18 @@ private:
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
-class UnaryExpr : private OneDimeBaseT::expr_base_type
+template<OneDimBaseType OneDimBaseT, UnaryOperationType Op>
+class UnaryExpr : private OneDimBaseT::expr_base_type
 {
 public:
-   using size_type = typename OneDimeBaseT::size_type;
-   using value_type = typename OneDimeBaseT::value_type;
-   using real_type = typename OneDimeBaseT::real_type;
-   using base_type = typename OneDimeBaseT::base_type;
-   using expr_base_type = typename OneDimeBaseT::expr_base_type;
-   using expr_type = const UnaryExpr<OneDimeBaseT, Op>;
+   using size_type = typename OneDimBaseT::size_type;
+   using value_type = typename OneDimBaseT::value_type;
+   using real_type = typename OneDimBaseT::real_type;
+   using base_type = typename OneDimBaseT::base_type;
+   using expr_base_type = typename OneDimBaseT::expr_base_type;
+   using expr_type = const UnaryExpr<OneDimBaseT, Op>;
 
-   explicit UnaryExpr(const OneDimeBaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
+   explicit UnaryExpr(const OneDimBaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
    UnaryExpr(const UnaryExpr &) = default;
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
@@ -1116,12 +1118,12 @@ public:
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
-   typename OneDimeBaseT::expr_type A;
+   typename OneDimBaseT::expr_type A;
    Op op;
 };
 
-template<OneDimBaseType OneDimeBaseT, UnaryOperationType Op>
-[[nodiscard]] inline auto UnaryExpr<OneDimeBaseT, Op>::seq(size_type first, size_type last, size_type stride) const
+template<OneDimBaseType OneDimBaseT, UnaryOperationType Op>
+[[nodiscard]] inline auto UnaryExpr<OneDimBaseT, Op>::seq(size_type first, size_type last, size_type stride) const
 {
    ASSERT_STRICT_DEBUG(internal::valid_index_pair(*this, first, last));
    return ConstSliceArray<std::decay_t<decltype(*this)>>
@@ -1305,10 +1307,6 @@ template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator/(const T1 & A, const T2 & B)
 { return BinExpr(A, B, Divide{}); }
 
-template<OneDimBaseType T1, OneDimBaseType T2>
-[[nodiscard]] auto two_prod(const T1 & A, const T2 & B)
-{ return std::pair{BinExpr(A, B, BinaryTwoProdFirst{}), BinExpr(A, B, BinaryTwoProdSecond{})}; }
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(StrictVal<U> val, const T & B)
@@ -1411,6 +1409,10 @@ template<OneDimFloatingBaseType T>
 { return UnaryExpr(A, UnarySqrt{}); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<OneDimBaseType T1, OneDimBaseType T2>
+[[nodiscard]] auto two_prod(const T1 & A, const T2 & B)
+{ return std::pair{BinExpr(A, B, BinaryTwoProdFirst{}), BinExpr(A, B, BinaryTwoProdSecond{})}; }
+
 template<RealType T>
 [[nodiscard]] auto e_unit(long long int j, long long int size)
 { return StandardUnitVector<T>(j, size); }

@@ -178,20 +178,20 @@ int main()
 
    N.seq(0, 8, 2) = e_slice_unit<float64>(3, 5);
    N = array_iota<float64>(N.size(), -5.);
-   apply_if(N, [](auto & x) { x *= x; },                           // square entries that are greater than zero
+   apply_if( N, [](auto & x) { x *= x; },                          // square entries that are greater than zero
                [](auto x) { return x > 0.; } );
 
    auto above_0 = within_cond( N, [](auto x) { return x > 0.; } ); // store a vector of pointers to all positive elements;
                                                                    // useful when more complicated action must be performed
                                                                    // on elements than passing lambda
    bool all_greater_1 =
-      all_satisfy(N, [](auto x) { return x > 1.; } );
+      all_satisfy( N, [](auto x) { return x > 1.; } );
 
    bool all_greater_1_expr =
-      all_satisfy(2. + abs(N), [](auto x) { return x > 1.; } );
+      all_satisfy( 2. + abs(N), [](auto x) { return x > 1.; } );
 
    bool any_greater_1 =
-      any_satisfy(N, [](auto x) { return x > 1.; } );
+      any_satisfy( N, [](auto x) { return x > 1.; } );
 
    return EXIT_SUCCESS;
 }

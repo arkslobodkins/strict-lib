@@ -136,7 +136,8 @@ template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> coss(StrictVa
 template<StandardFloatingType T> [[nodiscard]] inline bool isfinites(StrictVal<T> v);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> pows(StrictVal<T> v, StrictVal<T> p);
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, StrictVal<int> p);
-template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3);
+template<StandardFloatingType T, typename = std::enable_if_t<std::is_same_v<T, double>>>
+[[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3);
 
 template<NotQuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val);
 
@@ -487,7 +488,7 @@ template<StandardFloatingType T>
 template<StandardFloatingType T> [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, StrictVal<int> p)
 { return StrictVal<T>{ T(std::pow(T{v}, int{p})) }; }
 
-template<StandardFloatingType T>
+template<StandardFloatingType T, typename enable_if>
 [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3)
 { return StrictVal<T>{std::fma(T{v1}, T{v2}, T{v3})}; }
 
