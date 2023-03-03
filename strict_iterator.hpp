@@ -422,6 +422,32 @@ inline bool const_iterator<BaseT>::operator>=(const const_iterator<BaseT> & it) 
    return pos >= it.pos;
 }
 
+template<typename T> requires (BaseType<std::decay_t<T>>)
+auto begin(T && A)
+{
+   static_assert(std::is_lvalue_reference_v<T>, "Iterators are not allowed for rvalues");
+   return const_iterator(A, 0);
+}
+
+template<typename T> requires (BaseType<std::decay_t<T>>)
+auto end(T && A)
+{
+   static_assert(std::is_lvalue_reference_v<T>, "Iterators are not allowed for rvalues");
+   return const_iterator(A, A.size());
+}
+
+template<DirectBaseType DirectBaseT> requires (!std::is_const_v<DirectBaseT>)
+auto begin(DirectBaseT & A)
+{
+   return iterator(A, 0);
+}
+
+template<DirectBaseType DirectBaseT> requires (!std::is_const_v<DirectBaseT>)
+auto end(DirectBaseT & A)
+{
+   return iterator(A, A.size());
+}
+
 }
 
 #endif
