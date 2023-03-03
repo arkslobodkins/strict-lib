@@ -223,6 +223,29 @@ private:
    long long int m_stride;
 };
 
+class Seq
+{
+public:
+   Seq(long long int first, long long int last, long long int stride)
+      : m_first{first}, m_last{last}, m_stride{stride}
+   {
+      ASSERT_STRICT_DEBUG(first > -1);
+      ASSERT_STRICT_DEBUG(last >= first);
+      ASSERT_STRICT_DEBUG(stride > 0);
+   }
+
+   Slice to_slice() const { return Slice{m_first, (m_last-m_first)/m_stride + 1, m_stride}; }
+
+   [[nodiscard]] long long int first() const { return m_first; }
+   [[nodiscard]] long long int last() const { return m_last; }
+   [[nodiscard]] long long int stride() const { return m_stride; }
+
+private :
+   long long int m_first;
+   long long int m_last;
+   long long int m_stride;
+};
+
 //template<DirectBaseType DirectBaseT>
 //class RandSliceArray : private SliceArrayBase1D
 //{
