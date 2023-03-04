@@ -426,7 +426,7 @@ template<BaseType BaseT>
    ASSERT_STRICT_DEBUG(!A.empty());
    using real_type = RealTypeOf<BaseT>;
    auto blas_array = std::make_unique<real_type[]>(static_cast<std::size_t>(A.size()));
-   std::copy(A.begin(), A.end(), blas_array.get());
+   std::copy(begin(A), end(A), blas_array.get());
    return blas_array;
 }
 

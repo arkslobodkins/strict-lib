@@ -28,12 +28,12 @@ void assert_inf_norm()
    assert(within_tol_abs<T>(norm_inf(A), T{5}));
 
    Array<T> B{T{2}, T{8}, T{6}, T{4}, T{0}, T{-4}, T{-2}};
-   assert(within_tol_abs<T>(norm_inf(B.sl(0, 2)), T{8}));
-   assert(within_tol_abs<T>(norm_inf(B.sl(0, 2) + T{1}), T{9}));
-   assert(within_tol_abs<T>(norm_inf(B.sl(0, 2) * T{2}), T{16}));
-   assert(within_tol_abs<T>(norm_inf(B.sl(0, 2) + B.sl(1, 3)), T{14}));
-   assert(within_tol_abs<T>(norm_inf(B.sl(0, 4).sl(3, 4)), T{4}));
-   assert(within_tol_abs<T>(norm_inf(T{4}*B.sl(3, 4)), T{16}));
+   assert(within_tol_abs<T>(norm_inf(B[seq(0, 2)]), T{8}));
+   assert(within_tol_abs<T>(norm_inf(B[seq(0, 2)] + T{1}), T{9}));
+   assert(within_tol_abs<T>(norm_inf(B[seq(0, 2)] * T{2}), T{16}));
+   assert(within_tol_abs<T>(norm_inf(B[seq(0, 2)] + B[seq(1, 3)]), T{14}));
+   assert(within_tol_abs<T>(norm_inf(B[seq(0, 4)][seq(3, 4)]), T{4}));
+   assert(within_tol_abs<T>(norm_inf(T{4}*B[seq(3, 4)]), T{16}));
    std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 

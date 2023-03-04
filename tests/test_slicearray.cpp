@@ -26,46 +26,46 @@ void assert_float_ops()
    for(auto i = 0LL; i < n; ++i) v1[i] = s1[i];
    for(auto i = 0LL; i < n; ++i) v2[i] = s2[i];
 
-   auto s3_slice = s3.sl(0, n-1);
-   v3 += T{2}; s3.sl(0, n-1) += T{2}; assert_slicearray(v3, s3_slice);
-   v3 -= T{2}; s3.sl(0, n-1) -= T{2}; assert_slicearray(v3, s3_slice);
-   v3 *= T{2}; s3.sl(0, n-1) *= T{2}; assert_slicearray(v3, s3_slice);
-   v3 /= T{2}; s3.sl(0, n-1) /= T{2}; assert_slicearray(v3, s3_slice);
+   auto s3_slice = s3[seq(0, n-1)];
+   v3 += T{2}; s3[seq(0, n-1)] += T{2}; assert_slicearray(v3, s3_slice);
+   v3 -= T{2}; s3[seq(0, n-1)] -= T{2}; assert_slicearray(v3, s3_slice);
+   v3 *= T{2}; s3[seq(0, n-1)] *= T{2}; assert_slicearray(v3, s3_slice);
+   v3 /= T{2}; s3[seq(0, n-1)] /= T{2}; assert_slicearray(v3, s3_slice);
 
-   v3 += v2; s3.sl(0, n-1) += s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 -= v2; s3.sl(0, n-1) -= s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 *= v2; s3.sl(0, n-1) *= s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 /= v2; s3.sl(0, n-1) /= s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
+   v3 += v2; s3[seq(0, n-1)] += s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 -= v2; s3[seq(0, n-1)] -= s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 *= v2; s3[seq(0, n-1)] *= s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 /= v2; s3[seq(0, n-1)] /= s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
 
-   v3 += T{2} + v2; s3.sl(0, n-1) += T{2} + s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 -= T{2} - v2; s3.sl(0, n-1) -= T{2} - s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 *= T{2} * v2; s3.sl(0, n-1) *= T{2} * s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 /= T{2} / v2; s3.sl(0, n-1) /= T{2} / s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
+   v3 += T{2} + v2; s3[seq(0, n-1)] += T{2} + s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 -= T{2} - v2; s3[seq(0, n-1)] -= T{2} - s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 *= T{2} * v2; s3[seq(0, n-1)] *= T{2} * s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 /= T{2} / v2; s3[seq(0, n-1)] /= T{2} / s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
 
-   v3 += v2 + T{2}; s3.sl(0, n-1) += s2.sl(0, n-1) + T{2}; assert_slicearray(v3, s3_slice);
-   v3 -= v2 + T{2}; s3.sl(0, n-1) -= s2.sl(0, n-1) + T{2}; assert_slicearray(v3, s3_slice);
-   v3 *= v2 + T{2}; s3.sl(0, n-1) *= s2.sl(0, n-1) + T{2}; assert_slicearray(v3, s3_slice);
-   v3 /= v2 + T{2}; s3.sl(0, n-1) /= s2.sl(0, n-1) + T{2}; assert_slicearray(v3, s3_slice);
+   v3 += v2 + T{2}; s3[seq(0, n-1)] += s2[seq(0, n-1)] + T{2}; assert_slicearray(v3, s3_slice);
+   v3 -= v2 + T{2}; s3[seq(0, n-1)] -= s2[seq(0, n-1)] + T{2}; assert_slicearray(v3, s3_slice);
+   v3 *= v2 + T{2}; s3[seq(0, n-1)] *= s2[seq(0, n-1)] + T{2}; assert_slicearray(v3, s3_slice);
+   v3 /= v2 + T{2}; s3[seq(0, n-1)] /= s2[seq(0, n-1)] + T{2}; assert_slicearray(v3, s3_slice);
 
-   v3 = v1 + v2; s3.sl(0, n-1) = s1.sl(0, n-1) + s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 = v1 - v2; s3.sl(0, n-1) = s1.sl(0, n-1) - s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 = v1 * v2; s3.sl(0, n-1) = s1.sl(0, n-1) * s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 = v1 / v2; s3.sl(0, n-1) = s1.sl(0, n-1) / s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
+   v3 = v1 + v2; s3[seq(0, n-1)] = s1[seq(0, n-1)] + s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 = v1 - v2; s3[seq(0, n-1)] = s1[seq(0, n-1)] - s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 = v1 * v2; s3[seq(0, n-1)] = s1[seq(0, n-1)] * s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 = v1 / v2; s3[seq(0, n-1)] = s1[seq(0, n-1)] / s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
 
-   v3 = v1 + T{2}; s3.sl(0, n-1) = s1.sl(0, n-1) + T{2}; assert_slicearray(v3, s3_slice);
-   v3 = v1 - T{2}; s3.sl(0, n-1) = s1.sl(0, n-1) - T{2}; assert_slicearray(v3, s3_slice);
-   v3 = v1 * T{2}; s3.sl(0, n-1) = s1.sl(0, n-1) * T{2}; assert_slicearray(v3, s3_slice);
-   v3 = v1 / T{2}; s3.sl(0, n-1) = s1.sl(0, n-1) / T{2}; assert_slicearray(v3, s3_slice);
+   v3 = v1 + T{2}; s3[seq(0, n-1)] = s1[seq(0, n-1)] + T{2}; assert_slicearray(v3, s3_slice);
+   v3 = v1 - T{2}; s3[seq(0, n-1)] = s1[seq(0, n-1)] - T{2}; assert_slicearray(v3, s3_slice);
+   v3 = v1 * T{2}; s3[seq(0, n-1)] = s1[seq(0, n-1)] * T{2}; assert_slicearray(v3, s3_slice);
+   v3 = v1 / T{2}; s3[seq(0, n-1)] = s1[seq(0, n-1)] / T{2}; assert_slicearray(v3, s3_slice);
 
-   v3 = T{2} + v2; s3.sl(0, n-1) = T{2} + s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 = T{2} - v2; s3.sl(0, n-1) = T{2} - s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 = T{2} * v2; s3.sl(0, n-1) = T{2} * s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
-   v3 = T{2} / v2; s3.sl(0, n-1) = T{2} / s2.sl(0, n-1); assert_slicearray(v3, s3_slice);
+   v3 = T{2} + v2; s3[seq(0, n-1)] = T{2} + s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 = T{2} - v2; s3[seq(0, n-1)] = T{2} - s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 = T{2} * v2; s3[seq(0, n-1)] = T{2} * s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
+   v3 = T{2} / v2; s3[seq(0, n-1)] = T{2} / s2[seq(0, n-1)]; assert_slicearray(v3, s3_slice);
 
-   v3 = T{2} + v1 + v2 - T{3}; s3.sl(0, n-1) = T{2} + s1.sl(0, n-1) + s2.sl(0, n-1) - T{3}; assert_slicearray(v3, s3_slice);
-   v3 = T{2} + v1 - v2 - T{3}; s3.sl(0, n-1) = T{2} + s1.sl(0, n-1) - s2.sl(0, n-1) - T{3}; assert_slicearray(v3, s3_slice);
-   v3 = T{2} + v1 * v2 - T{3}; s3.sl(0, n-1) = T{2} + s1.sl(0, n-1) * s2.sl(0, n-1) - T{3}; assert_slicearray(v3, s3_slice);
-   v3 = T{2} + v1 / v2 - T{3}; s3.sl(0, n-1) = T{2} + s1.sl(0, n-1) / s2.sl(0, n-1) - T{3}; assert_slicearray(v3, s3_slice);
+   v3 = T{2} + v1 + v2 - T{3}; s3[seq(0, n-1)] = T{2} + s1[seq(0, n-1)] + s2[seq(0, n-1)] - T{3}; assert_slicearray(v3, s3_slice);
+   v3 = T{2} + v1 - v2 - T{3}; s3[seq(0, n-1)] = T{2} + s1[seq(0, n-1)] - s2[seq(0, n-1)] - T{3}; assert_slicearray(v3, s3_slice);
+   v3 = T{2} + v1 * v2 - T{3}; s3[seq(0, n-1)] = T{2} + s1[seq(0, n-1)] * s2[seq(0, n-1)] - T{3}; assert_slicearray(v3, s3_slice);
+   v3 = T{2} + v1 / v2 - T{3}; s3[seq(0, n-1)] = T{2} + s1[seq(0, n-1)] / s2[seq(0, n-1)] - T{3}; assert_slicearray(v3, s3_slice);
    std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 

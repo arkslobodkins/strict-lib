@@ -70,6 +70,7 @@ template<typename T> concept DirectBaseType = BaseType<T> &&           // Object
 template<typename T> concept IntegerBaseType = BaseType<T> && IntegerType<typename T::real_type>;
 template<typename T> concept StandardFloatingBaseType = BaseType<T> && StandardFloatingType<typename T::real_type>;
 template<typename T> concept FloatingBaseType = BaseType<T> && FloatingType<typename T::real_type>;
+
 #ifdef STRICT_QUADRUPLE_PRECISION
 template<typename T> concept QuadFloatingBaseType = BaseType<T> && QuadType<typename T::real_type>;
 template<typename T> concept NotQuadFloatingBaseType = BaseType<T> && !QuadType<typename T::real_type>;

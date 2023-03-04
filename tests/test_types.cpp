@@ -179,10 +179,10 @@ void assert_direct_base_type()
    static_assert(!DirectBaseType<decltype(A + B)>);
    static_assert(!DirectBaseType<decltype(A * B)>);
 
-   static_assert(!DirectBaseType<decltype((-A).sl(0, 0))>);
-   static_assert(!DirectBaseType<decltype((A + B).sl(0, 0))>);
-   static_assert(!DirectBaseType<decltype((A * B).sl(0, 0))>);
-   static_assert(!DirectBaseType<decltype(A.sl(0, 0) * B.sl(0, 0))>);
+   static_assert(!DirectBaseType<decltype((-A)[seq(0, 0)])>);
+   static_assert(!DirectBaseType<decltype((A + B)[seq(0, 0)])>);
+   static_assert(!DirectBaseType<decltype((A * B)[seq(0, 0)])>);
+   static_assert(!DirectBaseType<decltype(A[seq(0, 0)] * B[seq(0, 0)])>);
 
    std::cout << "passed " << __func__ << std::endl;
 }
@@ -199,11 +199,11 @@ void assert_array_base_type()
    static_assert(ArrayBaseType1D<decltype(A + B)>);
    static_assert(ArrayBaseType1D<decltype(A * B)>);
 
-   static_assert(!ArrayBaseType1D<decltype((-A).sl(0, 0))>);
-   static_assert(!ArrayBaseType1D<decltype((A + B).sl(0, 0))>);
-   static_assert(!ArrayBaseType1D<decltype((A * B).sl(0, 0))>);
-   static_assert(!ArrayBaseType1D<decltype(A.sl(0, 0) * B.sl(0, 0))>);
-   static_assert(!ArrayBaseType1D<decltype((A.sl(0, 0) * B.sl(0, 0)).sl(0, 0))>);
+   static_assert(!ArrayBaseType1D<decltype((-A)[seq(0, 0)])>);
+   static_assert(!ArrayBaseType1D<decltype((A + B)[seq(0, 0)])>);
+   static_assert(!ArrayBaseType1D<decltype((A * B)[seq(0, 0)])>);
+   static_assert(!ArrayBaseType1D<decltype(A[seq(0, 0)] * B[seq(0, 0)])>);
+   static_assert(!ArrayBaseType1D<decltype((A[seq(0, 0)] * B[seq(0, 0)])[seq(0, 0)])>);
    std::cout << "passed " << __func__ << std::endl;
 }
 
@@ -222,10 +222,10 @@ void assert_array_expr_type()
 
    static_assert(!ArrayExprType1D<decltype(A)>);
    static_assert(!ArrayExprType1D<decltype(B)>);
-   static_assert(!ArrayExprType1D<decltype(A.sl(0, 0))>);
-   static_assert(!ArrayExprType1D<decltype(A.sl(0, 0) + B.sl(0, 0))>);
-   static_assert(!ArrayExprType1D<decltype(A.sl(0, 0) + 1.)>);
-   static_assert(!ArrayExprType1D<decltype(1. + A.sl(0, 0))>);
+   static_assert(!ArrayExprType1D<decltype(A[seq(0, 0)])>);
+   static_assert(!ArrayExprType1D<decltype(A[seq(0, 0)] + B[seq(0, 0)])>);
+   static_assert(!ArrayExprType1D<decltype(A[seq(0, 0)] + 1.)>);
+   static_assert(!ArrayExprType1D<decltype(1. + A[seq(0, 0)])>);
    std::cout << "passed " << __func__ << std::endl;
 }
 
