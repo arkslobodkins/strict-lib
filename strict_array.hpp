@@ -111,10 +111,7 @@ public:
    [[nodiscard]] value_type* data() & { return !empty() ? &elem[0] : nullptr; }
    [[nodiscard]] const value_type* data() const & { return !empty() ? &elem[0] : nullptr; }
 
-   template<RealType U> [[nodiscard]] Array<U> convert() const; // conversion chosen by the user;
-
-   void sort_increasing();
-   void sort_decreasing();
+   template<RealType U> [[nodiscard]] Array<U> convert_type() const; // conversion chosen by the user;
 
 private:
    value_type* elem;
@@ -125,7 +122,7 @@ private:
       void apply1(const ArrayBaseT1D & A, F f);
 };
 
-// construct Array from any one-dimensional type
+// construct Array from any one-dimensional type of the same real type
 template<OneDimBaseType OneDimBaseT>
 [[nodiscard]] auto ConstructArray(const OneDimBaseT & A);
 
@@ -166,16 +163,38 @@ template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto two_prod(const
 template<RealType T> [[nodiscard]] auto e_unit(long long int j, long long int size);
 template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
 
+template<RealType T>
+class Low
+{
+public:
+   explicit Low(T low) : low{low} {}
+   explicit Low(StrictVal<T> low) : low{low} {}
+   StrictVal<T> get() const { return low; }
+private:
+      const StrictVal<T> low;
+};
+
+template<RealType T>
+class High
+{
+public:
+   explicit High(T high) : high{high} {}
+   explicit High(StrictVal<T> high) : high{high} {}
+   StrictVal<T> get() const { return high; }
+private:
+      const StrictVal<T> high;
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TODO: replace array_random with expression template,
 //      add slice_random,
 //      replace array_iota with expression template,
-//      add different strides
+//      add different strides.
 template<IntegerType T>
-[[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, StrictVal<T> low = T{0}, StrictVal<T> high = T{1});
+[[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, Low<T> low = T{0}, High<T> high = T{1});
 
 template<FloatingType T>
-[[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, StrictVal<T> low = T{0}, StrictVal<T> high = T{1});
+[[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, Low<T> low = T{0}, High<T> high = T{1});
 
 template<RealType T>
 [[nodiscard]] Array<T> array_iota(SizeTypeOf<Array<T>> size, StrictVal<T> val = T{0});
@@ -647,26 +666,12 @@ template<RealType T>
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-void Array<T>::sort_decreasing()
-{
-   ASSERT_STRICT_DEBUG(!empty());
-   std::sort(begin(*this), end(*this), [](auto a, auto b) { return a > b; });
-}
-
-template<RealType T>
-void Array<T>::sort_increasing()
-{
-   ASSERT_STRICT_DEBUG(!empty());
-   std::sort(begin(*this), end(*this), [](auto a, auto b) { return a < b; });
-}
-
 template<RealType T> template<RealType U>
-[[nodiscard]] Array<U> Array<T>::convert() const
+[[nodiscard]] Array<U> Array<T>::convert_type() const
 {
    Array<U> A(size());
    for(size_type i = 0; i < size(); ++i)
-      A[i] = ((*this)[i]).template convert<U>();
+      A[i] = ((*this)[i]).template convert_type<U>();
    return A;
 }
 
@@ -695,27 +700,31 @@ template<OneDimBaseType OneDimBaseT>
 }
 
 template<IntegerType T>
-[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
+[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, Low<T> low, High<T> high)
 {
+   auto l = low.get();
+   auto h = high.get();
    ASSERT_STRICT_DEBUG(size > 0);
-   ASSERT_STRICT_DEBUG(high >= low);
+   ASSERT_STRICT_DEBUG(h >= l);
    std::srand(static_cast<unsigned>((std::time(0))));
    Array<T> A(size);
-   long int diff_range = (high - low).template convert<long int>() + 1;
+   long int diff_range = (h - l).template convert_type<long int>() + 1;
    for(auto & x : A)
-      x = low + T(std::rand() % diff_range);
+      x = l + T(std::rand() % diff_range);
    return A;
 }
 
 template<FloatingType T>
-[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, StrictVal<T> low, StrictVal<T> high)
+[[nodiscard]] Array<T> array_random(typename Array<T>::size_type size, Low<T> low, High<T> high)
 {
+   auto l = low.get();
+   auto h = high.get();
    ASSERT_STRICT_DEBUG(size > 0);
-   ASSERT_STRICT_DEBUG(high >= low);
+   ASSERT_STRICT_DEBUG(h >= l);
    std::srand(static_cast<unsigned>((std::time(0))));
    Array<T> A(size);
    for(auto & x : A)
-      x = low + (high - low) * T(std::rand()) / T(RAND_MAX);
+      x = l + (h - l) * T(std::rand()) / T(RAND_MAX);
    return A;
 }
 

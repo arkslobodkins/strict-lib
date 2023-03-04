@@ -40,7 +40,7 @@ public:
    template<RealType U> constexpr inline StrictVal(U val);
    template<RealType U> constexpr inline StrictVal & operator=(U val) &;
    template<RealType U> [[nodiscard]] constexpr inline operator U () const; // safe conversion
-   template<RealType U> [[nodiscard]] constexpr inline U convert() const;   // conversion chosen by the user;
+   template<RealType U> [[nodiscard]] constexpr inline U convert_type() const;   // conversion chosen by the user;
 
    [[nodiscard]] constexpr StrictVal operator+() const { return *this; }
    [[nodiscard]] constexpr StrictVal operator-() const { return StrictVal{-T{*this}}; }
@@ -181,7 +181,7 @@ template<RealType T> template<RealType U>
 }
 
 template<RealType T> template<RealType U>
-[[nodiscard]] constexpr inline U StrictVal<T>::convert() const
+[[nodiscard]] constexpr inline U StrictVal<T>::convert_type() const
 {
    return static_cast<U>(x);
 }

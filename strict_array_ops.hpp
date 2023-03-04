@@ -111,6 +111,24 @@ within_cond(const DirectBaseT & A, Cond c);
 template<BaseType BaseT>
 [[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
 
+// two overloads are provided since slicing produces rvalues.
+template<DirectBaseType DirectBaseT>
+requires (!std::is_const_v<DirectBaseT>)
+void sort_increasing(DirectBaseT & A);
+
+template<DirectBaseType DirectBaseT>
+requires (!std::is_const_v<DirectBaseT>)
+void sort_increasing(DirectBaseT && A);
+
+template<DirectBaseType DirectBaseT>
+requires (!std::is_const_v<DirectBaseT>)
+void sort_decreasing(DirectBaseT & A);
+
+template<DirectBaseType DirectBaseT>
+requires (!std::is_const_v<DirectBaseT>)
+void sort_decreasing(DirectBaseT && A);
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
    template<BaseType BaseT>
@@ -428,6 +446,38 @@ template<BaseType BaseT>
    auto blas_array = std::make_unique<real_type[]>(static_cast<std::size_t>(A.size()));
    std::copy(begin(A), end(A), blas_array.get());
    return blas_array;
+}
+
+template<DirectBaseType DirectBaseT>
+requires (!std::is_const_v<DirectBaseT>)
+void sort_increasing(DirectBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   std::sort(begin(A), end(A), [](auto a, auto b) { return a < b; });
+}
+
+template<DirectBaseType DirectBaseT>
+requires (!std::is_const_v<DirectBaseT>)
+void sort_increasing(DirectBaseT && A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   std::sort(begin(A), end(A), [](auto a, auto b) { return a < b; });
+}
+
+template<DirectBaseType DirectBaseT>
+requires (!std::is_const_v<DirectBaseT>)
+void sort_decreasing(DirectBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   std::sort(begin(A), end(A), [](auto a, auto b) { return a > b; });
+}
+
+template<DirectBaseType DirectBaseT>
+requires (!std::is_const_v<DirectBaseT>)
+void sort_decreasing(DirectBaseT && A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   std::sort(begin(A), end(A), [](auto a, auto b) { return a > b; });
 }
 
 }

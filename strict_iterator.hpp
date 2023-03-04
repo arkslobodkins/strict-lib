@@ -424,15 +424,11 @@ inline bool const_iterator<BaseT>::operator>=(const const_iterator<BaseT> & it) 
 
 template<DirectBaseType DirectBaseT> requires (!std::is_const_v<DirectBaseT>)
 auto begin(DirectBaseT & A)
-{
-   return iterator(A, 0);
-}
+{ return iterator(A, 0); }
 
 template<DirectBaseType DirectBaseT> requires (!std::is_const_v<DirectBaseT>)
 auto end(DirectBaseT & A)
-{
-   return iterator(A, A.size());
-}
+{ return iterator(A, A.size()); }
 
 template<typename T> requires (BaseType<std::decay_t<T>>)
 auto begin(T && A)

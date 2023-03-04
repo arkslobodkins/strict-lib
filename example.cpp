@@ -58,7 +58,7 @@ int main()
    // i.e. StrictVal<float>.
 
    auto n = 100'000LL;
-   Array B = array_random<float32>(n, -1.F, 1.F);
+   Array B = array_random<float32>(n, Low{-1.F}, High{1.F});
    auto half_range = within_range(B, -0.5F, 0.5F);
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
    for(auto x : B) assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
@@ -78,14 +78,14 @@ int main()
    cout << "total sum = " << sum(expr) << endl << endl; // 0 + 2 + 4 ... is hopefully 72
 
    // 4. If for any reason there is a need to convert value to a different type,
-   // convert() function can be used. Conversion is needed because both prod
+   // convert_type() function can be used. Conversion is needed because both prod
    // and sqt in the example below are not float32.
 
    Array<float32> D{1.F, 2.F, 3.F, 4.F, 5.F};
    apply(D, [](auto & x) {x = x*x;});
-   float64 prod = dot_prod(D, D).convert<float64>();
+   float64 prod = dot_prod(D, D).convert_type<float64>();
    for(auto it = begin(D); it != end(D); ++it) {
-      float64 sqt = sqrt(it->convert<float64>());
+      float64 sqt = sqrt(it->convert_type<float64>());
       cout << "square root of " << *it << " = " << sqt << endl;
    }
    cout << endl;
@@ -124,8 +124,8 @@ int main()
    // expression templates of Array, SliceArray itself,
    // and expression templates of SliceArray.
 
-   Array<int> H = array_random<int>(9, 0, 5);
-   const Array<int> J = array_random<int>(9, 0, 5);
+   Array<int> H = array_random<int>(9, Low{0}, High{5});
+   const Array<int> J = array_random<int>(9, Low{0}, High{5});
    H[seq(0, 2)] = 2 * H[seq(3, 5)] + 10 * H[seq(6, 8)];
 
    auto first_five = H[seq(0, 4)];        // first_five refers to the first 5 entries of H
@@ -191,9 +191,6 @@ int main()
 
    bool any_greater_1 =
       any_satisfy( N, [](auto x) { return x > 1.; } );
-
-   const auto NN = N;
-   NN[seq(0, 2)][0];
 
    return EXIT_SUCCESS;
 }

@@ -23,8 +23,8 @@ void assert_float_ops()
 {
    auto n = 300LL;
    std::valarray<T> v1(n), v2(n), v3(n);
-   Array<T> s1 = array_random<T>(300, T{-1.F}, T{1.F});
-   Array<T> s2 = array_random<T>(300, T{0.01F}, T{1.F});
+   Array<T> s1 = array_random<T>(300, Low{T{-1}}, High{T{1}});
+   Array<T> s2 = array_random<T>(300, Low{T{1}}, High{T{1}});
    Array<T> s3(n);
    for(auto i = 0LL; i < n; ++i) v1[i] = s1[i];
    for(auto i = 0LL; i < n; ++i) v2[i] = s2[i];
