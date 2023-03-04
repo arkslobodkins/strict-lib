@@ -72,7 +72,7 @@ int main()
    Array<int> C = array_iota<int>(9);
    StrictVal<int> s{};
    auto expr = 2 * C;
-   for(auto it = begin(expr); it < end(expr); it += 2)
+   for(auto it = expr.begin(); it < expr.end(); it += 2)
       s += *it;
    cout << "sum = " << s << endl;                       // 0 + 4 + 8 + 12 + 16 is hopefully 40
    cout << "total sum = " << sum(expr) << endl << endl; // 0 + 2 + 4 ... is hopefully 72
@@ -84,7 +84,7 @@ int main()
    Array<float32> D{1.F, 2.F, 3.F, 4.F, 5.F};
    apply(D, [](auto & x) {x = x*x;});
    float64 prod = dot_prod(D, D).convert_type<float64>();
-   for(auto it = begin(D); it != end(D); ++it) {
+   for(auto it = D.begin(); it != D.end(); ++it) {
       float64 sqt = sqrt(it->convert_type<float64>());
       cout << "square root of " << *it << " = " << sqt << endl;
    }
@@ -115,9 +115,9 @@ int main()
 
    float64 g_raw[5]{};
    Array<float64> G{1., 2., 3., 4., 5.};
-   std::copy(begin(G), end(G), g_raw);
+   std::copy(G.begin(), G.end(), g_raw);
    g_raw[1]++; g_raw[3]++;
-   std::copy(g_raw, g_raw+5, begin(G));
+   std::copy(g_raw, g_raw+5, G.begin());
    cout << G << endl;
 
    // 8. SliceArray class provides slicing for Array,

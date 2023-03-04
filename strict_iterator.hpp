@@ -422,49 +422,6 @@ inline bool const_iterator<BaseT>::operator>=(const const_iterator<BaseT> & it) 
    return pos >= it.pos;
 }
 
-template<DirectBaseType DirectBaseT> requires (!std::is_const_v<DirectBaseT>)
-[[nodiscard]] auto begin(DirectBaseT & A)
-{ return iterator(A, 0); }
-
-template<DirectBaseType DirectBaseT> requires (!std::is_const_v<DirectBaseT>)
-[[nodiscard]] auto end(DirectBaseT & A)
-{ return iterator(A, A.size()); }
-
-template<typename T> requires (BaseType<std::decay_t<T>>)
-[[nodiscard]] auto begin(T && A)
-{
-   static_assert(std::is_lvalue_reference_v<T>, "Iterators are not allowed for rvalues");
-   return const_iterator(A, 0);
-}
-
-template<typename T> requires (BaseType<std::decay_t<T>>)
-[[nodiscard]] auto end(T && A)
-{
-   static_assert(std::is_lvalue_reference_v<T>, "Iterators are not allowed for rvalues");
-   return const_iterator(A, A.size());
-}
-
-template<typename T> requires (BaseType<std::decay_t<T>>)
-[[nodiscard]] auto cbegin(T && A)
-{
-   static_assert(std::is_lvalue_reference_v<T>, "Iterators are not allowed for rvalues");
-   return const_iterator(A, 0);
-}
-
-template<typename T> requires (BaseType<std::decay_t<T>>)
-[[nodiscard]] auto cend(T && A)
-{
-   static_assert(std::is_lvalue_reference_v<T>, "Iterators are not allowed for rvalues");
-   return const_iterator(A, A.size());
-}
-
-//[[nodiscard]] auto rbegin() { return std::reverse_iterator{end(A)}; }
-//[[nodiscard]] auto rend() { return std::reverse_iterator{begin(A)}; }
-//[[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend(A)}; }
-//[[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin(A)}; }
-//[[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend(A)}; }
-//[[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin(A)}; }
-
 }
 
 #endif

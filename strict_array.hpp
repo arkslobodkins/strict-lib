@@ -112,6 +112,20 @@ public:
 
    template<RealType U> [[nodiscard]] Array<U> convert_type() const; // conversion chosen by the user;
 
+   [[nodiscard]] auto begin() { return iterator{*this, 0}; }
+   [[nodiscard]] auto end() { return iterator{*this, size()}; }
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() { return std::reverse_iterator{end()}; }
+   [[nodiscard]] auto rend() { return std::reverse_iterator{begin()}; }
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
 private:
    value_type* elem;
    size_type sz;
@@ -391,12 +405,19 @@ public:
    [[nodiscard]] auto & first() const { return (*this)[0]; }
    [[nodiscard]] auto & last() const { return (*this)[sl.size()-1]; }
 
-//   [[nodiscard]] auto rbegin() { return std::reverse_iterator{end()}; }
-//   [[nodiscard]] auto rend() { return std::reverse_iterator{begin()}; }
-//   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
-//   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
-//   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
-//   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto begin() { return iterator{*this, 0}; }
+   [[nodiscard]] auto end() { return iterator{*this, size()}; }
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() { return std::reverse_iterator{end()}; }
+   [[nodiscard]] auto rend() { return std::reverse_iterator{begin()}; }
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
    typename DirectBaseT::slice_type A;
@@ -435,6 +456,17 @@ public:
    [[nodiscard]] decltype(auto) first() const { return (*this)[0]; }
    [[nodiscard]] decltype(auto) last() const { return (*this)[sl.size()-1]; }
 
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
+
 private:
    typename BaseT::expr_type A;
    slice sl;
@@ -458,17 +490,17 @@ Array<T>::Array(size_type size, StrictVal<T> val) :
    Array(size)
 {
    ASSERT_STRICT_DEBUG(sz > 0);
-   std::fill(begin(*this), end(*this), val);
+   std::fill(begin(), end(), val);
 }
 
 template<RealType T>
 Array<T>::Array(std::initializer_list<StrictVal<T>> list) :
    Array(static_cast<size_type>(list.size()))
-{ std::copy(list.begin(), list.end(), begin(*this)); }
+{ std::copy(list.begin(), list.end(), begin()); }
 
 template<RealType T> Array<T>::Array(const Array<T> & A) :
    Array(A.size())
-{ std::copy(begin(A), end(A), begin(*this)); }
+{ std::copy(A.begin(), A.end(), begin()); }
 
 template<RealType T>
 Array<T>::Array(Array<T> && A) noexcept :
@@ -481,7 +513,7 @@ template<RealType T>
 Array<T> & Array<T>::operator=(StrictVal<T> val) &
 {
    ASSERT_STRICT_DEBUG(!empty());
-   std::fill(begin(*this), end(*this), val);
+   std::fill(begin(), end(), val);
    return *this;
 }
 
@@ -489,7 +521,7 @@ template<RealType T>
 Array<T> & Array<T>::operator=(std::initializer_list<StrictVal<T>> list) &
 {
    ASSERT_STRICT_DEBUG(size() == static_cast<size_type>(list.size()));
-   std::copy(list.begin(), list.end(), begin(*this));
+   std::copy(list.begin(), list.end(), begin());
    return *this;
 }
 
@@ -498,7 +530,7 @@ Array<T> & Array<T>::operator=(const Array<T> & A) &
 {
    if(this != &A) {
       ASSERT_STRICT_DEBUG(sz == A.sz);
-      std::copy(begin(A), end(A), begin(*this));
+      std::copy(A.begin(), A.end(), begin());
    }
    return *this;
 }
@@ -516,7 +548,7 @@ template<RealType T> template<OneDimBaseType OneDimBaseT>
 Array<T> & Array<T>::Assign(const OneDimBaseT & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
-   std::copy(begin(A), end(A), begin(*this));
+   std::copy(A.begin(), A.end(), begin());
    return *this;
 }
 
@@ -524,13 +556,13 @@ Array<T> & Array<T>::Assign(const OneDimBaseT & A) &
 template<RealType T> template<ArrayExprType1D ArrayExprT1D>
 Array<T>::Array(const ArrayExprT1D & expr) :
    Array(expr.size())
-{ std::copy(begin(expr), end(expr), begin(*this)); }
+{ std::copy(expr.begin(), expr.end(), begin()); }
 
 template<RealType T> template<ArrayExprType1D ArrayExprT1D>
 Array<T> & Array<T>::operator=(const ArrayExprT1D & expr) &
 {
    ASSERT_STRICT_DEBUG(sz == expr.size());
-   std::copy(begin(expr), end(expr), begin(*this));
+   std::copy(expr.begin(), expr.end(), begin());
    return *this;
 }
 
@@ -620,7 +652,7 @@ template<RealType T>
 void Array<T>::resize(size_type size)
 {
    Array<T> temp(size);
-   std::copy(begin(*this), begin(*this) + std::min(sz, size), begin(*this));
+   std::copy(begin(), begin() + std::min(sz, size), temp.begin());
    swap(temp);
 }
 
@@ -732,7 +764,7 @@ template<RealType T>
 {
    ASSERT_STRICT_DEBUG(size > 0);
    Array<T> A(size);
-   std::iota(begin(A), end(A), val);
+   std::iota(A.begin(), A.end(), val);
    return A;
 }
 
@@ -750,7 +782,7 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(const SliceArray<Di
 {
    if(this != &s) {
       ASSERT_STRICT_DEBUG(size() == s.size());
-      std::copy(begin(s), end(s), begin(*this));
+      std::copy(s.begin(), s.end(), begin());
    }
    return *this;
 }
@@ -760,14 +792,14 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(const SliceArrayBas
 {
    static_assert(SameType<typename SliceArrayBaseT1D::real_type, real_type>);
    ASSERT_STRICT_DEBUG(size() == s.size());
-   std::copy(begin(s), end(s), begin(*this));
+      std::copy(s.begin(), s.end(), begin());
    return *this;
 }
 
 template<DirectBaseType DirectBaseT>
 SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(StrictVal<real_type> val)
 {
-   std::fill(begin(*this), end(*this), val);
+   std::fill(begin(), end(), val);
    return *this;
 }
 
@@ -775,7 +807,7 @@ template<DirectBaseType DirectBaseT>
 SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(std::initializer_list<StrictVal<real_type>> list)
 {
    ASSERT_STRICT_DEBUG(size() == static_cast<size_type>(list.size()));
-   std::copy(list.begin(), list.end(), begin(*this));
+   std::copy(list.begin(), list.end(), begin());
    return *this;
 }
 
@@ -783,7 +815,7 @@ template<DirectBaseType DirectBaseT> template<OneDimBaseType OneDimBaseT>
 SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::Assign(const OneDimBaseT & A) &
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
-   std::copy(begin(A), end(A), begin(*this));
+   std::copy(A.begin(), A.end(), begin());
    return *this;
 }
 
@@ -1042,6 +1074,16 @@ public:
    long long int size() const { return sz; }
    bool empty() const { return false; }
 
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
 private:
    const long long int j;
    const long long int sz;
@@ -1070,6 +1112,16 @@ public:
    value_type operator[](long long int i) const { return j == i ? T{1} : T{0}; }
    long long int size() const { return sz; }
    bool empty() const { return false; }
+
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
    const long long int j;
@@ -1103,6 +1155,16 @@ public:
 
    [[nodiscard]] value_type first() const { return (*this)[0]; }
    [[nodiscard]] value_type last() const { return (*this)[size()-1]; }
+
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
    typename OneDimBaseT::expr_type A;
@@ -1145,6 +1207,16 @@ public:
    [[nodiscard]] value_type first() const { return (*this)[0]; }
    [[nodiscard]] value_type last() const { return (*this)[size()-1]; }
 
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
 private:
    typename OneDimBaseT1::expr_type A;
    typename OneDimBaseT2::expr_type B;
@@ -1182,6 +1254,16 @@ public:
    [[nodiscard]] value_type first() const { return (*this)[0]; }
    [[nodiscard]] value_type last() const { return (*this)[size()-1]; }
 
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
 private:
    typename OneDimBaseT1::expr_type B;
    StrictVal<T2> val;
@@ -1218,6 +1300,16 @@ public:
 
    [[nodiscard]] value_type first() const { return (*this)[0]; }
    [[nodiscard]] value_type last() const { return (*this)[size()-1]; }
+
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
+
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
 
 private:
    typename OneDimBaseT1::expr_type A;

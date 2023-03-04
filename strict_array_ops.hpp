@@ -80,11 +80,13 @@ template<BaseType BaseT>
 template<BaseType BaseT>
 [[nodiscard]] bool all_negative(const BaseT & A);
 
-template<DirectBaseType DirectBaseT, typename F>
-void apply(DirectBaseT & A, F f);
+template<typename T, typename F>
+requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
+void apply(T && A, F f);
 
-template<DirectBaseType DirectBaseT, typename F, typename Cond>
-void apply_if(DirectBaseT & A, F f, Cond c);
+template<typename T, typename F, typename Cond>
+requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
+void apply_if(T && A, F f, Cond c);
 
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool any_satisfy(const BaseT & A, F f);
@@ -111,23 +113,13 @@ within_cond(const DirectBaseT & A, Cond c);
 template<BaseType BaseT>
 [[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
 
-// two overloads are provided since slicing produces rvalues.
-template<DirectBaseType DirectBaseT>
-requires (!std::is_const_v<DirectBaseT>)
-void sort_increasing(DirectBaseT & A);
+template<typename T>
+requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
+void sort_increasing(T && A);
 
-template<DirectBaseType DirectBaseT>
-requires (!std::is_const_v<DirectBaseT>)
-void sort_increasing(DirectBaseT && A);
-
-template<DirectBaseType DirectBaseT>
-requires (!std::is_const_v<DirectBaseT>)
-void sort_decreasing(DirectBaseT & A);
-
-template<DirectBaseType DirectBaseT>
-requires (!std::is_const_v<DirectBaseT>)
-void sort_decreasing(DirectBaseT && A);
-
+template<typename T>
+requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
+void sort_decreasing(T && A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
@@ -354,16 +346,18 @@ template<BaseType BaseT>
    return true;
 }
 
-template<DirectBaseType DirectBaseT, typename F>
-void apply(DirectBaseT & A, F f)
+template<typename T, typename F>
+requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
+void apply(T && A, F f)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto & x : A)
       f(x);
 }
 
-template<DirectBaseType DirectBaseT, typename F, typename Cond>
-void apply_if(DirectBaseT & A, F f, Cond c)
+template<typename T, typename F, typename Cond>
+requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
+void apply_if(T && A, F f, Cond c)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto & x : A)
@@ -444,40 +438,24 @@ template<BaseType BaseT>
    ASSERT_STRICT_DEBUG(!A.empty());
    using real_type = RealTypeOf<BaseT>;
    auto blas_array = std::make_unique<real_type[]>(static_cast<std::size_t>(A.size()));
-   std::copy(begin(A), end(A), blas_array.get());
+   std::copy(A.begin(), A.end(), blas_array.get());
    return blas_array;
 }
 
-template<DirectBaseType DirectBaseT>
-requires (!std::is_const_v<DirectBaseT>)
-void sort_increasing(DirectBaseT & A)
+template<typename T>
+requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
+void sort_increasing(T && A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   std::sort(begin(A), end(A), [](auto a, auto b) { return a < b; });
+   std::sort(A.begin(), A.end(), [](auto a, auto b) { return a < b; });
 }
 
-template<DirectBaseType DirectBaseT>
-requires (!std::is_const_v<DirectBaseT>)
-void sort_increasing(DirectBaseT && A)
+template<typename T>
+requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
+void sort_decreasing(T && A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   std::sort(begin(A), end(A), [](auto a, auto b) { return a < b; });
-}
-
-template<DirectBaseType DirectBaseT>
-requires (!std::is_const_v<DirectBaseT>)
-void sort_decreasing(DirectBaseT & A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   std::sort(begin(A), end(A), [](auto a, auto b) { return a > b; });
-}
-
-template<DirectBaseType DirectBaseT>
-requires (!std::is_const_v<DirectBaseT>)
-void sort_decreasing(DirectBaseT && A)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   std::sort(begin(A), end(A), [](auto a, auto b) { return a > b; });
+   std::sort(A.begin(), A.end(), [](auto a, auto b) { return a > b; });
 }
 
 }
