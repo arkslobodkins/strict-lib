@@ -42,6 +42,12 @@ template<typename T> concept OneDimFloatingBaseType = OneDimBaseType<T> && Float
 class slice;
 class seq;
 
+template<RealType T> class Low;
+template<RealType T> class High;
+template<RealType T> class Start;
+template<RealType T> class End;
+template<RealType T> class Incr;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 class Array : private ArrayBase1D
@@ -91,7 +97,7 @@ public:
 
    void swap(Array & A) noexcept;
    void resize(size_type size);
-   void resize_and_assign(const Array & A);
+   template<ArrayBaseType1D ArrayBaseT1D> void resize_and_assign(const ArrayBaseT1D & A);
 
    [[nodiscard]] inline value_type & operator[](size_type i);
    [[nodiscard]] inline const value_type & operator[](size_type i) const;
@@ -177,40 +183,82 @@ template<RealType T> [[nodiscard]] auto e_unit(long long int j, long long int si
 template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
 
 template<RealType T>
+[[nodiscard]] auto sequence(long long int size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
+
+template<RealType T>
+[[nodiscard]] auto slice_sequence(long long int size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
+
+template<RealType T>
+[[nodiscard]] auto linspace(long long int size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
+
+template<RealType T>
+[[nodiscard]] auto slice_linspace(long long int size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
+
+template<IntegerType T>
+[[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, Low<T> low = Low<T>{}, High<T> high = High<T>{T(1)});
+
+template<FloatingType T>
+[[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, Low<T> low = Low<T>{}, High<T> high = High<T>{T(1)});
+
+template<RealType T>
 class Low
 {
 public:
+   explicit Low() = default;
    explicit Low(T low) : low{low} {}
    explicit Low(StrictVal<T> low) : low{low} {}
    StrictVal<T> get() const { return low; }
 private:
-      const StrictVal<T> low;
+   const StrictVal<T> low;
 };
 
 template<RealType T>
 class High
 {
 public:
+   explicit High() = default;
    explicit High(T high) : high{high} {}
    explicit High(StrictVal<T> high) : high{high} {}
    StrictVal<T> get() const { return high; }
 private:
-      const StrictVal<T> high;
+   const StrictVal<T> high;
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//TODO: replace array_random with expression template,
-//      add slice_random,
-//      replace array_iota with expression template,
-//      add different strides.
-template<IntegerType T>
-[[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, Low<T> low = T{0}, High<T> high = T{1});
-
-template<FloatingType T>
-[[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, Low<T> low = T{0}, High<T> high = T{1});
+template<RealType T>
+class Start
+{
+public:
+   explicit Start() = default;
+   explicit Start(T start) : start{start} {}
+   explicit Start(StrictVal<T> start) : start{start} {}
+   StrictVal<T> get() const { return start; }
+private:
+   const StrictVal<T> start;
+};
 
 template<RealType T>
-[[nodiscard]] Array<T> array_iota(SizeTypeOf<Array<T>> size, StrictVal<T> val = T{0});
+class End
+{
+public:
+   explicit End() = default;
+   explicit End(T end) : end{end} {}
+   explicit End(StrictVal<T> end) : end{end} {}
+   StrictVal<T> get() const { return end; }
+private:
+   const StrictVal<T> end;
+};
+
+template<RealType T>
+class Incr
+{
+public:
+   explicit Incr() = default;
+   explicit Incr(T incr) : incr{incr} {}
+   explicit Incr(StrictVal<T> incr) : incr{incr} {}
+   StrictVal<T> get() const { return incr; }
+private:
+   const StrictVal<T> incr;
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
@@ -656,8 +704,8 @@ void Array<T>::resize(size_type size)
    swap(temp);
 }
 
-template<RealType T>
-void Array<T>::resize_and_assign(const Array<T> & A)
+template<RealType T> template<ArrayBaseType1D ArrayBaseT1D>
+void Array<T>::resize_and_assign(const ArrayBaseT1D & A)
 {
    resize(A.size());
    *this = A;
@@ -756,15 +804,6 @@ template<FloatingType T>
    Array<T> A(size);
    for(auto & x : A)
       x = l + (h - l) * T(std::rand()) / T(RAND_MAX);
-   return A;
-}
-
-template<RealType T>
-[[nodiscard]] Array<T> array_iota(typename Array<T>::size_type size, StrictVal<T> val)
-{
-   ASSERT_STRICT_DEBUG(size > 0);
-   Array<T> A(size);
-   std::iota(A.begin(), A.end(), val);
    return A;
 }
 
@@ -1050,82 +1089,76 @@ struct BinaryTwoProdSecond : private BinaryOperation
    }
 };
 
-template<RealType T>
-class StandardUnitVector : private ArrayExpr1D
+#define STRICT_GENERATE_CONST_ITERATORS()                                       \
+   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }        \
+   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }     \
+   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }       \
+   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }    \
+                                                                                \
+   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }  \
+   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }  \
+   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; } \
+   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+
+#define STRICT_GENERATE_USING_EXPR_TYPES(OneDimObjectType)            \
+   using size_type = typename OneDimObjectType::size_type;            \
+   using value_type = typename OneDimObjectType::value_type;          \
+   using real_type = typename OneDimObjectType::real_type;            \
+   using base_type = typename OneDimObjectType::base_type;            \
+   using expr_base_type = typename OneDimObjectType::expr_base_type;  \
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<OneDimBaseType OneDimBaseT>
+class StandardUnitVectorExpr : private OneDimBaseT::expr_base_type
 {
 public:
-   using size_type = long long int;
-   using value_type = StrictVal<T>;
-   using real_type = T;
-   using base_type = ArrayBase1D;
-   using expr_base_type = ArrayExpr1D;
-   using expr_type = StandardUnitVector<T>;
+   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT);
+   using expr_type = StandardUnitVectorExpr<OneDimBaseT>;
 
-   explicit StandardUnitVector(long long int j, long long int size) : j{j}, sz{size} {
+   explicit StandardUnitVectorExpr(size_type j, size_type size) : j{j}, sz{size} {
       ASSERT_STRICT_DEBUG(j > -1); ASSERT_STRICT_DEBUG(size > j);
    }
 
-   StandardUnitVector(const StandardUnitVector &) = default;
+   StandardUnitVectorExpr(const StandardUnitVectorExpr &) = default;
 
    // assignment is deleted to stay consistent with other expression templates
-   StandardUnitVector & operator=(const StandardUnitVector &) = delete;
+   StandardUnitVectorExpr & operator=(const StandardUnitVectorExpr &) = delete;
 
-   value_type operator[](long long int i) const { return j == i ? T{1} : T{0}; }
-   long long int size() const { return sz; }
+   value_type operator[](size_type i) const { return j == i ? real_type{1} : real_type{0}; }
+   size_type size() const { return sz; }
    bool empty() const { return false; }
 
-   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
-   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
-
-   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
-   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
-
 private:
-   const long long int j;
-   const long long int sz;
+   const size_type j;
+   const size_type sz;
 };
 
-template<RealType T>
-class StandardSliceUnitVector : private SliceArrayExpr1D
+template<OneDimBaseType OneDimBaseT>
+class SequenceExpr : private OneDimBaseT::expr_base_type
 {
 public:
-   using size_type = long long int;
-   using value_type = StrictVal<T>;
-   using real_type = T;
-   using base_type = SliceArrayBase1D;
-   using expr_base_type = SliceArrayExpr1D;
-   using expr_type = StandardSliceUnitVector<T>;
+   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT);
+   using expr_type = SequenceExpr<OneDimBaseT>;
 
-   explicit StandardSliceUnitVector(long long int j, long long int size) : j{j}, sz{size} {
-      ASSERT_STRICT_DEBUG(j > -1); ASSERT_STRICT_DEBUG(size > j);
+   explicit SequenceExpr(value_type start, size_type size, value_type incr)
+   : start{start}, sz{size}, incr{incr} {
+      ASSERT_STRICT_DEBUG(size > 0);
    }
-
-   StandardSliceUnitVector(const StandardSliceUnitVector &) = default;
+   SequenceExpr(const SequenceExpr &) = default;
 
    // assignment is deleted to stay consistent with other expression templates
-   StandardSliceUnitVector & operator=(const StandardSliceUnitVector &) = delete;
+   SequenceExpr & operator=(const SequenceExpr &) = delete;
 
-   value_type operator[](long long int i) const { return j == i ? T{1} : T{0}; }
-   long long int size() const { return sz; }
+   value_type operator[](size_type i) const { return start + incr * static_cast<real_type>(i); }
+   size_type size() const { return sz; }
    bool empty() const { return false; }
 
-   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
-   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
-
-   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
-   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
-
 private:
-   const long long int j;
-   const long long int sz;
+   value_type start;
+   const size_type sz;
+   value_type incr;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1133,11 +1166,8 @@ template<OneDimBaseType OneDimBaseT, UnaryOperationType Op>
 class UnaryExpr : private OneDimBaseT::expr_base_type
 {
 public:
-   using size_type = typename OneDimBaseT::size_type;
-   using value_type = typename OneDimBaseT::value_type;
-   using real_type = typename OneDimBaseT::real_type;
-   using base_type = typename OneDimBaseT::base_type;
-   using expr_base_type = typename OneDimBaseT::expr_base_type;
+   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT);
    using expr_type = UnaryExpr<OneDimBaseT, Op>;
 
    explicit UnaryExpr(const OneDimBaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
@@ -1156,16 +1186,6 @@ public:
    [[nodiscard]] value_type first() const { return (*this)[0]; }
    [[nodiscard]] value_type last() const { return (*this)[size()-1]; }
 
-   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
-   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
-
-   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
-   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
-
 private:
    typename OneDimBaseT::expr_type A;
    Op op;
@@ -1176,16 +1196,12 @@ template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperati
 class BinExpr : private OneDimBaseT1::expr_base_type
 {
 public:
-   using size_type = typename OneDimBaseT1::size_type;
-   using value_type = typename OneDimBaseT1::value_type;
-   using real_type = typename OneDimBaseT1::real_type;
-   using base_type = typename OneDimBaseT1::base_type;
-   using expr_base_type = typename OneDimBaseT1::expr_base_type;
+   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1);
    using expr_type = BinExpr<OneDimBaseT1, OneDimBaseT2, Op>;
 
    explicit BinExpr(const OneDimBaseT1 & A, const OneDimBaseT2 & B, Op op) : A{A}, B{B}, op{op} {
       // checking for the same size_type might be useful in the future
-      static_assert(SameType<typename OneDimBaseT1::size_type, typename OneDimBaseT2::size_type>);
       static_assert(SameType<typename OneDimBaseT1::size_type, typename OneDimBaseT2::size_type>);
       static_assert(SameType<typename OneDimBaseT1::value_type, typename OneDimBaseT2::value_type>);
       static_assert(SameType<typename OneDimBaseT1::base_type, typename OneDimBaseT2::base_type>);
@@ -1207,16 +1223,6 @@ public:
    [[nodiscard]] value_type first() const { return (*this)[0]; }
    [[nodiscard]] value_type last() const { return (*this)[size()-1]; }
 
-   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
-   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
-
-   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
-   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
-
 private:
    typename OneDimBaseT1::expr_type A;
    typename OneDimBaseT2::expr_type B;
@@ -1228,11 +1234,8 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 class BinExprValLeft : private OneDimBaseT1::expr_base_type
 {
 public:
-   using size_type = typename OneDimBaseT1::size_type;
-   using value_type = typename OneDimBaseT1::value_type;
-   using real_type = typename OneDimBaseT1::real_type;
-   using base_type = typename OneDimBaseT1::base_type;
-   using expr_base_type = typename OneDimBaseT1::expr_base_type;
+   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1);
    using expr_type = const BinExprValLeft<OneDimBaseT1, T2, Op>;
 
    explicit BinExprValLeft(const OneDimBaseT1 & B, T2 val, Op op) : B{B}, val{val}, op{op} {
@@ -1254,16 +1257,6 @@ public:
    [[nodiscard]] value_type first() const { return (*this)[0]; }
    [[nodiscard]] value_type last() const { return (*this)[size()-1]; }
 
-   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
-   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
-
-   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
-   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
-
 private:
    typename OneDimBaseT1::expr_type B;
    StrictVal<T2> val;
@@ -1275,11 +1268,8 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 class BinExprValRight : private OneDimBaseT1::expr_base_type
 {
 public:
-   using size_type = typename OneDimBaseT1::size_type;
-   using value_type = typename OneDimBaseT1::value_type;
-   using real_type = typename OneDimBaseT1::real_type;
-   using base_type = typename OneDimBaseT1::base_type;
-   using expr_base_type = typename OneDimBaseT1::expr_base_type;
+   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1);
    using expr_type = BinExprValRight<OneDimBaseT1, T2, Op>;
 
    explicit BinExprValRight(const OneDimBaseT1 & A, T2 val, Op op) : A{A}, val{val}, op{op} {
@@ -1301,16 +1291,6 @@ public:
    [[nodiscard]] value_type first() const { return (*this)[0]; }
    [[nodiscard]] value_type last() const { return (*this)[size()-1]; }
 
-   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
-   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
-
-   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
-   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
-
 private:
    typename OneDimBaseT1::expr_type A;
    StrictVal<T2> val;
@@ -1320,133 +1300,155 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator+(const T1 & A, const T2 & B)
-{ return BinExpr(A, B, Plus{}); }
+{ return BinExpr{A, B, Plus{}}; }
 
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator-(const T1 & A, const T2 & B)
-{ return BinExpr(A, B, Minus{}); }
+{ return BinExpr{A, B, Minus{}}; }
 
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator*(const T1 & A, const T2 & B)
-{ return BinExpr(A, B, Mult{}); }
+{ return BinExpr{A, B, Mult{}}; }
 
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator/(const T1 & A, const T2 & B)
-{ return BinExpr(A, B, Divide{}); }
+{ return BinExpr{A, B, Divide{}}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U{val}, Plus{}); }
+{ return BinExprValLeft{B, U{val}, Plus{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U{val}, Minus{}); }
+{ return BinExprValLeft{B, U{val}, Minus{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U{val}, Mult{}); }
+{ return BinExprValLeft{B, U{val}, Mult{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(StrictVal<U> val, const T & B)
-{ return BinExprValLeft(B, U{val}, Divide{}); }
+{ return BinExprValLeft{B, U{val}, Divide{}}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U{val}, Plus{}); }
+{ return BinExprValRight{A, U{val}, Plus{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U{val}, Minus{}); }
+{ return BinExprValRight{A, U{val}, Minus{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U{val}, Mult{}); }
+{ return BinExprValRight{A, U{val}, Mult{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(const T & A, StrictVal<U> val)
-{ return BinExprValRight(A, U{val}, Divide{}); }
+{ return BinExprValRight{A, U{val}, Divide{}}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(U val, const T & B)
-{ return BinExprValLeft(B, val, Plus{}); }
+{ return BinExprValLeft{B, val, Plus{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(U val, const T & B)
-{ return BinExprValLeft(B, val, Minus{}); }
+{ return BinExprValLeft{B, val, Minus{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(U val, const T & B)
-{ return BinExprValLeft(B, val, Mult{}); }
+{ return BinExprValLeft{B, val, Mult{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(U val, const T & B)
-{ return BinExprValLeft(B, val, Divide{}); }
+{ return BinExprValLeft{B, val, Divide{}}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(const T & A, U val)
-{ return BinExprValRight(A, val, Plus{}); }
+{ return BinExprValRight{A, val, Plus{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(const T & A, U val)
-{ return BinExprValRight(A, val, Minus{}); }
+{ return BinExprValRight{A, val, Minus{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(const T & A, U val)
-{ return BinExprValRight(A, val, Mult{}); }
+{ return BinExprValRight{A, val, Mult{}}; }
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(const T & A, U val)
-{ return BinExprValRight(A, val, Divide{}); }
+{ return BinExprValRight{A, val, Divide{}}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T>
 [[nodiscard]] auto operator+(const T & A)
-{ return UnaryExpr(A, UnaryPlus{}); }
+{ return UnaryExpr{A, UnaryPlus{}}; }
 
 template<OneDimBaseType T>
 [[nodiscard]] auto operator-(const T & A)
-{ return UnaryExpr(A, UnaryMinus{}); }
+{ return UnaryExpr{A, UnaryMinus{}}; }
 
 template<OneDimBaseType T>
 [[nodiscard]] auto abs(const T & A)
-{ return UnaryExpr(A, UnaryAbs{}); }
+{ return UnaryExpr{A, UnaryAbs{}}; }
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto pow(const T & A, ValueTypeOf<T> p)
-{ return UnaryExpr(A, UnaryPow{p}); }
+{ return UnaryExpr{A, UnaryPow{p}}; }
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto pow_int(const T & A, StrictVal<int> p)
-{ return UnaryExpr(A, UnaryPowInt{p}); }
+{ return UnaryExpr{A, UnaryPowInt{p}}; }
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto exp(const T & A)
-{ return UnaryExpr(A, UnaryExp{}); }
+{ return UnaryExpr{A, UnaryExp{}}; }
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto log(const T & A)
-{ return UnaryExpr(A, UnaryLog{}); }
+{ return UnaryExpr{A, UnaryLog{}}; }
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto sqrt(const T & A)
-{ return UnaryExpr(A, UnarySqrt{}); }
+{ return UnaryExpr{A, UnarySqrt{}}; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto two_prod(const T1 & A, const T2 & B)
-{ return std::pair{BinExpr(A, B, BinaryTwoProdFirst{}), BinExpr(A, B, BinaryTwoProdSecond{})}; }
+{ return std::pair{BinExpr{A, B, BinaryTwoProdFirst{}}, BinExpr{A, B, BinaryTwoProdSecond{}}}; }
 
 template<RealType T>
 [[nodiscard]] auto e_unit(long long int j, long long int size)
-{ return StandardUnitVector<T>(j, size); }
+{ return StandardUnitVectorExpr<Array<T>>{j, size}; }
 
 template<RealType T>
 [[nodiscard]] auto e_slice_unit(long long int j, long long int size)
-{ return StandardSliceUnitVector<T>(j, size); }
+{ return StandardUnitVectorExpr<SliceArray<Array<T>>>{j, size}; }
+
+template<RealType T>
+[[nodiscard]] auto sequence(long long int size, Start<T> start, Incr<T> incr)
+{ return SequenceExpr<Array<T>>{start.get(), size, incr.get()}; }
+
+template<RealType T>
+[[nodiscard]] auto slice_sequence(long long int size, Start<T> start, Incr<T> incr)
+{ return SequenceExpr<SliceArray<Array<T>>>{start.get(), size, incr.get()}; }
+
+template<RealType T>
+[[nodiscard]] auto linspace(long long int size, Start<T> start, End<T> end)
+{
+   ASSERT_STRICT_DEBUG(size > 1);
+   return SequenceExpr<Array<T>>{start.get(), size, (end.get()-start.get())/strict_cast<T>(size-1)};
+}
+
+template<RealType T>
+[[nodiscard]] auto slice_linspace(long long int size, Start<T> start, End<T> end)
+{
+   ASSERT_STRICT_DEBUG(size > 1);
+   return SequenceExpr<SliceArray<Array<T>>>{start.get(), size, (end.get()-start.get())/strict_cast<T>(size-1)};
+}
 
 }
 

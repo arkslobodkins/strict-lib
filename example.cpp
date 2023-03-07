@@ -58,7 +58,7 @@ int main()
    // i.e. StrictVal<float>.
 
    auto n = 100'000LL;
-   Array B = array_random<float32>(n, Low{-1.F}, High{1.F});
+   Array B = array_random(n, Low{-1.F}, High{1.F});
    auto half_range = within_range(B, -0.5F, 0.5F);
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
    for(auto x : B) assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
@@ -69,7 +69,7 @@ int main()
    // sum every second element of 0, 2, 4, .., i.e.
    // sum of 0, 4, 8 ...
 
-   Array<int> C = array_iota<int>(9);
+   Array<int> C = sequence<int>(9);
    StrictVal<int> s{};
    auto expr = 2 * C;
    for(auto it = expr.begin(); it < expr.end(); it += 2)
@@ -103,8 +103,8 @@ int main()
    // must be enabled via -std=gnu++20.
 
    #ifdef STRICT_QUADRUPLE_PRECISION
-   const Array<float128> F1 = array_iota<float128>(5, 1.Q);
-   const Array<float128> F2 = array_iota<float128>(5, 1.Q);
+   const Array<float128> F1 = sequence<float128>(5);
+   const Array<float128> F2 = sequence<float128>(5);
    cout << F1 + F2 << endl;
    #endif
 
@@ -124,8 +124,8 @@ int main()
    // expression templates of Array, SliceArray itself,
    // and expression templates of SliceArray.
 
-   Array<int> H = array_random<int>(9, Low{0}, High{5});
-   const Array<int> J = array_random<int>(9, Low{0}, High{5});
+   Array<int> H = array_random(9, Low{0}, High{5});
+   const Array<int> J = array_random(9, Low{0}, High{5});
    H[seq(0, 2)] = 2 * H[seq(3, 5)] + 10 * H[seq(6, 8)];
 
    auto first_five = H[seq(0, 4)];        // first_five refers to the first 5 entries of H
@@ -141,7 +141,7 @@ int main()
    // 9. Just like for expression templates of Array, non-member functions
    // can be used for SliceArray and expression templates of SliceArray.
 
-   Array<float64> K = array_iota<float64>(6, 1.);
+   Array<float64> K = sequence(6, Start{1.});
    auto m = max(K[seq(0, 3)]);
    auto n1 = norm2(K[seq(0, 2)]);
    auto n2 = norm2(K[seq(0, 2)] + K[seq(3, 5)]);
@@ -152,14 +152,14 @@ int main()
    bool neg = all_negative(-K[seq(0, 2)]);
    auto m_index = max_index(-1. * K[seq(1, 3)]); // produces expression template containing -2, -3, -4
                                                // 0 is the index of max value, -2 is the max value
-   Array<double> L{-1., -2., -3., -4., -5., -6., -7.};
+   Array<float64> L{-1., -2., -3., -4., -5., -6., -7.};
    K.Assign(L[seq(1, 6)]); // If type is not derived from ArrayBase,
                            // Assign routine can be used to assign
                            // other types of the same size.
 
    // 10. Non-contiguous slices.
 
-   Array<float64> M = array_iota<float64>(6, 1.);
+   Array<float64> M = sequence(6, Start{1.});
    auto even_elem = M[seq(0, M.size()-1, 2)];
    even_elem = -1.;                              // set every even element of M to -1
    even_elem = 100. * M[seq(1, M.size()-1, 2)];  // even entries are set to 100 times odd entries
@@ -176,7 +176,7 @@ int main()
    N.resize_and_assign(e_unit<float64>(0, 10) + e_unit<float64>(1, 10)); // N is resized to 10 and assigned to e_1 + e_2
 
    N[seq(0, 8, 2)] = e_slice_unit<float64>(3, 5);
-   N = array_iota<float64>(N.size(), -5.);
+   N = sequence(N.size(), Start{-5.});
    apply_if( N, [](auto & x) { x *= x; },                          // square entries that are greater than zero
                [](auto x) { return x > 0.; } );
 
@@ -191,6 +191,9 @@ int main()
 
    bool any_greater_1 =
       any_satisfy( N, [](auto x) { return x > 1.; } );
+
+   N.resize_and_assign( linspace(6, Start{-5.}, End{5.}) );
+   N[seq(0, 3)] = slice_linspace(4, Start{-5.}, End{5.});
 
    return EXIT_SUCCESS;
 }

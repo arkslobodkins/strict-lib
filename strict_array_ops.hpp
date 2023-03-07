@@ -54,13 +54,25 @@ template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm2(const FloatBaseT & A);
 
 template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm2_scaled(const FloatBaseT & A);
+
+template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto stable_norm2(const FloatBaseT & A);
+
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto stable_norm2_scaled(const FloatBaseT & A);
 
 template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm1(const FloatBaseT & A);
 
 template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm1_scaled(const FloatBaseT & A);
+
+template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto stable_norm1(const FloatBaseT & A);
+
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto stable_norm1_scaled(const FloatBaseT & A);
 
 template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm_lp(const FloatBaseT & A, int p);
@@ -94,6 +106,7 @@ template<BaseType BaseT, typename F>
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool all_satisfy(const BaseT & A, F f);
 
+// TODO: replace vector of pointers with arbitrary slice
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
 within_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
@@ -269,10 +282,26 @@ template<FloatingBaseType FloatBaseT>
 }
 
 template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm2_scaled(const FloatBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   using real_type = RealTypeOf<FloatBaseT>;
+   return norm2(A)/sqrts<real_type>(real_type(A.size()));
+}
+
+template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto stable_norm2(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    return sqrts(stable_dot_prod(A, A));
+}
+
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto stable_norm2_scaled(const FloatBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   using real_type = RealTypeOf<FloatBaseT>;
+   return stable_norm2(A)/sqrts<real_type>(real_type(A.size()));
 }
 
 template<FloatingBaseType FloatBaseT>
@@ -283,10 +312,26 @@ template<FloatingBaseType FloatBaseT>
 }
 
 template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto norm1_scaled(const FloatBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   using real_type = RealTypeOf<FloatBaseT>;
+   return norm1(A)/real_type(A.size());
+}
+
+template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto stable_norm1(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    return stable_sum(abs(A));
+}
+
+template<FloatingBaseType FloatBaseT>
+[[nodiscard]] auto stable_norm1_scaled(const FloatBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   using real_type = RealTypeOf<FloatBaseT>;
+   return stable_norm1/real_type(A.size());
 }
 
 template<FloatingBaseType FloatBaseT>

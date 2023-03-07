@@ -69,6 +69,9 @@ private:
    T x{};
 };
 
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> strict_cast(U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> strict_cast(StrictVal<U> strict_val);
+
 template<RealType T, RealType U> constexpr inline U & operator+=(U & val, StrictVal<T> strict_val);
 template<RealType T, RealType U> constexpr inline U & operator-=(U & val, StrictVal<T> strict_val);
 template<RealType T, RealType U> constexpr inline U & operator*=(U & val, StrictVal<T> strict_val);
@@ -245,6 +248,14 @@ constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(U val) &
 { static_assert(SameType<T, U>); x >>= val; return *this; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> strict_cast(U val)
+{ return StrictVal<T>{T(val)}; }
+
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline StrictVal<T> strict_cast(StrictVal<U> strict_val)
+{ return strict_val.template convert_type<T>(); }
+
 template<RealType T, RealType U>
 constexpr inline U & operator+=(U & val, StrictVal<T> strict_val)
 { static_assert(SameType<T, U>); val += T{strict_val}; return val; }
@@ -497,9 +508,9 @@ template<NotQuadType T>
 std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
    int num_digits{};
-   if(SameType<T, float>)            num_digits = std::numeric_limits<float>::digits10 + 2;
-   else if(SameType<T, double>)      num_digits = std::numeric_limits<double>::digits10 + 2;
-   else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10 + 2;
+   if(SameType<T, float>)            num_digits = std::numeric_limits<float>::digits10 + 1;
+   else if(SameType<T, double>)      num_digits = std::numeric_limits<double>::digits10 + 1;
+   else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10 + 1;
    else                              num_digits = int(std::cout.precision());
 
    os << std::setprecision(num_digits) << T{strict_val};
