@@ -59,8 +59,8 @@ public:
    using base_type = ArrayBase1D;
    using expr_base_type = ArrayExpr1D;
 
-   // expr_type and slice_type inform expression templates and SliceArrays about
-   // how the object should be stored.
+   // expr_type ind slice_type inform expression templates and SliceArrays
+   // about how the object should be stored.
    using expr_type = const Array<T> &;
    using slice_type = Array<T> &;
 
@@ -428,9 +428,19 @@ public:
    // assign either Array, SliceArray, or their expression template
    template<OneDimBaseType OneDimBaseT> SliceArray & Assign(const OneDimBaseT & A) &;
 
-   // TODO: add range checking
-   [[nodiscard]] auto & operator[](size_type i) { return A[sl.start() + i*sl.stride()]; }
-   [[nodiscard]] const auto & operator[](size_type i) const { return A[sl.start() + i*sl.stride()]; }
+   [[nodiscard]] auto & operator[](size_type i) {
+      #ifdef STRICT_DEBUG_ON
+      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      #endif
+      return A[sl.start() + i*sl.stride()];
+   }
+
+   [[nodiscard]] const auto & operator[](size_type i) const {
+      #ifdef STRICT_DEBUG_ON
+      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      #endif
+      return A[sl.start() + i*sl.stride()];
+   }
 
    [[nodiscard]] inline auto operator[](seq s);
    [[nodiscard]] inline auto operator[](seq s) const;
@@ -492,9 +502,12 @@ public:
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
-   // TODO: add range checking
-   [[nodiscard]] decltype(auto) operator[](size_type i) const
-      { return A[sl.start()+i*sl.stride()]; }
+   [[nodiscard]] decltype(auto) operator[](size_type i) const {
+      #ifdef STRICT_DEBUG_ON
+      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      #endif
+      return A[sl.start()+i*sl.stride()];
+   }
 
    [[nodiscard]] inline auto operator[](seq s) const;
 
@@ -513,7 +526,6 @@ public:
    [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
    [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
    [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
-
 
 private:
    typename BaseT::expr_type A;
@@ -861,12 +873,14 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::Assign(const OneDimBaseT & A)
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto SliceArray<DirectBaseT>::operator[](seq s)
 {
+   ASSERT_STRICT_DEBUG(s.valid(*this));
    return SliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
 }
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto SliceArray<DirectBaseT>::operator[](seq s) const
 {
+   ASSERT_STRICT_DEBUG(s.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
 }
 
@@ -965,6 +979,7 @@ ConstSliceArray<BaseT>::ConstSliceArray(const ConstSliceArray<BaseT> & cs) : A{c
 template<BaseType BaseT>
 [[nodiscard]] inline auto ConstSliceArray<BaseT>::operator[](seq s) const
 {
+   ASSERT_STRICT_DEBUG(s.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
 }
 
@@ -1121,13 +1136,17 @@ public:
    }
 
    StandardUnitVectorExpr(const StandardUnitVectorExpr &) = default;
-
-   // assignment is deleted to stay consistent with other expression templates
    StandardUnitVectorExpr & operator=(const StandardUnitVectorExpr &) = delete;
 
-   value_type operator[](size_type i) const { return j == i ? real_type{1} : real_type{0}; }
-   size_type size() const { return sz; }
-   bool empty() const { return false; }
+   [[nodiscard]] value_type operator[](size_type i) const {
+      #ifdef STRICT_DEBUG_ON
+      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      #endif
+      return j == i ? real_type{1} : real_type{0};
+   }
+
+   [[nodiscard]] size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return false; }
 
 private:
    const size_type j;
@@ -1143,7 +1162,7 @@ public:
    using expr_type = SequenceExpr<OneDimBaseT>;
 
    explicit SequenceExpr(value_type start, size_type size, value_type incr)
-   : start{start}, sz{size}, incr{incr} {
+      : start{start}, sz{size}, incr{incr} {
       ASSERT_STRICT_DEBUG(size > 0);
    }
    SequenceExpr(const SequenceExpr &) = default;
@@ -1151,9 +1170,15 @@ public:
    // assignment is deleted to stay consistent with other expression templates
    SequenceExpr & operator=(const SequenceExpr &) = delete;
 
-   value_type operator[](size_type i) const { return start + incr * static_cast<real_type>(i); }
-   size_type size() const { return sz; }
-   bool empty() const { return false; }
+   [[nodiscard]] value_type operator[](size_type i) const {
+      #ifdef STRICT_DEBUG_ON
+      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      #endif
+      return start + incr * static_cast<real_type>(i);
+   }
+
+   [[nodiscard]] size_type size() const { return sz; }
+   [[nodiscard]] bool empty() const { return false; }
 
 private:
    value_type start;
@@ -1174,8 +1199,14 @@ public:
    UnaryExpr(const UnaryExpr &) = default;
    UnaryExpr & operator=(const UnaryExpr &) = delete;
 
-   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i]); }
-   [[nodiscard]] inline auto operator[](seq s) const {
+   [[nodiscard]] value_type operator[](size_type i) const {
+      #ifdef STRICT_DEBUG_ON
+      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      #endif
+      return op(A[i]);
+   }
+
+   [[nodiscard]] auto operator[](seq s) const {
       ASSERT_STRICT_DEBUG(s.valid(*this));
       return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
    }
@@ -1211,8 +1242,14 @@ public:
    BinExpr(const BinExpr &) = default;
    BinExpr & operator=(const BinExpr &) = delete;
 
-   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], B[i]); }
-   [[nodiscard]] inline auto operator[](seq s) const {
+   [[nodiscard]] value_type operator[](size_type i) const {
+      #ifdef STRICT_DEBUG_ON
+      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      #endif
+      return op(A[i], B[i]);
+   }
+
+   [[nodiscard]] auto operator[](seq s) const {
       ASSERT_STRICT_DEBUG(s.valid(*this));
       return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
    }
@@ -1245,8 +1282,14 @@ public:
    BinExprValLeft(const BinExprValLeft &) = default;
    BinExprValLeft & operator=(const BinExprValLeft &) = delete;
 
-   [[nodiscard]] value_type operator[](size_type i) const { return op(val, B[i]); }
-   [[nodiscard]] inline auto operator[](seq s) const {
+   [[nodiscard]] value_type operator[](size_type i) const {
+      #ifdef STRICT_DEBUG_ON
+      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      #endif
+      return op(val, B[i]);
+   }
+
+   [[nodiscard]] auto operator[](seq s) const {
       ASSERT_STRICT_DEBUG(s.valid(*this));
       return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
    }
@@ -1279,8 +1322,14 @@ public:
    BinExprValRight(const BinExprValRight &) = default;
    BinExprValRight & operator=(const BinExprValRight &) = delete;
 
-   [[nodiscard]] value_type operator[](size_type i) const { return op(A[i], val); }
-   [[nodiscard]] inline auto operator[](seq s) const {
+   [[nodiscard]] value_type operator[](size_type i) const {
+      #ifdef STRICT_DEBUG_ON
+      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      #endif
+      return op(A[i], val);
+   }
+
+   [[nodiscard]] auto operator[](seq s) const {
       ASSERT_STRICT_DEBUG(s.valid(*this));
       return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
    }

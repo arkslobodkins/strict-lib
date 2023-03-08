@@ -155,6 +155,9 @@ namespace internal {
 template<BaseType BaseT>
 std::ostream & operator<<(std::ostream & os, const BaseT & A)
 {
+   if(A.empty()) {
+      std::cout << __func__ << " : empty Array" << std::endl;
+   }
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
       os << "[" << i << "] ="
          << internal::smart_spaces<BaseT>(A.size(), i) << A[i] << std::endl;
@@ -165,6 +168,9 @@ std::ostream & operator<<(std::ostream & os, const BaseT & A)
 template<BaseType BaseT>
 void print(const BaseT & A, const std::string & name)
 {
+   if(A.empty()) {
+      std::cout << __func__ << " : " << name  << " -> empty Array" << std::endl;
+   }
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
       std::cout << name << "[" << i << "] ="
          << internal::smart_spaces<BaseT>(A.size(), i) << A[i] << std::endl;
@@ -285,8 +291,8 @@ template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm2_scaled(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using real_type = RealTypeOf<FloatBaseT>;
-   return norm2(A)/sqrts<real_type>(real_type(A.size()));
+   using value_type = ValueTypeOf<FloatBaseT>;
+   return norm2(A)/sqrts(value_type(A.size()));
 }
 
 template<FloatingBaseType FloatBaseT>
@@ -300,8 +306,8 @@ template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto stable_norm2_scaled(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using real_type = RealTypeOf<FloatBaseT>;
-   return stable_norm2(A)/sqrts<real_type>(real_type(A.size()));
+   using value_type = ValueTypeOf<FloatBaseT>;
+   return stable_norm2(A)/sqrts(value_type(A.size()));
 }
 
 template<FloatingBaseType FloatBaseT>
@@ -315,8 +321,8 @@ template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm1_scaled(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using real_type = RealTypeOf<FloatBaseT>;
-   return norm1(A)/real_type(A.size());
+   using value_type = ValueTypeOf<FloatBaseT>;
+   return norm1(A)/value_type(A.size());
 }
 
 template<FloatingBaseType FloatBaseT>
@@ -330,8 +336,8 @@ template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto stable_norm1_scaled(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using real_type = RealTypeOf<FloatBaseT>;
-   return stable_norm1/real_type(A.size());
+   using value_type = ValueTypeOf<FloatBaseT>;
+   return stable_norm1/value_type(A.size());
 }
 
 template<FloatingBaseType FloatBaseT>
