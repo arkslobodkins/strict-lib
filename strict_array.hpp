@@ -200,65 +200,24 @@ template<IntegerType T>
 template<FloatingType T>
 [[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, Low<T> low = Low<T>{}, High<T> high = High<T>{T(1)});
 
-template<RealType T>
-class Low
-{
-public:
-   explicit Low() = default;
-   explicit Low(T low) : low{low} {}
-   explicit Low(StrictVal<T> low) : low{low} {}
-   StrictVal<T> get() const { return low; }
-private:
-   const StrictVal<T> low;
+#define STRICT_GENERATE_SMALL_TYPES(SmallObjectName)      \
+template<RealType T>                                      \
+class SmallObjectName                                     \
+{                                                         \
+public:                                                   \
+   explicit SmallObjectName() = default;                  \
+   explicit SmallObjectName(T x) : x{x} {}                \
+   explicit SmallObjectName(StrictVal<T> x) : x{x} {}     \
+   StrictVal<T> get() const { return x; }                 \
+private:                                                  \
+   const StrictVal<T> x;                                  \
 };
 
-template<RealType T>
-class High
-{
-public:
-   explicit High() = default;
-   explicit High(T high) : high{high} {}
-   explicit High(StrictVal<T> high) : high{high} {}
-   StrictVal<T> get() const { return high; }
-private:
-   const StrictVal<T> high;
-};
-
-template<RealType T>
-class Start
-{
-public:
-   explicit Start() = default;
-   explicit Start(T start) : start{start} {}
-   explicit Start(StrictVal<T> start) : start{start} {}
-   StrictVal<T> get() const { return start; }
-private:
-   const StrictVal<T> start;
-};
-
-template<RealType T>
-class End
-{
-public:
-   explicit End() = default;
-   explicit End(T end) : end{end} {}
-   explicit End(StrictVal<T> end) : end{end} {}
-   StrictVal<T> get() const { return end; }
-private:
-   const StrictVal<T> end;
-};
-
-template<RealType T>
-class Incr
-{
-public:
-   explicit Incr() = default;
-   explicit Incr(T incr) : incr{incr} {}
-   explicit Incr(StrictVal<T> incr) : incr{incr} {}
-   StrictVal<T> get() const { return incr; }
-private:
-   const StrictVal<T> incr;
-};
+STRICT_GENERATE_SMALL_TYPES(Low)
+STRICT_GENERATE_SMALL_TYPES(High)
+STRICT_GENERATE_SMALL_TYPES(Start)
+STRICT_GENERATE_SMALL_TYPES(End)
+STRICT_GENERATE_SMALL_TYPES(Incr)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
