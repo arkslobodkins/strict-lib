@@ -71,7 +71,7 @@ int main()
    // sum every second element of 0, 2, 4, .., i.e.
    // sum of 0, 4, 8 ...
 
-   Array<int> C = sequence<int>(9);
+   Array<int> C = sequence<int>(Size{9});
    StrictVal<int> s{};
    auto expr = 2 * C;
    for(auto it = expr.begin(); it < expr.end(); it += 2)
@@ -105,8 +105,8 @@ int main()
    // must be enabled via -std=gnu++20.
 
    #ifdef STRICT_QUADRUPLE_PRECISION
-   const Array<float128> F1 = sequence<float128>(5);
-   const Array<float128> F2 = sequence<float128>(5);
+   const Array<float128> F1 = sequence<float128>(Size{5});
+   const Array<float128> F2 = sequence<float128>(Size{5});
    cout << F1 + F2 << endl;
    #endif
 
@@ -143,7 +143,7 @@ int main()
    // 9. Just like for expression templates of Array, non-member functions
    // can be used for SliceArray and expression templates of SliceArray.
 
-   Array<float64> K = sequence(6, Start{1.});
+   Array<float64> K = sequence(Size{6}, Start{1.});
    auto m = max(K[seq(0, 3)]);
    auto n1 = norm2(K[seq(0, 2)]);
    auto n2 = norm2(K[seq(0, 2)] + K[seq(3, 5)]);
@@ -161,7 +161,7 @@ int main()
 
    // 10. Non-contiguous slices.
 
-   Array<float64> M = sequence(6, Start{1.});
+   Array<float64> M = sequence(Size{6}, Start{1.});
    auto even_elem = M[seq(0, M.size()-1, 2)];
    even_elem = -1.;                              // set every even element of M to -1
    even_elem = 100. * M[seq(1, M.size()-1, 2)];  // even entries are set to 100 times odd entries
@@ -178,7 +178,7 @@ int main()
    N.resize_and_assign(e_unit<float64>(0, 10) + e_unit<float64>(1, 10)); // N is resized to 10 and assigned to e_1 + e_2
 
    N[seq(0, 8, 2)] = e_slice_unit<float64>(3, 5);
-   N = sequence(N.size(), Start{-5.});
+   N = sequence(Size{N.size()}, Start{-5.});
    apply_if( N, [](auto & x) { x *= x; },                          // square entries that are greater than zero
                [](auto x) { return x > 0.; } );
 

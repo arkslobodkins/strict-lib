@@ -48,6 +48,8 @@ template<RealType T> class Start;
 template<RealType T> class End;
 template<RealType T> class Incr;
 
+class Size;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 class Array : private ArrayBase1D
@@ -183,10 +185,10 @@ template<RealType T> [[nodiscard]] auto e_unit(long long int j, long long int si
 template<RealType T> [[nodiscard]] auto e_slice_unit(long long int j, long long int size);
 
 template<RealType T>
-[[nodiscard]] auto sequence(long long int size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
+[[nodiscard]] auto sequence(Size size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
 
 template<RealType T>
-[[nodiscard]] auto slice_sequence(long long int size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
+[[nodiscard]] auto slice_sequence(Size size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
 
 template<RealType T>
 [[nodiscard]] auto linspace(long long int size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
@@ -210,7 +212,18 @@ public:                                                   \
    explicit SmallObjectName(StrictVal<T> x) : x{x} {}     \
    StrictVal<T> get() const { return x; }                 \
 private:                                                  \
-   const StrictVal<T> x;                                  \
+   StrictVal<T> x;                                        \
+};
+
+#define STRICT_GENERATE_SMALL_INT_TYPES(SmallObjectName)  \
+class SmallObjectName                                     \
+{                                                         \
+public:                                                   \
+   explicit SmallObjectName() : x{} {}                    \
+   explicit SmallObjectName(long long int x) : x{x} {}    \
+   long long int get() const { return x; }                \
+private:                                                  \
+   long long int x;                                       \
 };
 
 STRICT_GENERATE_SMALL_TYPES(Low)
@@ -218,6 +231,8 @@ STRICT_GENERATE_SMALL_TYPES(High)
 STRICT_GENERATE_SMALL_TYPES(Start)
 STRICT_GENERATE_SMALL_TYPES(End)
 STRICT_GENERATE_SMALL_TYPES(Incr)
+
+STRICT_GENERATE_SMALL_INT_TYPES(Size)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
@@ -385,7 +400,7 @@ public:
    SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
 
    // assign either Array, SliceArray, or their expression template
-   template<OneDimBaseType OneDimBaseT> SliceArray & Assign(const OneDimBaseT & A) &;
+   template<OneDimBaseType OneDimBaseT> SliceArray & Assign(const OneDimBaseT & A);
 
    [[nodiscard]] auto & operator[](size_type i) {
       #ifdef STRICT_DEBUG_ON
@@ -822,7 +837,7 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(std::initializer_li
 }
 
 template<DirectBaseType DirectBaseT> template<OneDimBaseType OneDimBaseT>
-SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::Assign(const OneDimBaseT & A) &
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::Assign(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    std::copy(A.begin(), A.end(), begin());
@@ -1437,12 +1452,12 @@ template<RealType T>
 { return StandardUnitVectorExpr<SliceArray<Array<T>>>{j, size}; }
 
 template<RealType T>
-[[nodiscard]] auto sequence(long long int size, Start<T> start, Incr<T> incr)
-{ return SequenceExpr<Array<T>>{start.get(), size, incr.get()}; }
+[[nodiscard]] auto sequence(Size size, Start<T> start, Incr<T> incr)
+{ return SequenceExpr<Array<T>>{start.get(), size.get(), incr.get()}; }
 
 template<RealType T>
-[[nodiscard]] auto slice_sequence(long long int size, Start<T> start, Incr<T> incr)
-{ return SequenceExpr<SliceArray<Array<T>>>{start.get(), size, incr.get()}; }
+[[nodiscard]] auto slice_sequence(Size size, Start<T> start, Incr<T> incr)
+{ return SequenceExpr<SliceArray<Array<T>>>{start.get(), size.get(), incr.get()}; }
 
 template<RealType T>
 [[nodiscard]] auto linspace(long long int size, Start<T> start, End<T> end)
