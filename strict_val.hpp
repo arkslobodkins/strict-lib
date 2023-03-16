@@ -162,13 +162,15 @@ template<QuadType T> std::ostream & operator<<(std::ostream & os, StrictVal<T> s
 template<FloatingType T> [[nodiscard]] inline auto two_prod(StrictVal<T> v1, StrictVal<T> v2);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> template<RealType U>
+template<RealType T>
+template<RealType U>
 constexpr inline StrictVal<T>::StrictVal(U val) : x{val}
 {
    static_assert(SameType<T, U>);
 }
 
-template<RealType T> template<RealType U>
+template<RealType T>
+template<RealType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator=(U val) &
 {
    static_assert(SameType<T, U>);
@@ -176,14 +178,16 @@ constexpr inline StrictVal<T> & StrictVal<T>::operator=(U val) &
    return *this;
 }
 
-template<RealType T> template<RealType U>
+template<RealType T>
+template<RealType U>
 [[nodiscard]] constexpr inline StrictVal<T>::operator U () const
 {
    static_assert(SameType<T, U>);
    return x;
 }
 
-template<RealType T> template<RealType U>
+template<RealType T>
+template<RealType U>
 [[nodiscard]] constexpr inline U StrictVal<T>::convert_type() const
 {
    return static_cast<U>(x);
@@ -206,44 +210,54 @@ template<RealType T>
 constexpr inline StrictVal<T> & StrictVal<T>::operator/=(StrictVal<T> strict_val) &
 { x /= strict_val.x; return *this; }
 
-template<RealType T> template<IntegerType U>
+template<RealType T>
+template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator%=(StrictVal<T> strict_val) &
 { x %= strict_val.x; return *this; }
 
-template<RealType T> template<IntegerType U>
+template<RealType T>
+template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(StrictVal<T> strict_val) &
 { x <<= strict_val.x; return *this; }
 
-template<RealType T> template<IntegerType U>
+template<RealType T>
+template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(StrictVal<T> strict_val) &
 { x >>= strict_val.x; return *this; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T> template<RealType U>
+template<RealType T>
+template<RealType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator+=(U val) &
 { static_assert(SameType<T, U>); x += val; return *this; }
 
-template<RealType T> template<RealType U>
+template<RealType T>
+template<RealType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator-=(U val) &
 { static_assert(SameType<T, U>); x -= val; return *this; }
 
-template<RealType T> template<RealType U>
+template<RealType T>
+template<RealType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator*=(U val) &
 { static_assert(SameType<T, U>); x *= val; return *this; }
 
-template<RealType T> template<RealType U>
+template<RealType T>
+template<RealType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator/=(U val) &
 { static_assert(SameType<T, U>); x /= val; return *this; }
 
-template<RealType T> template<IntegerType U>
+template<RealType T>
+template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator%=(U val) &
 { static_assert(SameType<T, U>); x %= val; return *this; }
 
-template<RealType T> template<IntegerType U>
+template<RealType T>
+template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(U val) &
 { static_assert(SameType<T, U>); x <<= val; return *this; }
 
-template<RealType T> template<IntegerType U>
+template<RealType T>
+template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(U val) &
 { static_assert(SameType<T, U>); x >>= val; return *this; }
 

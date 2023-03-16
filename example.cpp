@@ -60,7 +60,7 @@ int main()
    // i.e. StrictVal<float>.
 
    auto n = 100'000LL;
-   Array B = array_random(n, Low{-1.F}, High{1.F});
+   Array<float32> B = random(Size{n}, Low{-1.F}, High{1.F});
    auto half_range = within_range(B, -0.5F, 0.5F);
    for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
    for(auto x : B) assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
@@ -126,8 +126,8 @@ int main()
    // expression templates of Array, SliceArray itself,
    // and expression templates of SliceArray.
 
-   Array<int> H = array_random(9, Low{0}, High{5});
-   const Array<int> J = array_random(9, Low{0}, High{5});
+   Array<int> H = random(Size{9}, Low{0}, High{5});
+   const Array<int> J = random(Size{9}, Low{0}, High{5});
    H[seq(0, 2)] = 2 * H[seq(3, 5)] + 10 * H[seq(6, 8)];
 
    auto first_five = H[seq(0, 4)];        // first_five refers to the first 5 entries of H
@@ -193,9 +193,6 @@ int main()
 
    bool any_greater_1 =
       any_satisfy( N, [](auto x) { return x > 1.; } );
-
-   N.resize_and_assign( linspace(Size{6}, Start{-5.}, End{5.}) );
-   N[seq(0, 3)] = slice_linspace(Size{4}, Start{-5.}, End{5.});
 
    return EXIT_SUCCESS;
 }
