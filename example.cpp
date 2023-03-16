@@ -194,8 +194,8 @@ int main()
    bool any_greater_1 =
       any_satisfy( N, [](auto x) { return x > 1.; } );
 
-   N.resize_and_assign( linspace(6, Start{-5.}, End{5.}) );
-   N[seq(0, 3)] = slice_linspace(4, Start{-5.}, End{5.});
+   N.resize_and_assign( linspace(Size{6}, Start{-5.}, End{5.}) );
+   N[seq(0, 3)] = slice_linspace(Size{4}, Start{-5.}, End{5.});
 
    return EXIT_SUCCESS;
 }

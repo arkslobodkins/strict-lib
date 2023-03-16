@@ -191,10 +191,10 @@ template<RealType T>
 [[nodiscard]] auto slice_sequence(Size size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
 
 template<RealType T>
-[[nodiscard]] auto linspace(long long int size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
+[[nodiscard]] auto linspace(Size size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
 
 template<RealType T>
-[[nodiscard]] auto slice_linspace(long long int size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
+[[nodiscard]] auto slice_linspace(Size size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
 
 template<IntegerType T>
 [[nodiscard]] Array<T> array_random(SizeTypeOf<Array<T>> size, Low<T> low = Low<T>{}, High<T> high = High<T>{T(1)});
@@ -1460,17 +1460,19 @@ template<RealType T>
 { return SequenceExpr<SliceArray<Array<T>>>{start.get(), size.get(), incr.get()}; }
 
 template<RealType T>
-[[nodiscard]] auto linspace(long long int size, Start<T> start, End<T> end)
+[[nodiscard]] auto linspace(Size size, Start<T> start, End<T> end)
 {
-   ASSERT_STRICT_DEBUG(size > 1);
-   return SequenceExpr<Array<T>>{start.get(), size, (end.get()-start.get())/strict_cast<T>(size-1)};
+   auto sz = size.get();
+   ASSERT_STRICT_DEBUG(sz > 1);
+   return SequenceExpr<Array<T>>{start.get(), sz, (end.get()-start.get())/strict_cast<T>(sz-1)};
 }
 
 template<RealType T>
-[[nodiscard]] auto slice_linspace(long long int size, Start<T> start, End<T> end)
+[[nodiscard]] auto slice_linspace(Size size, Start<T> start, End<T> end)
 {
-   ASSERT_STRICT_DEBUG(size > 1);
-   return SequenceExpr<SliceArray<Array<T>>>{start.get(), size, (end.get()-start.get())/strict_cast<T>(size-1)};
+   auto sz = size.get();
+   ASSERT_STRICT_DEBUG(sz > 1);
+   return SequenceExpr<SliceArray<Array<T>>>{start.get(), sz, (end.get()-start.get())/strict_cast<T>(sz-1)};
 }
 
 }
