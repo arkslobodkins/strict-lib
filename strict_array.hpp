@@ -14,6 +14,7 @@
 #include <numeric>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "strict_auxiliary.hpp"
 #include "strict_concepts.hpp"
@@ -110,6 +111,7 @@ public:
    [[nodiscard]] inline const value_type & operator[](Last) const;
    [[nodiscard]] inline auto operator[](seq s);
    [[nodiscard]] inline auto operator[](seq s) const;
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const;
 
    [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sz > -1); return sz; }
    [[nodiscard]] bool empty() const { ASSERT_STRICT_DEBUG(sz > -1); return sz == 0; }
@@ -317,9 +319,10 @@ public:
    [[nodiscard]] const inline auto & operator[](Last) const;
    [[nodiscard]] inline auto operator[](seq s);
    [[nodiscard]] inline auto operator[](seq s) const;
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const;
 
    [[nodiscard]] size_type size() const { return sl.size(); }
-   [[nodiscard]] bool empty() const { return A.empty(); }
+   [[nodiscard]] bool empty() const { return size() == 0; }
 
    SliceArray & operator+=(StrictVal<real_type> val);
    SliceArray & operator-=(StrictVal<real_type> val);
@@ -362,16 +365,48 @@ public:
    ConstSliceArray(const ConstSliceArray & cs);
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
-   [[nodiscard]] decltype(auto) operator[](size_type i) const;
-   [[nodiscard]] decltype(auto) operator[](Last) const;
+   [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
+   [[nodiscard]] inline decltype(auto) operator[](Last) const;
    [[nodiscard]] inline auto operator[](seq s) const;
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const;
 
    [[nodiscard]] size_type size() const { return sl.size(); }
-   [[nodiscard]] bool empty() const { return A.empty(); }
+   [[nodiscard]] bool empty() const { return size() == 0; }
 
 private:
    typename BaseT::expr_type A;
    slice sl;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<BaseType BaseT>
+class RandConstSliceArray : private SliceArrayBase1D
+{
+public:
+   STRICT_GENERATE_CONST_ITERATORS();
+
+   using size_type = typename BaseT::size_type;
+   using value_type = typename BaseT::value_type;
+   using real_type = typename BaseT::real_type;
+   using base_type = SliceArrayBase1D;
+   using expr_base_type = SliceArrayExpr1D;
+   using expr_type = const RandConstSliceArray<BaseT>;
+
+   explicit inline RandConstSliceArray(const BaseT & A, std::vector<size_type> && indexes);
+   RandConstSliceArray(const RandConstSliceArray & rs);
+   RandConstSliceArray & operator=(const RandConstSliceArray &) = delete;
+
+   [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
+   [[nodiscard]] inline decltype(auto) operator[](Last) const;
+   [[nodiscard]] inline auto operator[](seq s) const;
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const;
+
+   [[nodiscard]] size_type size() const { return m_indexes.size(); }
+   [[nodiscard]] bool empty() const { return size() == 0; }
+
+private:
+   typename BaseT::expr_type A;
+   std::vector<size_type> m_indexes;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -614,6 +649,12 @@ template<RealType T>
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
 }
 
+template<RealType T>
+[[nodiscard]] inline auto Array<T>::operator[](std::vector<size_type> indexes) const
+{
+   return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 template<RealType U>
@@ -776,6 +817,12 @@ template<DirectBaseType DirectBaseT>
 }
 
 template<DirectBaseType DirectBaseT>
+[[nodiscard]] inline auto SliceArray<DirectBaseT>::operator[](std::vector<size_type> indexes) const
+{
+   return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
+}
+
+template<DirectBaseType DirectBaseT>
 SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator+=(StrictVal<real_type> val)
 {
    ASSERT_STRICT_DEBUG(!empty());
@@ -874,7 +921,7 @@ ConstSliceArray<BaseT>::ConstSliceArray(const ConstSliceArray<BaseT> & cs) : A{c
 {}
 
 template<BaseType BaseT>
-[[nodiscard]] decltype(auto) ConstSliceArray<BaseT>::operator[](size_type i) const {
+[[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](size_type i) const {
    #ifdef STRICT_DEBUG_ON
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
    #endif
@@ -882,7 +929,7 @@ template<BaseType BaseT>
 }
 
 template<BaseType BaseT>
-[[nodiscard]] decltype(auto) ConstSliceArray<BaseT>::operator[](Last) const {
+[[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](Last) const {
    return A[sl.start() + (size()-1)*sl.stride()];
 }
 
@@ -891,6 +938,58 @@ template<BaseType BaseT>
 {
    ASSERT_STRICT_DEBUG(s.valid(*this));
    return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
+}
+
+template<BaseType BaseT>
+[[nodiscard]] inline auto ConstSliceArray<BaseT>::operator[](std::vector<size_type> indexes) const
+{
+   return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<BaseType BaseT>
+inline RandConstSliceArray<BaseT>::RandConstSliceArray(const BaseT & A, std::vector<size_type> && indexes)
+   : A{A}, m_indexes{std::move(indexes)}
+{
+   ASSERT_STRICT_DEBUG(!m_indexes.empty());
+   ASSERT_STRICT_DEBUG(m_indexes.size() <= A.size());
+   ASSERT_STRICT_DEBUG(m_indexes[0] > -1);
+   #ifdef STRICT_DEBUG_ON
+   for(size_type i = 1; i < m_indexes.size(); ++i)
+      assert(m_indexes[i] > m_indexes[i-1]);
+   #endif
+}
+
+template<BaseType BaseT>
+RandConstSliceArray<BaseT>::RandConstSliceArray(const RandConstSliceArray & rs) : A{rs.A}, m_indexes{rs.m_indexes}
+{}
+
+template<BaseType BaseT>
+[[nodiscard]] inline decltype(auto) RandConstSliceArray<BaseT>::operator[](size_type i) const
+{
+   #ifdef STRICT_DEBUG_ON
+   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   #endif
+   return A[m_indexes[i]];
+}
+
+template<BaseType BaseT>
+[[nodiscard]] inline decltype(auto) RandConstSliceArray<BaseT>::operator[](Last) const
+{
+   return A[m_indexes[size()-1]];
+}
+
+template<BaseType BaseT>
+[[nodiscard]] inline auto RandConstSliceArray<BaseT>::operator[](seq s) const
+{
+   ASSERT_STRICT_DEBUG(s.valid(*this));
+   return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
+}
+
+template<BaseType BaseT>
+[[nodiscard]] inline auto RandConstSliceArray<BaseT>::operator[](std::vector<size_type> indexes) const
+{
+   return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1080,6 +1179,10 @@ public:
       return start + incr * static_cast<real_type>(size()-1);
    }
 
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
+      return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
+   }
+
    [[nodiscard]] size_type size() const { return sz; }
    [[nodiscard]] bool empty() const { return false; }
 
@@ -1118,6 +1221,10 @@ public:
       return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
    }
 
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
+      return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
+   }
+
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
 
@@ -1136,8 +1243,6 @@ public:
    using expr_type = BinExpr<OneDimBaseT1, OneDimBaseT2, Op>;
 
    explicit BinExpr(const OneDimBaseT1 & A, const OneDimBaseT2 & B, Op op) : A{A}, B{B}, op{op} {
-      // checking for the same size_type might be useful in the future
-      static_assert(SameType<typename OneDimBaseT1::size_type, typename OneDimBaseT2::size_type>);
       static_assert(SameType<typename OneDimBaseT1::value_type, typename OneDimBaseT2::value_type>);
       static_assert(SameType<typename OneDimBaseT1::base_type, typename OneDimBaseT2::base_type>);
       ASSERT_STRICT_DEBUG(!A.empty());
@@ -1160,6 +1265,10 @@ public:
    [[nodiscard]] auto operator[](seq s) const {
       ASSERT_STRICT_DEBUG(s.valid(*this));
       return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
+   }
+
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
+      return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
    }
 
    [[nodiscard]] size_type size() const { return A.size(); }
@@ -1203,6 +1312,10 @@ public:
       return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
    }
 
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
+      return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
+   }
+
    [[nodiscard]] size_type size() const { return B.size(); }
    [[nodiscard]] bool empty() const { return B.empty(); }
 
@@ -1242,6 +1355,10 @@ public:
    [[nodiscard]] auto operator[](seq s) const {
       ASSERT_STRICT_DEBUG(s.valid(*this));
       return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
+   }
+
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
+      return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
    }
 
    [[nodiscard]] size_type size() const { return A.size(); }

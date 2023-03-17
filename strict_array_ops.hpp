@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -92,10 +93,12 @@ template<BaseType BaseT>
 template<BaseType BaseT>
 [[nodiscard]] bool all_negative(const BaseT & A);
 
+// requires not needed, only for better error messages
 template<DirectBaseType T, typename F>
 requires (!std::is_const_v<T>)
 void apply(T & A, F f);
 
+// requires not needed, only for better error messages
 template<DirectBaseType T, typename F, typename Cond>
 requires (!std::is_const_v<T>)
 void apply_if(T & A, F f, Cond c);
@@ -106,34 +109,28 @@ template<BaseType BaseT, typename F>
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool all_satisfy(const BaseT & A, F f);
 
-// TODO: replace vector of pointers with arbitrary slice
-template<DirectBaseType DirectBaseT>
-[[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
-within_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
+// only for const lvalue references
+template<typename T>
+requires (BaseType<std::decay_t<T>> && std::is_const_v<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+[[nodiscard]] auto within_range(T && A, ValueTypeOf<std::decay_t<T>> low, ValueTypeOf<std::decay_t<T>> high);
 
-// TODO: requires lvalue
-template<DirectBaseType DirectBaseT>
-[[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
-within_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
-
-template<DirectBaseType DirectBaseT, typename Cond>
-[[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
-within_cond(DirectBaseT & A, Cond c);
-
-template<DirectBaseType DirectBaseT, typename Cond>
-[[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
-within_cond(const DirectBaseT & A, Cond c);
+// only for const lvalue references
+template<typename T, typename Cond>
+requires (BaseType<std::decay_t<T>> && std::is_const_v<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+[[nodiscard]] auto within_cond(T && A, Cond c);
 
 template<BaseType BaseT>
 [[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
 
-template<typename T>
-requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
-void sort_increasing(T && A);
+// requires not needed, only for better error messages
+template<DirectBaseType T>
+requires (!std::is_const_v<T>)
+void sort_increasing(T & A);
 
-template<typename T>
-requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
-void sort_decreasing(T && A);
+// requires not needed, only for better error messages
+template<DirectBaseType T>
+requires (!std::is_const_v<T>)
+void sort_decreasing(T & A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
@@ -157,7 +154,7 @@ template<BaseType BaseT>
 std::ostream & operator<<(std::ostream & os, const BaseT & A)
 {
    if(A.empty()) {
-      std::cout << __func__ << " : empty Array" << std::endl;
+      std::cout << __func__ << " : empty Array based object" << std::endl;
    }
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
       os << "[" << i << "] ="
@@ -170,7 +167,7 @@ template<BaseType BaseT>
 void print(const BaseT & A, const std::string & name)
 {
    if(A.empty()) {
-      std::cout << __func__ << " : " << name  << " -> empty Array" << std::endl;
+      std::cout << __func__ << " : " << name  << " -> empty Array based object" << std::endl;
    }
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
       std::cout << name << "[" << i << "] ="
@@ -436,52 +433,40 @@ template<BaseType BaseT, typename F>
    return true;
 }
 
-template<DirectBaseType DirectBaseT>
-[[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
-within_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high)
+template<typename T>
+requires (BaseType<std::decay_t<T>> && std::is_const_v<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+[[nodiscard]] auto within_range(T && A, ValueTypeOf<std::decay_t<T>> low, ValueTypeOf<std::decay_t<T>> high)
 {
+   using size_type = SizeTypeOf<std::decay_t<T>>;
    ASSERT_STRICT_DEBUG(!A.empty());
    ASSERT_STRICT_DEBUG(high >= low);
-   std::vector<ValueTypeOf<DirectBaseT>*> v{};
-   for(auto & x : A)
-      if(x >= low && x <= high)
-         v.push_back(&x);
-   return v;
+
+   std::vector<size_type> indexes;
+   for(size_type i = 0; i < A.size(); ++i)
+      if(A[i] >= low && A[i] <= high)
+         indexes.push_back(i);
+
+   if(!indexes.empty())
+      return std::optional<decltype(A[indexes])>(A[indexes]);
+   else
+      return std::optional<decltype(A[indexes])>(std::nullopt);
 }
 
-template<DirectBaseType DirectBaseT>
-[[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
-within_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high)
+template<typename T, typename Cond>
+requires (BaseType<std::decay_t<T>> && std::is_const_v<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+[[nodiscard]] auto within_cond(T && A, Cond c)
 {
+   using size_type = SizeTypeOf<std::decay_t<T>>;
    ASSERT_STRICT_DEBUG(!A.empty());
-   ASSERT_STRICT_DEBUG(high >= low);
-   std::vector<const ValueTypeOf<DirectBaseT>*> v{};
-   for(const auto & x : A)
-      if(x >= low && x <= high)
-         v.push_back(&x);
-   return v;
-}
 
-template<DirectBaseType DirectBaseT, typename Cond>
-[[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
-within_cond(DirectBaseT & A, Cond c)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   std::vector<ValueTypeOf<DirectBaseT>*> v{};
-   for(auto & x : A)
-      if(c(x)) v.push_back(&x);
-   return v;
-}
+   std::vector<size_type> indexes;
+   for(size_type i = 0; i < A.size(); ++i)
+      if(c(A[i])) indexes.push_back(i);
 
-template<DirectBaseType DirectBaseT, typename Cond>
-[[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
-within_cond(const DirectBaseT & A, Cond c)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   std::vector<const ValueTypeOf<DirectBaseT>*> v{};
-   for(const auto & x : A)
-      if(c(x)) v.push_back(&x);
-   return v;
+   if(!indexes.empty())
+      return std::optional<decltype(A[indexes])>(A[indexes]);
+   else
+      return std::optional<decltype(A[indexes])>(std::nullopt);
 }
 
 template<BaseType BaseT>
@@ -494,17 +479,17 @@ template<BaseType BaseT>
    return blas_array;
 }
 
-template<typename T>
-requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
-void sort_increasing(T && A)
+template<DirectBaseType T>
+requires (!std::is_const_v<T>)
+void sort_increasing(T & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    std::sort(A.begin(), A.end(), [](auto a, auto b) { return a < b; });
 }
 
-template<typename T>
-requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
-void sort_decreasing(T && A)
+template<DirectBaseType T>
+requires (!std::is_const_v<T>)
+void sort_decreasing(T & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    std::sort(A.begin(), A.end(), [](auto a, auto b) { return a > b; });

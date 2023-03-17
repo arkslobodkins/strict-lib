@@ -61,9 +61,9 @@ int main()
 
    auto n = 100'000LL;
    Array<float32> B = random(Size{n}, Low{-1.F}, High{1.F});
-   auto half_range = within_range(B, -0.5F, 0.5F);
-   for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
-   for(auto x : B) assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
+//   auto half_range = within_range(B, -0.5F, 0.5F);
+//   for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
+//   for(auto x : B) assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
 
    // 3. Fill C with 0, 1, 2, ..., then multiply C by 2
    // (which gives expression template) and
@@ -182,7 +182,7 @@ int main()
    apply_if( N, [](auto & x) { x *= x; },                          // square entries that are greater than zero
                [](auto x) { return x > 0.; } );
 
-   auto above_0 = within_cond( N, [](auto x) { return x > 0.; } ); // store a vector of pointers to all positive elements;
+//   auto above_0 = within_cond( N, [](auto x) { return x > 0.; } ); // store a vector of pointers to all positive elements;
                                                                    // useful when more complicated action must be performed
                                                                    // on elements than passing lambda
    bool all_greater_1 =
@@ -193,9 +193,6 @@ int main()
 
    bool any_greater_1 =
       any_satisfy( N, [](auto x) { return x > 1.; } );
-
-   const auto NN = N;
-   apply(NN, [](auto & z){ z = z; });
 
    return EXIT_SUCCESS;
 }
