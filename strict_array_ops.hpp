@@ -92,13 +92,13 @@ template<BaseType BaseT>
 template<BaseType BaseT>
 [[nodiscard]] bool all_negative(const BaseT & A);
 
-template<typename T, typename F>
-requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
-void apply(T && A, F f);
+template<DirectBaseType T, typename F>
+requires (!std::is_const_v<T>)
+void apply(T & A, F f);
 
-template<typename T, typename F, typename Cond>
-requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
-void apply_if(T && A, F f, Cond c);
+template<DirectBaseType T, typename F, typename Cond>
+requires (!std::is_const_v<T>)
+void apply_if(T & A, F f, Cond c);
 
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool any_satisfy(const BaseT & A, F f);
@@ -111,6 +111,7 @@ template<DirectBaseType DirectBaseT>
 [[nodiscard]] std::vector<ValueTypeOf<DirectBaseT>*>
 within_range(DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
 
+// TODO: requires lvalue
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] std::vector<const ValueTypeOf<DirectBaseT>*>
 within_range(const DirectBaseT & A, ValueTypeOf<DirectBaseT> low, ValueTypeOf<DirectBaseT> high);
@@ -397,18 +398,18 @@ template<BaseType BaseT>
    return true;
 }
 
-template<typename T, typename F>
-requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
-void apply(T && A, F f)
+template<DirectBaseType T, typename F>
+requires (!std::is_const_v<T>)
+void apply(T & A, F f)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto & x : A)
       f(x);
 }
 
-template<typename T, typename F, typename Cond>
-requires (!std::is_const_v<T> && DirectBaseType<std::decay_t<T>>)
-void apply_if(T && A, F f, Cond c)
+template<DirectBaseType T, typename F, typename Cond>
+requires (!std::is_const_v<T>)
+void apply_if(T & A, F f, Cond c)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto & x : A)

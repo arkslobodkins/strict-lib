@@ -194,6 +194,9 @@ int main()
    bool any_greater_1 =
       any_satisfy( N, [](auto x) { return x > 1.; } );
 
+   const auto NN = N;
+   apply(NN, [](auto & z){ z = z; });
+
    return EXIT_SUCCESS;
 }
 
