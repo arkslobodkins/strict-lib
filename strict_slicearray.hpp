@@ -97,6 +97,8 @@ class ConstSliceArray;
 template<BaseType Base>
 class RandConstSliceArray;
 
+using index_vec = std::vector<strict_int>;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectBaseType DirectBaseT>
 class SliceArray : private SliceArrayBase1D
