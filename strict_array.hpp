@@ -20,7 +20,6 @@
 #include "strict_array_ops.hpp"
 #include "strict_concepts.hpp"
 #include "strict_error.hpp"
-#include "strict_iterator.hpp"
 #include "strict_slicearray.hpp"
 #include "strict_val.hpp"
 
@@ -96,11 +95,7 @@ public:
    [[nodiscard]] inline value_type & operator[](Last);
    [[nodiscard]] inline const value_type & operator[](Last) const;
 
-   [[nodiscard]] inline auto operator[](seq s);
-   [[nodiscard]] inline auto operator[](seq s) const;
-
-   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes);
-   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const;
+   STRICT_GENERATE_SLICES();
 
    [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sz > -1); return sz; }
    [[nodiscard]] bool empty() const { ASSERT_STRICT_DEBUG(sz > -1); return sz == 0; }
@@ -111,19 +106,7 @@ public:
    template<RealType U>
       [[nodiscard]] Array<U> convert_type() const; // conversion chosen by the user;
 
-   [[nodiscard]] auto begin() { return iterator{*this, 0}; }
-   [[nodiscard]] auto end() { return iterator{*this, size()}; }
-   [[nodiscard]] auto begin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto end() const { return const_iterator{*this, size()}; }
-   [[nodiscard]] auto cbegin() const { return const_iterator{*this, 0}; }
-   [[nodiscard]] auto cend() const { return const_iterator{*this, size()}; }
-
-   [[nodiscard]] auto rbegin() { return std::reverse_iterator{end()}; }
-   [[nodiscard]] auto rend() { return std::reverse_iterator{begin()}; }
-   [[nodiscard]] auto rbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto rend() const { return std::reverse_iterator{cbegin()}; }
-   [[nodiscard]] auto crbegin() const { return std::reverse_iterator{cend()}; }
-   [[nodiscard]] auto crend() const { return std::reverse_iterator{cbegin()}; }
+   STRICT_GENERATE_ITERATORS();
 
 private:
    value_type* elem;
@@ -150,18 +133,22 @@ template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator+(cons
 template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator-(const T1 & A, const T2 & B);
 template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator*(const T1 & A, const T2 & B);
 template<OneDimBaseType T1, OneDimBaseType T2> [[nodiscard]] auto operator/(const T1 & A, const T2 & B);
+
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator+(StrictVal<U> val, const T & B);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(StrictVal<U> val, const T & B);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(StrictVal<U> val, const T & B);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(StrictVal<U> val, const T & B);
+
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator+(const T & A, StrictVal<U> val);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A, StrictVal<U> val);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, StrictVal<U> val);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, StrictVal<U> val);
+
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator+(U val, const T & B);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(U val, const T & B);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(U val, const T & B);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(U val, const T & B);
+
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator+(const T & A, U val);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator-(const T & A, U val);
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A, U val);
@@ -401,7 +388,7 @@ void Array<T>::resize_and_assign(const ArrayBaseT1D & A)
 template<RealType T>
 [[nodiscard]] inline StrictVal<T> & Array<T>::operator[](size_type i)
 {
-   #ifdef STRICT_DEBUG_ON
+   #ifndef STRICT_DEBUG_OFF
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return elem[i];
@@ -410,7 +397,7 @@ template<RealType T>
 template<RealType T>
 [[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](size_type i) const
 {
-   #ifdef STRICT_DEBUG_ON
+   #ifndef STRICT_DEBUG_OFF
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return elem[i];
@@ -423,32 +410,6 @@ template<RealType T>
 template<RealType T>
 [[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](Last) const
 { return elem[sz-1]; }
-
-template<RealType T>
-[[nodiscard]] inline auto Array<T>::operator[](seq s)
-{
-   ASSERT_STRICT_DEBUG(s.valid(*this));
-   return SliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
-}
-
-template<RealType T>
-[[nodiscard]] inline auto Array<T>::operator[](seq s) const
-{
-   ASSERT_STRICT_DEBUG(s.valid(*this));
-   return ConstSliceArray<std::decay_t<decltype(*this)>> {*this, s.to_slice()};
-}
-
-template<RealType T>
-[[nodiscard]] inline auto Array<T>::operator[](std::vector<size_type> indexes)
-{
-   return RandSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
-}
-
-template<RealType T>
-[[nodiscard]] inline auto Array<T>::operator[](std::vector<size_type> indexes) const
-{
-   return RandConstSliceArray<std::decay_t<decltype(*this)>> {*this, std::move(indexes)};
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -646,6 +607,10 @@ struct BinaryTwoProdSecond : private BinaryOperation
    using base_type = typename OneDimObjectType::base_type;            \
    using expr_base_type = typename OneDimObjectType::expr_base_type;  \
 
+#define STRICT_GENERATE_EXPR_COPY_ASSIGN(StrictClassName)             \
+   StrictClassName(const StrictClassName &) = default;                \
+   StrictClassName & operator=(const StrictClassName &) = delete;     \
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimBaseT>
 class StandardUnitVectorExpr : private OneDimBaseT::expr_base_type
@@ -658,12 +623,10 @@ public:
    explicit StandardUnitVectorExpr(size_type j, size_type size) : j{j}, sz{size} {
       ASSERT_STRICT_DEBUG(j > -1); ASSERT_STRICT_DEBUG(size > j);
    }
-
-   StandardUnitVectorExpr(const StandardUnitVectorExpr &) = default;
-   StandardUnitVectorExpr & operator=(const StandardUnitVectorExpr &) = delete;
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(StandardUnitVectorExpr);
 
    [[nodiscard]] value_type operator[](size_type i) const {
-      #ifdef STRICT_DEBUG_ON
+      #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
       return j == i ? real_type{1} : real_type{0};
@@ -673,15 +636,14 @@ public:
    [[nodiscard]] bool empty() const { return false; }
 
 private:
-   const size_type j;
-   const size_type sz;
+   size_type j;
+   size_type sz;
 };
 
 template<OneDimBaseType OneDimBaseT>
 class SequenceExpr : private OneDimBaseT::expr_base_type
 {
 public:
-   STRICT_GENERATE_CONST_ITERATORS();
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT);
    using expr_type = SequenceExpr<OneDimBaseT>;
 
@@ -689,13 +651,10 @@ public:
       : start{start}, sz{size}, incr{incr} {
       ASSERT_STRICT_DEBUG(size > 0);
    }
-   SequenceExpr(const SequenceExpr &) = default;
-
-   // assignment is deleted to stay consistent with other expression templates
-   SequenceExpr & operator=(const SequenceExpr &) = delete;
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(SequenceExpr);
 
    [[nodiscard]] value_type operator[](size_type i) const {
-      #ifdef STRICT_DEBUG_ON
+      #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
       return start + incr * static_cast<real_type>(i);
@@ -705,17 +664,15 @@ public:
       return start + incr * static_cast<real_type>(size()-1);
    }
 
-   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
-      return RandConstSliceArray<std::decay_t<decltype(*this)>>
-         {*this, std::move(indexes)};
-   }
+   STRICT_GENERATE_CONST_SLICES();
+   STRICT_GENERATE_CONST_ITERATORS();
 
    [[nodiscard]] size_type size() const { return sz; }
    [[nodiscard]] bool empty() const { return false; }
 
 private:
    value_type start;
-   const size_type sz;
+   size_type sz;
    value_type incr;
 };
 
@@ -724,16 +681,14 @@ template<OneDimBaseType OneDimBaseT, UnaryOperationType Op>
 class UnaryExpr : private OneDimBaseT::expr_base_type
 {
 public:
-   STRICT_GENERATE_CONST_ITERATORS();
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT);
    using expr_type = UnaryExpr<OneDimBaseT, Op>;
 
    explicit UnaryExpr(const OneDimBaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
-   UnaryExpr(const UnaryExpr &) = default;
-   UnaryExpr & operator=(const UnaryExpr &) = delete;
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(UnaryExpr);
 
    [[nodiscard]] value_type operator[](size_type i) const {
-      #ifdef STRICT_DEBUG_ON
+      #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
       return op(A[i]);
@@ -743,16 +698,8 @@ public:
       return op(A[size()-1]);
    }
 
-   [[nodiscard]] auto operator[](seq s) const {
-      ASSERT_STRICT_DEBUG(s.valid(*this));
-      return ConstSliceArray<std::decay_t<decltype(*this)>>
-         {*this, s.to_slice()};
-   }
-
-   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
-      return RandConstSliceArray<std::decay_t<decltype(*this)>>
-         {*this, std::move(indexes)};
-   }
+   STRICT_GENERATE_CONST_SLICES();
+   STRICT_GENERATE_CONST_ITERATORS();
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -767,7 +714,6 @@ template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperati
 class BinExpr : private OneDimBaseT1::expr_base_type
 {
 public:
-   STRICT_GENERATE_CONST_ITERATORS();
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1);
    using expr_type = BinExpr<OneDimBaseT1, OneDimBaseT2, Op>;
 
@@ -777,11 +723,10 @@ public:
       ASSERT_STRICT_DEBUG(!A.empty());
       ASSERT_STRICT_DEBUG(A.size() == B.size());
    }
-   BinExpr(const BinExpr &) = default;
-   BinExpr & operator=(const BinExpr &) = delete;
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExpr);
 
    [[nodiscard]] value_type operator[](size_type i) const {
-      #ifdef STRICT_DEBUG_ON
+      #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
       return op(A[i], B[i]);
@@ -791,16 +736,8 @@ public:
       return op(A[size()-1], B[size()-1]);
    }
 
-   [[nodiscard]] auto operator[](seq s) const {
-      ASSERT_STRICT_DEBUG(s.valid(*this));
-      return ConstSliceArray<std::decay_t<decltype(*this)>>
-         {*this, s.to_slice()};
-   }
-
-   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
-      return RandConstSliceArray<std::decay_t<decltype(*this)>>
-         {*this, std::move(indexes)};
-   }
+   STRICT_GENERATE_CONST_SLICES();
+   STRICT_GENERATE_CONST_ITERATORS();
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -816,7 +753,6 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 class BinExprValLeft : private OneDimBaseT1::expr_base_type
 {
 public:
-   STRICT_GENERATE_CONST_ITERATORS();
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1);
    using expr_type = BinExprValLeft<OneDimBaseT1, T2, Op>;
 
@@ -824,11 +760,10 @@ public:
       static_assert(SameType<RealTypeOf<OneDimBaseT1>, T2>);
       ASSERT_STRICT_DEBUG(!B.empty());
    }
-   BinExprValLeft(const BinExprValLeft &) = default;
-   BinExprValLeft & operator=(const BinExprValLeft &) = delete;
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValLeft);
 
    [[nodiscard]] value_type operator[](size_type i) const {
-      #ifdef STRICT_DEBUG_ON
+      #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
       return op(val, B[i]);
@@ -838,16 +773,8 @@ public:
       return op(B[size()-1], val);
    }
 
-   [[nodiscard]] auto operator[](seq s) const {
-      ASSERT_STRICT_DEBUG(s.valid(*this));
-      return ConstSliceArray<std::decay_t<decltype(*this)>>
-         {*this, s.to_slice()};
-   }
-
-   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
-      return RandConstSliceArray<std::decay_t<decltype(*this)>>
-         {*this, std::move(indexes)};
-   }
+   STRICT_GENERATE_CONST_SLICES();
+   STRICT_GENERATE_CONST_ITERATORS();
 
    [[nodiscard]] size_type size() const { return B.size(); }
    [[nodiscard]] bool empty() const { return B.empty(); }
@@ -863,7 +790,6 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 class BinExprValRight : private OneDimBaseT1::expr_base_type
 {
 public:
-   STRICT_GENERATE_CONST_ITERATORS();
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1);
    using expr_type = BinExprValRight<OneDimBaseT1, T2, Op>;
 
@@ -871,11 +797,10 @@ public:
       static_assert(SameType<RealTypeOf<OneDimBaseT1>, T2>);
       ASSERT_STRICT_DEBUG(!A.empty());
    }
-   BinExprValRight(const BinExprValRight &) = default;
-   BinExprValRight & operator=(const BinExprValRight &) = delete;
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValRight);
 
    [[nodiscard]] value_type operator[](size_type i) const {
-      #ifdef STRICT_DEBUG_ON
+      #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
       return op(A[i], val);
@@ -885,16 +810,8 @@ public:
       return op(A[size()-1], val);
    }
 
-   [[nodiscard]] auto operator[](seq s) const {
-      ASSERT_STRICT_DEBUG(s.valid(*this));
-      return ConstSliceArray<std::decay_t<decltype(*this)>>
-         {*this, s.to_slice()};
-   }
-
-   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {
-      return RandConstSliceArray<std::decay_t<decltype(*this)>>
-         {*this, std::move(indexes)};
-   }
+   STRICT_GENERATE_CONST_SLICES();
+   STRICT_GENERATE_CONST_ITERATORS();
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -1049,7 +966,8 @@ template<RealType T>
 {
    auto sz = size.get();
    ASSERT_STRICT_DEBUG(sz > 1);
-   return SequenceExpr<Array<T>> {start.get(), sz, (end.get()-start.get())/strict_cast<T>(sz-1)};
+   return SequenceExpr<Array<T>>
+      {start.get(), sz, ( end.get()-start.get() )/strict_cast<T>(sz-1)};
 }
 
 template<RealType T>
@@ -1057,7 +975,8 @@ template<RealType T>
 {
    auto sz = size.get();
    ASSERT_STRICT_DEBUG(sz > 1);
-   return SequenceExpr<SliceArray<Array<T>>> {start.get(), sz, (end.get()-start.get())/strict_cast<T>(sz-1)};
+   return SequenceExpr<SliceArray<Array<T>>>
+      {start.get(), sz, ( end.get()-start.get() )/strict_cast<T>(sz-1)};
 }
 
 }

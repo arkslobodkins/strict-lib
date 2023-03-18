@@ -16,7 +16,7 @@
    throw std::out_of_range{"OUT OF RANGE! " + trace_err(__FILE__, __func__, __LINE__)};     \
    } while(0)
 
-#ifdef STRICT_DEBUG_ON
+#ifndef STRICT_DEBUG_OFF
 #define ASSERT_STRICT_DEBUG(condition)                                      \
    do {                                                                     \
       if(!(condition)) {                                                    \

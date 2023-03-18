@@ -152,7 +152,7 @@ inline auto iterator<DirectBaseT>::operator-(const iterator & it) const -> diffe
 template<DirectBaseType DirectBaseT>
 inline auto iterator<DirectBaseT>::operator[](difference_type n) const -> reference
 {
-   #ifdef STRICT_DEBUG_ON
+   #ifndef STRICT_DEBUG_OFF
    if(pos + n < 0 || pos + n > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return (*A_ptr)[pos + n];
@@ -161,7 +161,7 @@ inline auto iterator<DirectBaseT>::operator[](difference_type n) const -> refere
 template<DirectBaseType DirectBaseT>
 inline auto iterator<DirectBaseT>::operator*() const -> reference
 {
-   #ifdef STRICT_DEBUG_ON
+   #ifndef STRICT_DEBUG_OFF
    if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return (*A_ptr)[pos];
@@ -170,7 +170,7 @@ inline auto iterator<DirectBaseT>::operator*() const -> reference
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto iterator<DirectBaseT>::operator->() const -> pointer
 {
-   #ifdef STRICT_DEBUG_ON
+   #ifndef STRICT_DEBUG_OFF
    if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return &((*A_ptr)[pos]);
@@ -354,7 +354,7 @@ inline auto const_iterator<BaseT>::operator-(const const_iterator & it) const ->
 template<BaseType BaseT>
 inline decltype(auto) const_iterator<BaseT>::operator[](difference_type n) const
 {
-   #ifdef STRICT_DEBUG_ON
+   #ifndef STRICT_DEBUG_OFF
    if(pos + n < 0 || pos + n > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return (*A_ptr)[pos + n];
@@ -363,7 +363,7 @@ inline decltype(auto) const_iterator<BaseT>::operator[](difference_type n) const
 template<BaseType BaseT>
 inline decltype(auto) const_iterator<BaseT>::operator*() const
 {
-   #ifdef STRICT_DEBUG_ON
+   #ifndef STRICT_DEBUG_OFF
    if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return (*A_ptr)[pos];
@@ -374,7 +374,7 @@ template<BaseType BaseT>
 {
    static_assert(std::is_lvalue_reference_v<decltype((*A_ptr)[0])>,
          "CANNOT ASSIGN ADDRESS OF ELEMENTS OF EXPRESSION TEMPLATES OR SLICES OF EXPRESSION TEMPLATES TO A POINTER");
-   #ifdef STRICT_DEBUG_ON
+   #ifndef STRICT_DEBUG_OFF
    if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
    #endif
    return &((*A_ptr)[pos]);

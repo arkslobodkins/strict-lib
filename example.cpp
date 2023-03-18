@@ -194,10 +194,6 @@ int main()
    bool any_greater_1 =
       any_satisfy( N, [](auto x) { return x > 1.; } );
 
-   N[index_vec{0, 1, 2}] = {1., 2., 3.};
-
-   cout << N << endl;
-
    return EXIT_SUCCESS;
 }
 

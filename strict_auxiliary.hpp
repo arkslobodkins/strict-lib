@@ -12,6 +12,41 @@
 #include "strict_iterator.hpp"
 #include "strict_val.hpp"
 
+#define STRICT_GENERATE_SLICES()                                                 \
+   [[nodiscard]] auto operator[](seq s) {                                        \
+      ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
+      return SliceArray<std::decay_t<decltype(*this)>>                           \
+         {*this, s.to_slice()};                                                  \
+   }                                                                             \
+                                                                                 \
+   [[nodiscard]] auto operator[](std::vector<size_type> indexes) {               \
+      return RandSliceArray<std::decay_t<decltype(*this)>>                       \
+         {*this, std::move(indexes)};                                            \
+   }                                                                             \
+                                                                                 \
+   [[nodiscard]] auto operator[](seq s) const {                                  \
+      ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
+      return ConstSliceArray<std::decay_t<decltype(*this)>>                      \
+         {*this, s.to_slice()};                                                  \
+   }                                                                             \
+                                                                                 \
+   [[nodiscard]] auto operator[](std::vector<size_type> indexes) const {         \
+      return RandConstSliceArray<std::decay_t<decltype(*this)>>                  \
+         {*this, std::move(indexes)};                                            \
+   }
+
+#define STRICT_GENERATE_CONST_SLICES()                                           \
+   [[nodiscard]] auto operator[](seq s) const {                                  \
+      ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
+      return ConstSliceArray<std::decay_t<decltype(*this)>>                      \
+         {*this, s.to_slice()};                                                  \
+   }                                                                             \
+                                                                                 \
+   [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {  \
+      return RandConstSliceArray<std::decay_t<decltype(*this)>>                  \
+         {*this, std::move(indexes)};                                            \
+   }
+
 #define STRICT_GENERATE_ITERATORS()                                             \
    [[nodiscard]] auto begin() { return iterator{*this, 0}; }                    \
    [[nodiscard]] auto end() { return iterator{*this, size()}; }                 \
