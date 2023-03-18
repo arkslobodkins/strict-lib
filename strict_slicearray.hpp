@@ -384,7 +384,18 @@ public:
 
    explicit inline RandSliceArray(DirectBaseT & A, std::vector<size_type> && indexes);
    RandSliceArray(const RandSliceArray & rs);
-   RandSliceArray & operator=(const RandSliceArray &) = delete;
+   RandSliceArray & operator=(const RandSliceArray &);
+
+   // assign other types of 1-D SliceArray
+   template<SliceArrayBaseType1D SliceArrayBaseT1D>
+      RandSliceArray & operator=(const SliceArrayBaseT1D & s);
+
+   RandSliceArray & operator=(StrictVal<real_type> s);
+   RandSliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
+
+   // assign either Array, SliceArray, or their expression template
+   template<OneDimBaseType OneDimBaseT>
+      RandSliceArray & Assign(const OneDimBaseT & A);
 
    [[nodiscard]] inline auto & operator[](size_type i);
    [[nodiscard]] inline auto & operator[](Last);
@@ -439,6 +450,50 @@ inline RandSliceArray<BaseT>::RandSliceArray(BaseT & A, std::vector<size_type> &
 template<DirectBaseType DirectBaseT>
 RandSliceArray<DirectBaseT>::RandSliceArray(const RandSliceArray & rs) : A{rs.A}, m_indexes{rs.m_indexes}
 {}
+
+template<DirectBaseType DirectBaseT>
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator=(const RandSliceArray<DirectBaseT> & s)
+{
+   if(this != &s) {
+      ASSERT_STRICT_DEBUG(size() == s.size());
+      std::copy(s.begin(), s.end(), begin());
+   }
+   return *this;
+}
+
+template<DirectBaseType DirectBaseT>
+template<SliceArrayBaseType1D SliceArrayBaseT1D>
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator=(const SliceArrayBaseT1D & s)
+{
+   static_assert(SameType<RealTypeOf<SliceArrayBaseT1D>, real_type>); // compiler message
+   ASSERT_STRICT_DEBUG(size() == s.size());
+   std::copy(s.begin(), s.end(), begin());
+   return *this;
+}
+
+template<DirectBaseType DirectBaseT>
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator=(StrictVal<real_type> val)
+{
+   std::fill(begin(), end(), val);
+   return *this;
+}
+
+template<DirectBaseType DirectBaseT>
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator=(std::initializer_list<StrictVal<real_type>> list)
+{
+   ASSERT_STRICT_DEBUG(size() == static_cast<size_type>(list.size()));
+   std::copy(list.begin(), list.end(), begin());
+   return *this;
+}
+
+template<DirectBaseType DirectBaseT>
+template<OneDimBaseType OneDimBaseT>
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::Assign(const OneDimBaseT & A)
+{
+   ASSERT_STRICT_DEBUG(size() == A.size());
+   std::copy(A.begin(), A.end(), begin());
+   return *this;
+}
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto & RandSliceArray<DirectBaseT>::operator[](size_type i)
