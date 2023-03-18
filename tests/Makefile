@@ -1,6 +1,6 @@
-all: test_types test_val test_array test_slicearray test_functions
+all: test_types test_val test_array test_slicearray test_randslicearray test_functions
 
-CXX = g++-12.2 -std=gnu++20
+CXX = g++-12.1 -std=gnu++20
 CXXFLAGS = -DSTRICT_DEBUG_ON
 LFLAGS = -lquadmath -lm
 
@@ -16,9 +16,12 @@ test_array: test_array.cpp
 test_slicearray: test_slicearray.cpp
 	$(CXX) $(CXXFLAGS) test_slicearray.cpp -o test_slicearray.x $(LFLAGS)
 
+test_randslicearray: test_randslicearray.cpp
+	$(CXX) $(CXXFLAGS) test_randslicearray.cpp -o test_randslicearray.x $(LFLAGS)
+
 test_functions: test_functions.cpp
 	$(CXX) $(CXXFLAGS) test_functions.cpp -o test_functions.x $(LFLAGS)
 
 clean:
-	rm -rf test_types.x test_val.x test_array.x test_slicearray.x test_functions.x
+	rm -rf test_types.x test_val.x test_array.x test_slicearray.x test_randslicearray.x test_functions.x
 

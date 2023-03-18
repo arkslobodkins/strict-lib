@@ -6,11 +6,11 @@
    #error requires c++20 or higher
 #else
 
+#include <iterator>
+
 #include "strict_concepts.hpp"
 #include "strict_iterator.hpp"
 #include "strict_val.hpp"
-
-namespace strict_array {
 
 #define STRICT_GENERATE_ITERATORS()                                             \
    [[nodiscard]] auto begin() { return iterator{*this, 0}; }                    \
@@ -57,11 +57,13 @@ class SmallObjectName                                     \
 {                                                         \
 public:                                                   \
    explicit SmallObjectName() : x{} {}                    \
-   explicit SmallObjectName(long long int x) : x{x} {}    \
-   long long int get() const { return x; }                \
+   explicit SmallObjectName(strict_int x) : x{x} {}       \
+   strict_int get() const { return x; }                   \
 private:                                                  \
-   long long int x;                                       \
+   strict_int x;                                          \
 };
+
+namespace strict_array {
 
 STRICT_GENERATE_SMALL_TYPES(Low)
 STRICT_GENERATE_SMALL_TYPES(High)
