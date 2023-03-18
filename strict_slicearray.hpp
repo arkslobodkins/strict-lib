@@ -133,8 +133,8 @@ public:
 
    [[nodiscard]] inline auto & operator[](size_type i);
    [[nodiscard]] const inline auto & operator[](size_type i) const;
-   [[nodiscard]] inline auto & operator[](Last);
-   [[nodiscard]] const inline auto & operator[](Last) const;
+   [[nodiscard]] inline auto & operator[](internal::Last);
+   [[nodiscard]] const inline auto & operator[](internal::Last) const;
 
    STRICT_GENERATE_SLICES();
 
@@ -238,11 +238,11 @@ template<DirectBaseType DirectBaseT>
 }
 
 template<DirectBaseType DirectBaseT>
-[[nodiscard]] inline auto & SliceArray<DirectBaseT>::operator[](Last)
+[[nodiscard]] inline auto & SliceArray<DirectBaseT>::operator[](internal::Last)
 { return A[sl.start() + (size()-1)*sl.stride()]; }
 
 template<DirectBaseType DirectBaseT>
-[[nodiscard]] const inline auto & SliceArray<DirectBaseT>::operator[](Last) const
+[[nodiscard]] const inline auto & SliceArray<DirectBaseT>::operator[](internal::Last) const
 { return A[sl.start() + (size()-1)*sl.stride()]; }
 
 template<DirectBaseType DirectBaseT>
@@ -367,9 +367,9 @@ public:
       RandSliceArray & Assign(const OneDimBaseT & A);
 
    [[nodiscard]] inline auto & operator[](size_type i);
-   [[nodiscard]] inline auto & operator[](Last);
+   [[nodiscard]] inline auto & operator[](internal::Last);
    [[nodiscard]] inline const auto & operator[](size_type i) const;
-   [[nodiscard]] inline const auto & operator[](Last) const;
+   [[nodiscard]] inline const auto & operator[](internal::Last) const;
 
    STRICT_GENERATE_SLICES();
 
@@ -471,7 +471,7 @@ template<DirectBaseType DirectBaseT>
 }
 
 template<DirectBaseType DirectBaseT>
-[[nodiscard]] inline auto & RandSliceArray<DirectBaseT>::operator[](Last)
+[[nodiscard]] inline auto & RandSliceArray<DirectBaseT>::operator[](internal::Last)
 {
    return A[m_indexes[size()-1]];
 }
@@ -486,7 +486,7 @@ template<DirectBaseType DirectBaseT>
 }
 
 template<DirectBaseType DirectBaseT>
-[[nodiscard]] inline const auto & RandSliceArray<DirectBaseT>::operator[](Last) const
+[[nodiscard]] inline const auto & RandSliceArray<DirectBaseT>::operator[](internal::Last) const
 {
    return A[m_indexes[size()-1]];
 }
@@ -601,7 +601,7 @@ public:
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
    [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
-   [[nodiscard]] inline decltype(auto) operator[](Last) const;
+   [[nodiscard]] inline decltype(auto) operator[](internal::Last) const;
    STRICT_GENERATE_CONST_SLICES();
 
    [[nodiscard]] size_type size() const { return sl.size(); }
@@ -631,7 +631,7 @@ template<BaseType BaseT>
 }
 
 template<BaseType BaseT>
-[[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](Last) const
+[[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](internal::Last) const
 {
    return A[sl.start() + (size()-1)*sl.stride()];
 }
@@ -657,7 +657,7 @@ public:
    RandConstSliceArray & operator=(const RandConstSliceArray &) = delete;
 
    [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
-   [[nodiscard]] inline decltype(auto) operator[](Last) const;
+   [[nodiscard]] inline decltype(auto) operator[](internal::Last) const;
 
    STRICT_GENERATE_CONST_SLICES();
 
@@ -697,7 +697,7 @@ template<BaseType BaseT>
 }
 
 template<BaseType BaseT>
-[[nodiscard]] inline decltype(auto) RandConstSliceArray<BaseT>::operator[](Last) const
+[[nodiscard]] inline decltype(auto) RandConstSliceArray<BaseT>::operator[](internal::Last) const
 {
    return A[m_indexes[size()-1]];
 }

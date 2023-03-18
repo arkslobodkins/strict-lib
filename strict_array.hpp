@@ -92,8 +92,8 @@ public:
    [[nodiscard]] inline value_type & operator[](size_type i);
    [[nodiscard]] inline const value_type & operator[](size_type i) const;
 
-   [[nodiscard]] inline value_type & operator[](Last);
-   [[nodiscard]] inline const value_type & operator[](Last) const;
+   [[nodiscard]] inline value_type & operator[](internal::Last);
+   [[nodiscard]] inline const value_type & operator[](internal::Last) const;
 
    STRICT_GENERATE_SLICES();
 
@@ -404,11 +404,11 @@ template<RealType T>
 }
 
 template<RealType T>
-[[nodiscard]] inline StrictVal<T> & Array<T>::operator[](Last)
+[[nodiscard]] inline StrictVal<T> & Array<T>::operator[](internal::Last)
 { return elem[sz-1]; }
 
 template<RealType T>
-[[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](Last) const
+[[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](internal::Last) const
 { return elem[sz-1]; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -660,7 +660,7 @@ public:
       return start + incr * static_cast<real_type>(i);
    }
 
-   [[nodiscard]] value_type operator[](Last) const {
+   [[nodiscard]] value_type operator[](internal::Last) const {
       return start + incr * static_cast<real_type>(size()-1);
    }
 
@@ -694,7 +694,7 @@ public:
       return op(A[i]);
    }
 
-   [[nodiscard]] value_type operator[](Last) const {
+   [[nodiscard]] value_type operator[](internal::Last) const {
       return op(A[size()-1]);
    }
 
@@ -732,7 +732,7 @@ public:
       return op(A[i], B[i]);
    }
 
-   [[nodiscard]] value_type operator[](Last) const {
+   [[nodiscard]] value_type operator[](internal::Last) const {
       return op(A[size()-1], B[size()-1]);
    }
 
@@ -769,7 +769,7 @@ public:
       return op(val, B[i]);
    }
 
-   [[nodiscard]] value_type operator[](Last) const {
+   [[nodiscard]] value_type operator[](internal::Last) const {
       return op(B[size()-1], val);
    }
 
@@ -806,7 +806,7 @@ public:
       return op(A[i], val);
    }
 
-   [[nodiscard]] value_type operator[](Last) const {
+   [[nodiscard]] value_type operator[](internal::Last) const {
       return op(A[size()-1], val);
    }
 

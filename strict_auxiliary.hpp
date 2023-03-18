@@ -13,6 +13,11 @@
 #include "strict_val.hpp"
 
 #define STRICT_GENERATE_SLICES()                                                 \
+   [[nodiscard]] auto operator[](internal::All) {                                \
+      return SliceArray<std::decay_t<decltype(*this)>>                           \
+         {*this, slice(0, size())};                                              \
+   }                                                                             \
+                                                                                 \
    [[nodiscard]] auto operator[](seq s) {                                        \
       ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
       return SliceArray<std::decay_t<decltype(*this)>>                           \
@@ -27,6 +32,11 @@
    [[nodiscard]] auto operator[](std::vector<size_type> indexes) {               \
       return RandSliceArray<std::decay_t<decltype(*this)>>                       \
          {*this, std::move(indexes)};                                            \
+   }                                                                             \
+                                                                                 \
+   [[nodiscard]] auto operator[](internal::All) const {                          \
+      return ConstSliceArray<std::decay_t<decltype(*this)>>                      \
+         {*this, slice(0, size())};                                              \
    }                                                                             \
                                                                                  \
    [[nodiscard]] auto operator[](seq s) const {                                  \
@@ -47,6 +57,11 @@
    }
 
 #define STRICT_GENERATE_CONST_SLICES()                                           \
+   [[nodiscard]] auto operator[](internal::All) const {                          \
+      return ConstSliceArray<std::decay_t<decltype(*this)>>                      \
+         {*this, slice(0, size())};                                              \
+   }                                                                             \
+                                                                                 \
    [[nodiscard]] auto operator[](seq s) const {                                  \
       ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
       return ConstSliceArray<std::decay_t<decltype(*this)>>                      \
@@ -125,8 +140,12 @@ STRICT_GENERATE_SMALL_TYPES(Incr)
 
 STRICT_GENERATE_SMALL_INT_TYPES(Size)
 
-class Last {};
-static constexpr Last last;
+namespace internal {
+   class Last {};
+   class All {};
+}
+static constexpr internal::Last last;
+static constexpr internal::All all;
 
 }
 
