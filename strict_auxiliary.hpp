@@ -19,6 +19,11 @@
          {*this, s.to_slice()};                                                  \
    }                                                                             \
                                                                                  \
+   [[nodiscard]] auto operator[](seqN s) {                                       \
+      ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
+      return SliceArray<std::decay_t<decltype(*this)>>                           \
+         {*this, s};                                                             \
+   }                                                                             \
    [[nodiscard]] auto operator[](std::vector<size_type> indexes) {               \
       return RandSliceArray<std::decay_t<decltype(*this)>>                       \
          {*this, std::move(indexes)};                                            \
@@ -28,6 +33,12 @@
       ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
       return ConstSliceArray<std::decay_t<decltype(*this)>>                      \
          {*this, s.to_slice()};                                                  \
+   }                                                                             \
+                                                                                 \
+   [[nodiscard]] auto operator[](seqN s) const {                                 \
+      ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
+      return ConstSliceArray<std::decay_t<decltype(*this)>>                      \
+         {*this, s};                                                             \
    }                                                                             \
                                                                                  \
    [[nodiscard]] auto operator[](std::vector<size_type> indexes) const {         \
@@ -40,6 +51,12 @@
       ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
       return ConstSliceArray<std::decay_t<decltype(*this)>>                      \
          {*this, s.to_slice()};                                                  \
+   }                                                                             \
+                                                                                 \
+   [[nodiscard]] auto operator[](seqN s) const {                                 \
+      ASSERT_STRICT_DEBUG(s.valid(*this));                                       \
+      return ConstSliceArray<std::decay_t<decltype(*this)>>                      \
+         {*this, s};                                                             \
    }                                                                             \
                                                                                  \
    [[nodiscard]] inline auto operator[](std::vector<size_type> indexes) const {  \

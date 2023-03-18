@@ -23,7 +23,7 @@ namespace strict_array {
 class slice
 {
 public:
-   explicit slice(strict_int start, strict_int size, strict_int stride)
+   explicit slice(strict_int start, strict_int size, strict_int stride = 1)
       : m_start{start}, m_size{size}, m_stride{stride}
    {
       ASSERT_STRICT_DEBUG(start > -1);
@@ -48,6 +48,8 @@ private:
    strict_int m_size;
    strict_int m_stride;
 };
+
+using seqN = slice;
 
 class seq
 {
