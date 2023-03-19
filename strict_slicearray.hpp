@@ -597,7 +597,7 @@ public:
    using expr_type = ConstSliceArray<BaseT>;
 
    explicit inline ConstSliceArray(const BaseT & A, slice sl);
-   ConstSliceArray(const ConstSliceArray & cs);
+   ConstSliceArray(const ConstSliceArray & cs) = default;
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
    [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
@@ -616,10 +616,6 @@ private:
 template<BaseType BaseT>
 inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, slice sl) : A{A}, sl{sl}
 { ASSERT_STRICT_DEBUG(sl.valid(A)); }
-
-template<BaseType BaseT>
-ConstSliceArray<BaseT>::ConstSliceArray(const ConstSliceArray<BaseT> & cs) : A{cs.A}, sl{cs.sl}
-{}
 
 template<BaseType BaseT>
 [[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](size_type i) const
@@ -653,7 +649,7 @@ public:
    using expr_type = const RandConstSliceArray<BaseT>;
 
    explicit inline RandConstSliceArray(const BaseT & A, std::vector<size_type> && indexes);
-   RandConstSliceArray(const RandConstSliceArray & rs);
+   RandConstSliceArray(const RandConstSliceArray & rs) = default;
    RandConstSliceArray & operator=(const RandConstSliceArray &) = delete;
 
    [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
@@ -682,10 +678,6 @@ inline RandConstSliceArray<BaseT>::RandConstSliceArray(const BaseT & A, std::vec
       assert(m_indexes[i] > m_indexes[i-1]);
    #endif
 }
-
-template<BaseType BaseT>
-RandConstSliceArray<BaseT>::RandConstSliceArray(const RandConstSliceArray & rs) : A{rs.A}, m_indexes{rs.m_indexes}
-{}
 
 template<BaseType BaseT>
 [[nodiscard]] inline decltype(auto) RandConstSliceArray<BaseT>::operator[](size_type i) const
