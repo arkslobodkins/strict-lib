@@ -109,28 +109,34 @@ template<BaseType BaseT, typename F>
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool all_satisfy(const BaseT & A, F f);
 
+// only for non-const lvalue references
+template<DirectBaseType T>
+[[nodiscard]] auto within_range(T & A, ValueTypeOf<T> low, ValueTypeOf<T> high);
+
+// only for non-const lvalue references
+template<DirectBaseType T, typename Cond>
+[[nodiscard]] auto within_cond(T & A, Cond c);
+
 // only for const lvalue references
 template<typename T>
-requires (BaseType<std::decay_t<T>> && std::is_const_v<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
-[[nodiscard]] auto within_range(T && A, ValueTypeOf<std::decay_t<T>> low, ValueTypeOf<std::decay_t<T>> high);
+requires (BaseType<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T> && std::is_const_v<std::remove_reference_t<T>>)
+[[nodiscard]] auto within_range(T && A, ValueTypeOf<T> low, ValueTypeOf<T> high);
 
 // only for const lvalue references
 template<typename T, typename Cond>
-requires (BaseType<std::decay_t<T>> && std::is_const_v<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+requires (BaseType<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T> && std::is_const_v<std::remove_reference_t<T>>)
 [[nodiscard]] auto within_cond(T && A, Cond c);
 
 template<BaseType BaseT>
 [[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
 
-// requires not needed, only for better error messages
-template<DirectBaseType T>
-requires (!std::is_const_v<T>)
-void sort_increasing(T & A);
+template<typename T>
+requires (DirectBaseType<std::decay_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
+void sort_increasing(T && A);
 
-// requires not needed, only for better error messages
-template<DirectBaseType T>
-requires (!std::is_const_v<T>)
-void sort_decreasing(T & A);
+template<typename T>
+requires (DirectBaseType<std::decay_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
+void sort_decreasing(T && A);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace internal {
@@ -433,9 +439,43 @@ template<BaseType BaseT, typename F>
    return true;
 }
 
+template<DirectBaseType T>
+[[nodiscard]] auto within_range(T & A, ValueTypeOf<T> low, ValueTypeOf<T> high)
+{
+   using size_type = SizeTypeOf<std::decay_t<T>>;
+   ASSERT_STRICT_DEBUG(!A.empty());
+   ASSERT_STRICT_DEBUG(high >= low);
+
+   std::vector<size_type> indexes;
+   for(size_type i = 0; i < A.size(); ++i)
+      if(A[i] >= low && A[i] <= high)
+         indexes.push_back(i);
+
+   if(!indexes.empty())
+      return std::optional<decltype(A[indexes])>(A[indexes]);
+   else
+      return std::optional<decltype(A[indexes])>(std::nullopt);
+}
+
+template<DirectBaseType T, typename Cond>
+[[nodiscard]] auto within_cond(T & A, Cond c)
+{
+   using size_type = SizeTypeOf<std::decay_t<T>>;
+   ASSERT_STRICT_DEBUG(!A.empty());
+
+   std::vector<size_type> indexes;
+   for(size_type i = 0; i < A.size(); ++i)
+      if(c(A[i])) indexes.push_back(i);
+
+   if(!indexes.empty())
+      return std::optional<decltype(A[indexes])>(A[indexes]);
+   else
+      return std::optional<decltype(A[indexes])>(std::nullopt);
+}
+
 template<typename T>
-requires (BaseType<std::decay_t<T>> && std::is_const_v<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
-[[nodiscard]] auto within_range(T && A, ValueTypeOf<std::decay_t<T>> low, ValueTypeOf<std::decay_t<T>> high)
+requires (BaseType<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T> && std::is_const_v<std::remove_reference_t<T>>)
+[[nodiscard]] auto within_range(T && A, ValueTypeOf<T> low, ValueTypeOf<T> high)
 {
    using size_type = SizeTypeOf<std::decay_t<T>>;
    ASSERT_STRICT_DEBUG(!A.empty());
@@ -453,7 +493,7 @@ requires (BaseType<std::decay_t<T>> && std::is_const_v<std::remove_reference_t<T
 }
 
 template<typename T, typename Cond>
-requires (BaseType<std::decay_t<T>> && std::is_const_v<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+requires (BaseType<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T> && std::is_const_v<std::remove_reference_t<T>>)
 [[nodiscard]] auto within_cond(T && A, Cond c)
 {
    using size_type = SizeTypeOf<std::decay_t<T>>;
@@ -479,17 +519,17 @@ template<BaseType BaseT>
    return blas_array;
 }
 
-template<DirectBaseType T>
-requires (!std::is_const_v<T>)
-void sort_increasing(T & A)
+template<typename T>
+requires (DirectBaseType<std::decay_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
+void sort_increasing(T && A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    std::sort(A.begin(), A.end(), [](auto a, auto b) { return a < b; });
 }
 
-template<DirectBaseType T>
-requires (!std::is_const_v<T>)
-void sort_decreasing(T & A)
+template<typename T>
+requires (DirectBaseType<std::decay_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
+void sort_decreasing(T && A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    std::sort(A.begin(), A.end(), [](auto a, auto b) { return a > b; });

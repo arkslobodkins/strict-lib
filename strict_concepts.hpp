@@ -85,7 +85,7 @@ template<BaseType T>
 using SizeTypeOf = typename T::size_type;
 
 template<BaseType T>
-using ValueTypeOf = typename T::value_type;
+using ValueTypeOf = typename std::remove_reference_t<T>::value_type;
 
 using strict_int = long long int;
 
