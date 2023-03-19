@@ -18,6 +18,8 @@ int main(int argc, char *argv[])
 
    StrictVal<double> s1 = sum(zd);
    StrictVal<double> s2 = stable_sum(zd);
+   StrictVal<double> mx = max(zd);
+   StrictVal<double> mn = min(zd);
 
    auto seq1 = zd[all];
    auto seq2 = zd[seq(0, zd.size()-1, 2)];   // every second
@@ -53,6 +55,11 @@ int main(int argc, char *argv[])
    // gr_one is std optional of ConstRandSliceArray. Elements cannot be modified
    const auto ud = zd;
    auto gr_one = within_cond(ud, [](auto x) { return x > 0.; });
+
+   zd.resize(3);
+   zd = {-1., 0., 1.};
+   zd.resize_and_assign(xd);
+
 
    return EXIT_SUCCESS;
 }
