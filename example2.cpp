@@ -61,9 +61,13 @@ int main()
 
    auto n = 100'000LL;
    Array<float32> B = random(Size{n}, Low{-1.F}, High{1.F});
-//   auto half_range = within_range(B, -0.5F, 0.5F);
-//   for(auto x_ptr : half_range) *x_ptr += 0.5F * sign(*x_ptr);
-//   for(auto x : B) assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
+   auto half_range = within_range(B, -0.5F, 0.5F);
+
+   if(half_range)
+      for(auto & x_ptr : *half_range)
+         x_ptr += 0.5F * sign(x_ptr);
+   for(auto x : B)
+      assert(abss(x) >= 0.5F && abss(x) <= 1.F); // test mapping
 
    // 3. Fill C with 0, 1, 2, ..., then multiply C by 2
    // (which gives expression template) and
@@ -153,7 +157,7 @@ int main()
    bool pos = all_positive(K[seq(0, 2)]);
    bool neg = all_negative(-K[seq(0, 2)]);
    auto m_index = max_index(-1. * K[seq(1, 3)]); // produces expression template containing -2, -3, -4
-                                               // 0 is the index of max value, -2 is the max value
+                                                 // 0 is the index of max value, -2 is the max value
    Array<float64> L{-1., -2., -3., -4., -5., -6., -7.};
    K.Assign(L[seq(1, 6)]); // If type is not derived from ArrayBase,
                            // Assign routine can be used to assign
@@ -182,9 +186,9 @@ int main()
    apply_if( N, [](auto & x) { x *= x; },                          // square entries that are greater than zero
                [](auto x) { return x > 0.; } );
 
-//   auto above_0 = within_cond( N, [](auto x) { return x > 0.; } ); // store a vector of pointers to all positive elements;
+   auto above_0 = within_cond( N, [](auto x) { return x > 0.; } ); // returns std::optional containing RandSliceArray
                                                                    // useful when more complicated action must be performed
-                                                                   // on elements than passing lambda
+                                                                   // on elements than passing a lambda to apply_if
    bool all_greater_1 =
       all_satisfy( N, [](auto x) { return x > 1.; } );
 

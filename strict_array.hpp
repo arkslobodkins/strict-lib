@@ -119,7 +119,7 @@ private:
 
 // construct Array from any one-dimensional type of the same real type
 template<OneDimBaseType OneDimBaseT>
-[[nodiscard]] auto ConstructArray(const OneDimBaseT & A);
+[[nodiscard]] auto Construct(const OneDimBaseT & A);
 
 template<IntegerType T>
 [[nodiscard]] Array<T> random(Size size, Low<T> low = Low<T>{}, High<T> high = High<T>{T(1)});
@@ -441,7 +441,7 @@ void Array<T>::apply1(const ArrayBaseT1D & A, F f)
 }
 
 template<OneDimBaseType OneDimBaseT>
-[[nodiscard]] auto ConstructArray(const OneDimBaseT & A)
+[[nodiscard]] auto Construct(const OneDimBaseT & A)
 {
    Array<RealTypeOf<OneDimBaseT>> C(A.size());
    C.Assign(A);

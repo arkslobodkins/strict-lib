@@ -14,12 +14,7 @@ int main(int argc, char *argv[])
    Array<double> zd = xd + yd;
    zd += 2. * xd + 2. / yd;
    zd = abs(2. - xd);
-   zd = exp(2. - xd);
-
-   StrictVal<double> s1 = sum(zd);
-   StrictVal<double> s2 = stable_sum(zd);
-   StrictVal<double> mx = max(zd);
-   StrictVal<double> mn = min(zd);
+   zd = exp(2. * yd);
 
    auto seq1 = zd[all];
    auto seq2 = zd[seq(0, zd.size()-1, 2)];   // every second
@@ -28,24 +23,39 @@ int main(int argc, char *argv[])
    auto seq5 = zd[{0, 1, 2, 3, 4, 5}];       // first five
    zd[seq(1, zd.size()-1, 2)] = 2. * seq2;   // assign 2 * even_elements to odd_elements
 
+   StrictVal<double> s1 = sum(zd);
+   StrictVal<double> s2 = stable_sum(zd);
+   StrictVal<double> mx = max(zd);
+   StrictVal<double> mn = min(zd);
+
+   StrictVal<double> dp1 = dot_prod(xd, yd);
+   StrictVal<double> dp2 = dot_prod(2. * xd, -yd);
+
+   StrictVal<double> nt1 = norm2(zd);
+   StrictVal<double> nt2 = norm2(zd[seq(0, 4)]);
+   StrictVal<double> snt1 = stable_norm2(zd);
+   StrictVal<double> snt2 = stable_norm2(zd[seq(0, 4)]);
+
    bool all_p = all_positive(zd);
    bool all_n = all_negative(zd);
 
-   bool all_sat = all_satisfy(zd, [](auto x) { return x > sqrts<double>(10.); });
+   sort_decreasing(zd);
+   sort_increasing(zd[seq(0, 4)]);  // sort first five elements
+
+   auto count = 1LL;
+   bool all_sat = all_satisfy(zd, [&count](auto x) { return x > strict_cast<double>(count++); });
    bool any_sat = any_satisfy(zd[seq(0, 10)], [](auto x) { return x > sqrts<double>(10.); });
 
-   sort_decreasing(zd);
-   sort_increasing(zd[seq(0, 4)]);           // sort first five elements
-   StrictVal<double> dp1 = dot_prod(xd, yd);
-   StrictVal<double> dp2 = dot_prod(2. * xd, -yd);
-   StrictVal<double> nt1 = norm2(zd);
-   StrictVal<double> nt2 = norm2(zd[seq(0, 4)]);
+   std::unique_ptr<double[]> raw_ptr = unique_blas_array(zd);
 
    // within_unit is std optional of RandSliceArray, which contains all
    // elements that are within the interval [0, 1]
    zd = random(Size{n}, Low{-1.}, High{1.});
    auto within_unit = within_range(zd, 0., 1.);
-   if(within_unit) *within_unit = 0.;
+   if(within_unit) {
+      std::vector<strict_int> indexes = within_unit->indexes();
+      *within_unit = 0.;
+   }
 
    // gr_zero is std optional of RandSliceArray, which contains all
    // elements that are greater than 0
@@ -59,7 +69,22 @@ int main(int argc, char *argv[])
    zd.resize(3);
    zd = {-1., 0., 1.};
    zd.resize_and_assign(xd);
+   zd.resize(3);
 
+   Array<double> td = Construct(zd[seq(0, 2)]); // to construct array from slicearray, Construct is used
+   td.Assign(xd[seq(0, 2)]);                    // to assign slicearray to array, Assign is used
+   xd[seq(0, 2)].Assign(td);                    // Conversely, ...
+
+   Array<float> zf1 = zd.convert_type<float>();  // to convert the type, convert_type is used
+
+   // currently one of the two ways to construct Array
+   // from a slice of array of a different type
+
+   Array<long double> zf2 =
+      Construct( zd[seq(0, 2)] ).convert_type<long double>();
+
+   Array<long double> zf3 =
+      Construct( zd.convert_type<long double>()[seq(0, 2)] );
 
    return EXIT_SUCCESS;
 }
