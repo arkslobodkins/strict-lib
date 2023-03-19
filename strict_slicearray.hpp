@@ -106,7 +106,7 @@ template<DirectBaseType DirectBaseT>
 class SliceArray : private SliceArrayBase1D
 {
 public:
-   STRICT_GENERATE_ITERATORS();
+   STRICT_GENERATE_ITERATORS()
 
    using size_type = typename DirectBaseT::size_type;
    using value_type = typename DirectBaseT::value_type;
@@ -136,7 +136,7 @@ public:
    [[nodiscard]] inline auto & operator[](internal::Last);
    [[nodiscard]] const inline auto & operator[](internal::Last) const;
 
-   STRICT_GENERATE_SLICES();
+   STRICT_GENERATE_SLICES()
 
    [[nodiscard]] size_type size() const { return sl.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
@@ -341,7 +341,7 @@ template<DirectBaseType DirectBaseT>
 class RandSliceArray : private SliceArrayBase1D
 {
 public:
-   STRICT_GENERATE_ITERATORS();
+   STRICT_GENERATE_ITERATORS()
 
    using size_type = typename DirectBaseT::size_type;
    using value_type = typename DirectBaseT::value_type;
@@ -371,7 +371,7 @@ public:
    [[nodiscard]] inline const auto & operator[](size_type i) const;
    [[nodiscard]] inline const auto & operator[](internal::Last) const;
 
-   STRICT_GENERATE_SLICES();
+   STRICT_GENERATE_SLICES()
 
    [[nodiscard]] size_type size() const { return m_indexes.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
@@ -587,7 +587,7 @@ template<BaseType BaseT>
 class ConstSliceArray : private SliceArrayBase1D
 {
 public:
-   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_CONST_ITERATORS()
 
    using size_type = typename BaseT::size_type;
    using value_type = typename BaseT::value_type;
@@ -602,7 +602,7 @@ public:
 
    [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
    [[nodiscard]] inline decltype(auto) operator[](internal::Last) const;
-   STRICT_GENERATE_CONST_SLICES();
+   STRICT_GENERATE_CONST_SLICES()
 
    [[nodiscard]] size_type size() const { return sl.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
@@ -639,7 +639,7 @@ template<BaseType BaseT>
 class RandConstSliceArray : private SliceArrayBase1D
 {
 public:
-   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_CONST_ITERATORS()
 
    using size_type = typename BaseT::size_type;
    using value_type = typename BaseT::value_type;
@@ -655,7 +655,7 @@ public:
    [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
    [[nodiscard]] inline decltype(auto) operator[](internal::Last) const;
 
-   STRICT_GENERATE_CONST_SLICES();
+   STRICT_GENERATE_CONST_SLICES()
 
    [[nodiscard]] size_type size() const { return m_indexes.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }

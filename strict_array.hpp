@@ -95,7 +95,7 @@ public:
    [[nodiscard]] inline value_type & operator[](internal::Last);
    [[nodiscard]] inline const value_type & operator[](internal::Last) const;
 
-   STRICT_GENERATE_SLICES();
+   STRICT_GENERATE_SLICES()
 
    [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sz > -1); return sz; }
    [[nodiscard]] bool empty() const { ASSERT_STRICT_DEBUG(sz > -1); return sz == 0; }
@@ -106,7 +106,7 @@ public:
    template<RealType U>
       [[nodiscard]] Array<U> convert_type() const; // conversion chosen by the user;
 
-   STRICT_GENERATE_ITERATORS();
+   STRICT_GENERATE_ITERATORS()
 
 private:
    value_type* elem;
@@ -616,14 +616,14 @@ template<OneDimBaseType OneDimBaseT>
 class StandardUnitVectorExpr : private OneDimBaseT::expr_base_type
 {
 public:
-   STRICT_GENERATE_CONST_ITERATORS();
-   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT);
+   STRICT_GENERATE_CONST_ITERATORS()
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT)
    using expr_type = StandardUnitVectorExpr<OneDimBaseT>;
 
    explicit StandardUnitVectorExpr(size_type j, size_type size) : j{j}, sz{size} {
       ASSERT_STRICT_DEBUG(j > -1); ASSERT_STRICT_DEBUG(size > j);
    }
-   STRICT_GENERATE_EXPR_COPY_ASSIGN(StandardUnitVectorExpr);
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(StandardUnitVectorExpr)
 
    [[nodiscard]] value_type operator[](size_type i) const {
       #ifndef STRICT_DEBUG_OFF
@@ -644,14 +644,14 @@ template<OneDimBaseType OneDimBaseT>
 class SequenceExpr : private OneDimBaseT::expr_base_type
 {
 public:
-   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT);
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT)
    using expr_type = SequenceExpr<OneDimBaseT>;
 
    explicit SequenceExpr(value_type start, size_type size, value_type incr)
       : start{start}, sz{size}, incr{incr} {
       ASSERT_STRICT_DEBUG(size > 0);
    }
-   STRICT_GENERATE_EXPR_COPY_ASSIGN(SequenceExpr);
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(SequenceExpr)
 
    [[nodiscard]] value_type operator[](size_type i) const {
       #ifndef STRICT_DEBUG_OFF
@@ -664,8 +664,8 @@ public:
       return start + incr * static_cast<real_type>(size()-1);
    }
 
-   STRICT_GENERATE_CONST_SLICES();
-   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_CONST_SLICES()
+   STRICT_GENERATE_CONST_ITERATORS()
 
    [[nodiscard]] size_type size() const { return sz; }
    [[nodiscard]] bool empty() const { return false; }
@@ -681,11 +681,11 @@ template<OneDimBaseType OneDimBaseT, UnaryOperationType Op>
 class UnaryExpr : private OneDimBaseT::expr_base_type
 {
 public:
-   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT);
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT)
    using expr_type = UnaryExpr<OneDimBaseT, Op>;
 
    explicit UnaryExpr(const OneDimBaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
-   STRICT_GENERATE_EXPR_COPY_ASSIGN(UnaryExpr);
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(UnaryExpr)
 
    [[nodiscard]] value_type operator[](size_type i) const {
       #ifndef STRICT_DEBUG_OFF
@@ -698,8 +698,8 @@ public:
       return op(A[size()-1]);
    }
 
-   STRICT_GENERATE_CONST_SLICES();
-   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_CONST_SLICES()
+   STRICT_GENERATE_CONST_ITERATORS()
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -714,7 +714,7 @@ template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperati
 class BinExpr : private OneDimBaseT1::expr_base_type
 {
 public:
-   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1);
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1)
    using expr_type = BinExpr<OneDimBaseT1, OneDimBaseT2, Op>;
 
    explicit BinExpr(const OneDimBaseT1 & A, const OneDimBaseT2 & B, Op op) : A{A}, B{B}, op{op} {
@@ -723,7 +723,7 @@ public:
       ASSERT_STRICT_DEBUG(!A.empty());
       ASSERT_STRICT_DEBUG(A.size() == B.size());
    }
-   STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExpr);
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExpr)
 
    [[nodiscard]] value_type operator[](size_type i) const {
       #ifndef STRICT_DEBUG_OFF
@@ -736,8 +736,8 @@ public:
       return op(A[size()-1], B[size()-1]);
    }
 
-   STRICT_GENERATE_CONST_SLICES();
-   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_CONST_SLICES()
+   STRICT_GENERATE_CONST_ITERATORS()
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
@@ -753,14 +753,14 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 class BinExprValLeft : private OneDimBaseT1::expr_base_type
 {
 public:
-   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1);
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1)
    using expr_type = BinExprValLeft<OneDimBaseT1, T2, Op>;
 
    explicit BinExprValLeft(const OneDimBaseT1 & B, T2 val, Op op) : B{B}, val{val}, op{op} {
       static_assert(SameType<RealTypeOf<OneDimBaseT1>, T2>);
       ASSERT_STRICT_DEBUG(!B.empty());
    }
-   STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValLeft);
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValLeft)
 
    [[nodiscard]] value_type operator[](size_type i) const {
       #ifndef STRICT_DEBUG_OFF
@@ -773,8 +773,8 @@ public:
       return op(B[size()-1], val);
    }
 
-   STRICT_GENERATE_CONST_SLICES();
-   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_CONST_SLICES()
+   STRICT_GENERATE_CONST_ITERATORS()
 
    [[nodiscard]] size_type size() const { return B.size(); }
    [[nodiscard]] bool empty() const { return B.empty(); }
@@ -790,14 +790,14 @@ template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
 class BinExprValRight : private OneDimBaseT1::expr_base_type
 {
 public:
-   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1);
+   STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1)
    using expr_type = BinExprValRight<OneDimBaseT1, T2, Op>;
 
    explicit BinExprValRight(const OneDimBaseT1 & A, T2 val, Op op) : A{A}, val{val}, op{op} {
       static_assert(SameType<RealTypeOf<OneDimBaseT1>, T2>);
       ASSERT_STRICT_DEBUG(!A.empty());
    }
-   STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValRight);
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValRight)
 
    [[nodiscard]] value_type operator[](size_type i) const {
       #ifndef STRICT_DEBUG_OFF
@@ -810,8 +810,8 @@ public:
       return op(A[size()-1], val);
    }
 
-   STRICT_GENERATE_CONST_SLICES();
-   STRICT_GENERATE_CONST_ITERATORS();
+   STRICT_GENERATE_CONST_SLICES()
+   STRICT_GENERATE_CONST_ITERATORS()
 
    [[nodiscard]] size_type size() const { return A.size(); }
    [[nodiscard]] bool empty() const { return A.empty(); }
