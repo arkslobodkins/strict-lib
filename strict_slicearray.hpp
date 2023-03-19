@@ -23,7 +23,8 @@ namespace strict_array {
 class slice
 {
 public:
-   explicit slice(strict_int start, strict_int size, strict_int stride = 1)
+   template<IntegerType IntType1, IntegerType IntType2, IntegerType IntType3 = strict_int>
+      explicit slice(IntType1 start, IntType2 size, IntType3 stride = 1)
       : m_start{start}, m_size{size}, m_stride{stride}
    {
       ASSERT_STRICT_DEBUG(start > -1);
@@ -54,7 +55,8 @@ using seqN = slice;
 class seq
 {
 public:
-   explicit seq(strict_int first, strict_int last, strict_int stride = 1)
+   template<IntegerType IntType1, IntegerType IntType2, IntegerType IntType3 = strict_int>
+      explicit seq(IntType1 first, IntType2 last, IntType3 stride = 1)
       : m_first{first}, m_last{last}, m_stride{stride}
    {
       ASSERT_STRICT_DEBUG(first > -1);
@@ -131,8 +133,10 @@ public:
    template<OneDimBaseType OneDimBaseT>
       SliceArray & Assign(const OneDimBaseT & A);
 
-   [[nodiscard]] inline auto & operator[](size_type i);
-   [[nodiscard]] const inline auto & operator[](size_type i) const;
+   template<IntegerType IntType>
+      [[nodiscard]] inline auto & operator[](IntType i);
+   template<IntegerType IntType>
+      [[nodiscard]] const inline auto & operator[](IntType i) const;
    [[nodiscard]] inline auto & operator[](internal::Last);
    [[nodiscard]] const inline auto & operator[](internal::Last) const;
 
@@ -178,10 +182,8 @@ SliceArray<DirectBaseT>::SliceArray(const SliceArray<DirectBaseT> & s) : A{s.A},
 template<DirectBaseType DirectBaseT>
 SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(const SliceArray<DirectBaseT> & s)
 {
-   if(this != &s) {
-      ASSERT_STRICT_DEBUG(size() == s.size());
-      std::copy(s.begin(), s.end(), begin());
-   }
+   ASSERT_STRICT_DEBUG(size() == s.size());
+   std::copy(s.begin(), s.end(), begin());
    return *this;
 }
 
@@ -220,7 +222,8 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::Assign(const OneDimBaseT & A)
 }
 
 template<DirectBaseType DirectBaseT>
-[[nodiscard]] inline auto & SliceArray<DirectBaseT>::operator[](size_type i)
+template<IntegerType IntType>
+[[nodiscard]] inline auto & SliceArray<DirectBaseT>::operator[](IntType i)
 {
    #ifndef STRICT_DEBUG_OFF
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
@@ -229,7 +232,8 @@ template<DirectBaseType DirectBaseT>
 }
 
 template<DirectBaseType DirectBaseT>
-[[nodiscard]] const inline auto & SliceArray<DirectBaseT>::operator[](size_type i) const
+template<IntegerType IntType>
+[[nodiscard]] const inline auto & SliceArray<DirectBaseT>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
@@ -368,9 +372,11 @@ public:
    template<OneDimBaseType OneDimBaseT>
       RandSliceArray & Assign(const OneDimBaseT & A);
 
-   [[nodiscard]] inline auto & operator[](size_type i);
+   template<IntegerType IntType>
+      [[nodiscard]] inline auto & operator[](IntType i);
+   template<IntegerType IntType>
+      [[nodiscard]] inline const auto & operator[](IntType i) const;
    [[nodiscard]] inline auto & operator[](internal::Last);
-   [[nodiscard]] inline const auto & operator[](size_type i) const;
    [[nodiscard]] inline const auto & operator[](internal::Last) const;
 
    STRICT_GENERATE_SLICES()
@@ -480,7 +486,18 @@ RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::Assign(const OneDimBa
 }
 
 template<DirectBaseType DirectBaseT>
-[[nodiscard]] inline auto & RandSliceArray<DirectBaseT>::operator[](size_type i)
+template<IntegerType IntType>
+[[nodiscard]] inline auto & RandSliceArray<DirectBaseT>::operator[](IntType i)
+{
+   #ifndef STRICT_DEBUG_OFF
+   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   #endif
+   return A[m_indexes[i]];
+}
+
+template<DirectBaseType DirectBaseT>
+template<IntegerType IntType>
+[[nodiscard]] inline const auto & RandSliceArray<DirectBaseT>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
@@ -492,15 +509,6 @@ template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto & RandSliceArray<DirectBaseT>::operator[](internal::Last)
 {
    return A[m_indexes[size()-1]];
-}
-
-template<DirectBaseType DirectBaseT>
-[[nodiscard]] inline const auto & RandSliceArray<DirectBaseT>::operator[](size_type i) const
-{
-   #ifndef STRICT_DEBUG_OFF
-   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
-   #endif
-   return A[m_indexes[i]];
 }
 
 template<DirectBaseType DirectBaseT>
@@ -626,7 +634,8 @@ public:
    ConstSliceArray(const ConstSliceArray & cs) = default;
    ConstSliceArray & operator=(const ConstSliceArray &) = delete;
 
-   [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
+   template<IntegerType IntType>
+      [[nodiscard]] inline decltype(auto) operator[](IntType i) const;
    [[nodiscard]] inline decltype(auto) operator[](internal::Last) const;
    STRICT_GENERATE_CONST_SLICES()
 
@@ -644,7 +653,8 @@ inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, slice sl) : A{A}
 { ASSERT_STRICT_DEBUG(sl.valid(A)); }
 
 template<BaseType BaseT>
-[[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](size_type i) const
+template<IntegerType IntType>
+[[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
@@ -678,7 +688,8 @@ public:
    RandConstSliceArray(const RandConstSliceArray & rs) = default;
    RandConstSliceArray & operator=(const RandConstSliceArray &) = delete;
 
-   [[nodiscard]] inline decltype(auto) operator[](size_type i) const;
+   template<IntegerType IntType>
+      [[nodiscard]] inline decltype(auto) operator[](IntType i) const;
    [[nodiscard]] inline decltype(auto) operator[](internal::Last) const;
 
    STRICT_GENERATE_CONST_SLICES()
@@ -706,7 +717,8 @@ inline RandConstSliceArray<BaseT>::RandConstSliceArray(const BaseT & A, std::vec
 }
 
 template<BaseType BaseT>
-[[nodiscard]] inline decltype(auto) RandConstSliceArray<BaseT>::operator[](size_type i) const
+template<IntegerType IntType>
+[[nodiscard]] inline decltype(auto) RandConstSliceArray<BaseT>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();

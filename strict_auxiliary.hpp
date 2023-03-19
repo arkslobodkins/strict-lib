@@ -124,7 +124,8 @@ class SmallObjectName                                     \
 {                                                         \
 public:                                                   \
    explicit SmallObjectName() : x{} {}                    \
-   explicit SmallObjectName(strict_int x) : x{x} {}       \
+   template<IntegerType IntType>                          \
+   explicit SmallObjectName(IntType x) : x{x} {}          \
    strict_int get() const { return x; }                   \
 private:                                                  \
    strict_int x;                                          \

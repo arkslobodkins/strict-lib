@@ -86,5 +86,10 @@ int main(int argc, char *argv[])
    Array<long double> zf3 =
       Construct( zd.convert_type<long double>()[seq(0, 2)] );
 
+   zf3 = e_unit<long double>(0, zf3.size()); // e0 unit vector
+   zf3 = Array<long double>(3, 1.L);         // vector of ones
+   zf3 = {-5.L, 0.L, 5.L};
+
+
    return EXIT_SUCCESS;
 }

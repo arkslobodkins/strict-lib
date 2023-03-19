@@ -42,8 +42,13 @@ public:
    using slice_type = Array<T> &;
 
    explicit Array();
-   explicit Array(size_type size);
-   explicit Array(size_type size, value_type val);
+
+   template<IntegerType IntType>
+      explicit Array(IntType size);
+
+   template<IntegerType IntType>
+      explicit Array(IntType size, value_type val);
+
    explicit Array(std::initializer_list<value_type> list);
    Array(const Array & A);
    Array(Array && a) noexcept;
@@ -84,13 +89,18 @@ public:
       Array & operator/=(const ArrayBaseT1D & A) &;
 
    void swap(Array & A) noexcept;
-   void resize(size_type size);
+
+   template<IntegerType IntType>
+      void resize(IntType size);
 
    template<ArrayBaseType1D ArrayBaseT1D>
       void resize_and_assign(const ArrayBaseT1D & A);
 
-   [[nodiscard]] inline value_type & operator[](size_type i);
-   [[nodiscard]] inline const value_type & operator[](size_type i) const;
+   template<IntegerType IntType>
+      [[nodiscard]] inline value_type & operator[](IntType i);
+
+   template<IntegerType IntType>
+      [[nodiscard]] inline const value_type & operator[](IntType i) const;
 
    [[nodiscard]] inline value_type & operator[](internal::Last);
    [[nodiscard]] inline const value_type & operator[](internal::Last) const;
@@ -193,13 +203,15 @@ Array<T>::Array() :
 {}
 
 template<RealType T>
-Array<T>::Array(size_type size) :
+template<IntegerType IntType>
+Array<T>::Array(IntType size) :
    elem{new StrictVal<T>[static_cast<std::size_t>(size)]},
    sz{size}
 { ASSERT_STRICT_DEBUG(sz > -1); }
 
 template<RealType T>
-Array<T>::Array(size_type size, StrictVal<T> val) :
+template<IntegerType IntType>
+Array<T>::Array(IntType size, StrictVal<T> val) :
    Array(size)
 {
    ASSERT_STRICT_DEBUG(sz > 0);
@@ -241,10 +253,8 @@ Array<T> & Array<T>::operator=(std::initializer_list<StrictVal<T>> list) &
 template<RealType T>
 Array<T> & Array<T>::operator=(const Array<T> & A) &
 {
-   if(this != &A) {
-      ASSERT_STRICT_DEBUG(sz == A.sz);
-      std::copy(A.begin(), A.end(), begin());
-   }
+   ASSERT_STRICT_DEBUG(sz == A.sz);
+   std::copy(A.begin(), A.end(), begin());
    return *this;
 }
 
@@ -369,10 +379,11 @@ void Array<T>::swap(Array<T> & A) noexcept
 }
 
 template<RealType T>
-void Array<T>::resize(size_type size)
+template<IntegerType IntType>
+void Array<T>::resize(IntType size)
 {
    Array<T> temp(size);
-   std::copy(begin(), begin() + std::min(sz, size), temp.begin());
+   std::copy(begin(), begin() + std::min<strict_int>(sz, size), temp.begin());
    swap(temp);
 }
 
@@ -386,7 +397,8 @@ void Array<T>::resize_and_assign(const ArrayBaseT1D & A)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-[[nodiscard]] inline StrictVal<T> & Array<T>::operator[](size_type i)
+template<IntegerType IntType>
+[[nodiscard]] inline StrictVal<T> & Array<T>::operator[](IntType i)
 {
    #ifndef STRICT_DEBUG_OFF
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
@@ -395,7 +407,8 @@ template<RealType T>
 }
 
 template<RealType T>
-[[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](size_type i) const
+template<IntegerType IntType>
+[[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
    if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
@@ -625,7 +638,8 @@ public:
    }
    STRICT_GENERATE_EXPR_COPY_ASSIGN(StandardUnitVectorExpr)
 
-   [[nodiscard]] value_type operator[](size_type i) const {
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
@@ -653,7 +667,8 @@ public:
    }
    STRICT_GENERATE_EXPR_COPY_ASSIGN(SequenceExpr)
 
-   [[nodiscard]] value_type operator[](size_type i) const {
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
@@ -687,7 +702,8 @@ public:
    explicit UnaryExpr(const OneDimBaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
    STRICT_GENERATE_EXPR_COPY_ASSIGN(UnaryExpr)
 
-   [[nodiscard]] value_type operator[](size_type i) const {
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
@@ -725,7 +741,8 @@ public:
    }
    STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExpr)
 
-   [[nodiscard]] value_type operator[](size_type i) const {
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
@@ -762,7 +779,8 @@ public:
    }
    STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValLeft)
 
-   [[nodiscard]] value_type operator[](size_type i) const {
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
@@ -799,7 +817,8 @@ public:
    }
    STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValRight)
 
-   [[nodiscard]] value_type operator[](size_type i) const {
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
       if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
       #endif
