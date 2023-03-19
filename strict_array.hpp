@@ -177,11 +177,11 @@ template<OneDimFloatingBaseType T> [[nodiscard]] auto sqrt(const T & A);
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto two_prod(const T1 & A, const T2 & B);
 
-template<RealType T>
-[[nodiscard]] auto e_unit(strict_int j, strict_int size);
+template<RealType T, IntegerType IntType1 = strict_int, IntegerType IntType2 = strict_int>
+[[nodiscard]] auto e_unit(IntType1 j, IntType2 size);
 
-template<RealType T>
-[[nodiscard]] auto e_slice_unit(strict_int j, strict_int size);
+template<RealType T, IntegerType IntType1 = strict_int, IntegerType IntType2 = strict_int>
+[[nodiscard]] auto e_slice_unit(IntType1 j, IntType2 size);
 
 template<RealType T>
 [[nodiscard]] auto sequence(Size size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
@@ -964,12 +964,12 @@ template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto two_prod(const T1 & A, const T2 & B)
 { return std::pair{BinExpr{A, B, BinaryTwoProdFirst{}}, BinExpr{A, B, BinaryTwoProdSecond{}}}; }
 
-template<RealType T>
-[[nodiscard]] auto e_unit(strict_int j, strict_int size)
+template<RealType T, IntegerType IntType1, IntegerType IntType2>
+[[nodiscard]] auto e_unit(IntType1 j, IntType2 size)
 { return StandardUnitVectorExpr<Array<T>> {j, size}; }
 
-template<RealType T>
-[[nodiscard]] auto e_slice_unit(strict_int j, strict_int size)
+template<RealType T, IntegerType IntType1, IntegerType IntType2>
+[[nodiscard]] auto e_slice_unit(IntType1 j, IntType2 size)
 { return StandardUnitVectorExpr<SliceArray<Array<T>>> {j, size}; }
 
 template<RealType T>
