@@ -109,14 +109,12 @@ template<BaseType BaseT, typename F>
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool all_satisfy(const BaseT & A, F f);
 
-// only for lvalue references
 template<typename T>
-requires (BaseType<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+requires (BaseType<std::remove_reference_t<T>>)
 [[nodiscard]] auto within_range(T && A, ValueTypeOf<std::remove_reference_t<T>> low, ValueTypeOf<std::remove_reference_t<T>> high);
 
-// only for lvalue references
 template<typename T, typename Cond>
-requires (BaseType<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+requires (BaseType<std::remove_reference_t<T>>)
 [[nodiscard]] auto within_cond(T && A, Cond c);
 
 template<BaseType BaseT>
@@ -287,8 +285,8 @@ template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto norm2_scaled(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using value_type = ValueTypeOf<FloatBaseT>;
-   return norm2(A)/sqrts(value_type(A.size()));
+   using real_type = RealTypeOf<FloatBaseT>;
+   return norm2(A)/sqrts(strict_cast<real_type>(A.size()));
 }
 
 template<FloatingBaseType FloatBaseT>
@@ -302,8 +300,8 @@ template<FloatingBaseType FloatBaseT>
 [[nodiscard]] auto stable_norm2_scaled(const FloatBaseT & A)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using value_type = ValueTypeOf<FloatBaseT>;
-   return stable_norm2(A)/sqrts(value_type(A.size()));
+   using real_type = RealTypeOf<FloatBaseT>;
+   return stable_norm2(A)/sqrts(strict_cast<real_type>(A.size()));
 }
 
 template<FloatingBaseType FloatBaseT>
@@ -348,18 +346,18 @@ template<FloatingBaseType FloatBaseT>
 template<BaseType BaseT1, BaseType BaseT2>
 [[nodiscard]] auto dot_prod(const BaseT1 & A1, const BaseT2 & A2)
 {
-   static_assert(SameType<typename BaseT1::base_type, typename BaseT2::base_type>);
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_DEBUG(!A1.empty());
+   static_assert(SameType<typename BaseT1::base_type, typename BaseT2::base_type>);
    return sum(A1 * A2);
 }
 
 template<FloatingBaseType FloatBaseT1, FloatingBaseType FloatBaseT2>
 [[nodiscard]] auto stable_dot_prod(const FloatBaseT1 & A1, const FloatBaseT2 & A2)
 {
-   static_assert(SameType<typename FloatBaseT1::base_type, typename FloatBaseT2::base_type>);
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_DEBUG(!A1.empty());
+   static_assert(SameType<typename FloatBaseT1::base_type, typename FloatBaseT2::base_type>);
    return stable_sum(two_prod(A1, A2).first) + stable_sum(two_prod(A1, A2).second);
 }
 
@@ -393,6 +391,7 @@ template<BaseType BaseT>
    return true;
 }
 
+// !std::is_const for better error messages
 template<DirectBaseType T, typename F>
 requires (!std::is_const_v<T>)
 void apply(T & A, F f)
@@ -402,6 +401,7 @@ void apply(T & A, F f)
       f(x);
 }
 
+// !std::is_const for better error messages
 template<DirectBaseType T, typename F, typename Cond>
 requires (!std::is_const_v<T>)
 void apply_if(T & A, F f, Cond c)
@@ -432,12 +432,12 @@ template<BaseType BaseT, typename F>
 }
 
 template<typename T>
-requires (BaseType<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+requires (BaseType<std::remove_reference_t<T>>)
 [[nodiscard]] auto within_range(T && A, ValueTypeOf<std::remove_reference_t<T>> low, ValueTypeOf<std::remove_reference_t<T>> high)
 {
-   using size_type = SizeTypeOf<std::remove_reference_t<T>>;
    ASSERT_STRICT_DEBUG(!A.empty());
    ASSERT_STRICT_DEBUG(high >= low);
+   using size_type = SizeTypeOf<std::remove_reference_t<T>>;
 
    std::vector<size_type> indexes;
    for(size_type i = 0; i < A.size(); ++i)
@@ -451,11 +451,11 @@ requires (BaseType<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
 }
 
 template<typename T, typename Cond>
-requires (BaseType<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>)
+requires (BaseType<std::remove_reference_t<T>>)
 [[nodiscard]] auto within_cond(T && A, Cond c)
 {
-   using size_type = SizeTypeOf<std::remove_reference_t<T>>;
    ASSERT_STRICT_DEBUG(!A.empty());
+   using size_type = SizeTypeOf<std::remove_reference_t<T>>;
 
    std::vector<size_type> indexes;
    for(size_type i = 0; i < A.size(); ++i)
@@ -477,6 +477,7 @@ template<BaseType BaseT>
    return blas_array;
 }
 
+// !std::is_const for better error messages
 template<typename T>
 requires (DirectBaseType<std::remove_reference_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
 void sort_increasing(T && A)
@@ -485,6 +486,7 @@ void sort_increasing(T && A)
    std::sort(A.begin(), A.end(), [](auto a, auto b) { return a < b; });
 }
 
+// !std::is_const for better error messages
 template<typename T>
 requires (DirectBaseType<std::remove_reference_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
 void sort_decreasing(T && A)
