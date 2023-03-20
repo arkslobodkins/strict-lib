@@ -93,21 +93,14 @@ template<BaseType BaseT>
 template<BaseType BaseT>
 [[nodiscard]] bool all_negative(const BaseT & A);
 
-// requires not needed, only for better error messages
-template<DirectBaseType T, typename F>
-requires (!std::is_const_v<T>)
-void apply(T & A, F f);
-
-// requires not needed, only for better error messages
-template<DirectBaseType T, typename F, typename Cond>
-requires (!std::is_const_v<T>)
-void apply_if(T & A, F f, Cond c);
-
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool any_satisfy(const BaseT & A, F f);
 
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool all_satisfy(const BaseT & A, F f);
+
+template<BaseType BaseT>
+[[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
 
 template<typename T>
 requires (BaseType<std::remove_reference_t<T>>)
@@ -117,8 +110,13 @@ template<typename T, typename Cond>
 requires (BaseType<std::remove_reference_t<T>>)
 [[nodiscard]] auto within_cond(T && A, Cond c);
 
-template<BaseType BaseT>
-[[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A);
+template<typename T, typename F>
+requires (DirectBaseType<std::remove_reference_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
+void apply(T && A, F f);
+
+template<typename T, typename F, typename Cond>
+requires (DirectBaseType<std::remove_reference_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
+void apply_if(T && A, F f, Cond c);
 
 template<typename T>
 requires (DirectBaseType<std::remove_reference_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
@@ -391,26 +389,6 @@ template<BaseType BaseT>
    return true;
 }
 
-// !std::is_const for better error messages
-template<DirectBaseType T, typename F>
-requires (!std::is_const_v<T>)
-void apply(T & A, F f)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   for(auto & x : A)
-      f(x);
-}
-
-// !std::is_const for better error messages
-template<DirectBaseType T, typename F, typename Cond>
-requires (!std::is_const_v<T>)
-void apply_if(T & A, F f, Cond c)
-{
-   ASSERT_STRICT_DEBUG(!A.empty());
-   for(auto & x : A)
-      if(c(x)) f(x);
-}
-
 template<BaseType BaseT, typename F>
 [[nodiscard]] bool any_satisfy(const BaseT & A, F f)
 {
@@ -429,6 +407,16 @@ template<BaseType BaseT, typename F>
       if(!f(x))
          return false;
    return true;
+}
+
+template<BaseType BaseT>
+[[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   using real_type = RealTypeOf<BaseT>;
+   auto blas_array = std::make_unique<real_type[]>(static_cast<std::size_t>(A.size()));
+   std::copy(A.begin(), A.end(), blas_array.get());
+   return blas_array;
 }
 
 template<typename T>
@@ -467,14 +455,24 @@ requires (BaseType<std::remove_reference_t<T>>)
       return std::optional<decltype(A[indexes])>(std::nullopt);
 }
 
-template<BaseType BaseT>
-[[nodiscard]] std::unique_ptr<RealTypeOf<BaseT>[]> unique_blas_array(const BaseT & A)
+// !std::is_const for better error messages
+template<typename T, typename F>
+requires (DirectBaseType<std::remove_reference_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
+void apply(T && A, F f)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
-   using real_type = RealTypeOf<BaseT>;
-   auto blas_array = std::make_unique<real_type[]>(static_cast<std::size_t>(A.size()));
-   std::copy(A.begin(), A.end(), blas_array.get());
-   return blas_array;
+   for(auto & x : A)
+      f(x);
+}
+
+// !std::is_const for better error messages
+template<typename T, typename F, typename Cond>
+requires (DirectBaseType<std::remove_reference_t<T>> && !std::is_const_v<std::remove_reference_t<T>>)
+void apply_if(T && A, F f, Cond c)
+{
+   ASSERT_STRICT_DEBUG(!A.empty());
+   for(auto & x : A)
+      if(c(x)) f(x);
 }
 
 // !std::is_const for better error messages

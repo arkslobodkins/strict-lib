@@ -1,6 +1,6 @@
 all: test_types test_val test_array test_slicearray test_randslicearray test_functions
 
-CXX = g++-12.1 -std=gnu++20
+CXX = g++-12.2 -std=gnu++20
 CXXFLAGS = -DSTRICT_DEBUG_ON
 LFLAGS = -lquadmath -lm
 

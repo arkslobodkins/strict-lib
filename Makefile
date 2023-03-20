@@ -1,6 +1,6 @@
 all: example1 example2
 
-CXX = g++-12.1
+CXX = g++-12.2
 CXXFLAGS = -std=gnu++20 -fsanitize=address
 LFLAGS = -lquadmath -lm
 

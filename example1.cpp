@@ -93,9 +93,5 @@ int main(int argc, char *argv[])
    cout << zf3 << endl;
    print(zf3, "zf3"); // print including the variable name
 
-   auto tt = within_cond(zf3[seq(0, 2)] + 10.L, [](auto x) { return x >= 0.L; });
-//   cout << *tt << endl;
-   stable_norm2_scaled(*tt);
-
    return EXIT_SUCCESS;
 }
