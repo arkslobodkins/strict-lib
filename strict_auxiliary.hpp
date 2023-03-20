@@ -29,6 +29,7 @@
       return SliceArray<std::decay_t<decltype(*this)>>                           \
          {*this, s};                                                             \
    }                                                                             \
+                                                                                 \
    [[nodiscard]] auto operator[](std::vector<size_type> indexes) {               \
       return RandSliceArray<std::decay_t<decltype(*this)>>                       \
          {*this, std::move(indexes)};                                            \

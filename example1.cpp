@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
    zf3 = Array<long double>(3, 1.L);         // vector of ones
    zf3 = {-5.L, 0.L, 5.L};
 
+   cout << zf3 << endl;
+   print(zf3, "zf3"); // print including the variable name
 
    return EXIT_SUCCESS;
 }
