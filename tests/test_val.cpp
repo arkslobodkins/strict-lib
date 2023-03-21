@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "../strict_val.hpp"
+#include "../src/strict_val.hpp"
 
 using namespace strict_array;
 

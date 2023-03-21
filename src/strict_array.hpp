@@ -93,6 +93,8 @@ public:
    template<IntegerType IntType>
       void resize(IntType size);
 
+   void resize_and_assign(Array && A);
+
    template<ArrayBaseType1D ArrayBaseT1D>
       void resize_and_assign(const ArrayBaseT1D & A);
 
@@ -385,6 +387,13 @@ void Array<T>::resize(IntType size)
    Array<T> temp(size);
    std::copy(begin(), begin() + std::min<strict_int>(sz, size), temp.begin());
    swap(temp);
+}
+
+template<RealType T>
+void Array<T>::resize_and_assign(Array<T> && A)
+{
+   resize(A.size());
+   *this = std::move(A);
 }
 
 template<RealType T>

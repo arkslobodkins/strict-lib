@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include "../strict_array.hpp"
+#include "../src/strict_array.hpp"
 
 using namespace strict_array;
 

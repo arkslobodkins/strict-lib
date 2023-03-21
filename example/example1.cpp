@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <iostream>
-#include "strict_array.hpp"
+#include "../src/strict_array.hpp"
 
 int main(int argc, char *argv[])
 {

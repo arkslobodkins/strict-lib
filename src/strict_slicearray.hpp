@@ -410,7 +410,8 @@ private:
       void apply1(const SliceArrayBaseT1D & A, F f);
 };
 
-std::ostream & operator<<(std::ostream & os, const std::vector<strict_int> & indexes);
+template<IntegerType IntType>
+std::ostream & operator<<(std::ostream & os, const std::vector<IntType> & indexes);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectBaseType BaseT>
@@ -606,15 +607,14 @@ void RandSliceArray<DirectBaseT>::apply1(const SliceArrayBaseT1D & A, F f)
       f(i);
 }
 
-std::ostream & operator<<(std::ostream & os, const std::vector<strict_int> & indexes)
+template<IntegerType IntType>
+std::ostream & operator<<(std::ostream & os, const std::vector<IntType> & indexes)
 {
    for(decltype(indexes.size()) i = 0; i < indexes.size(); ++i) {
       os << "index[" << i << "] = " << indexes[i] << std::endl;
    }
    return os;
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>

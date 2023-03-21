@@ -2,8 +2,8 @@
 #include <cassert>
 #include <valarray>
 
-#include "../strict_array.hpp"
-#include "../strict_util.hpp"
+#include "../src/strict_array.hpp"
+#include "../src/strict_util.hpp"
 
 using namespace strict_array;
 
