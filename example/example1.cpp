@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
    zd = random(Size{n}, Low{-1.}, High{1.});
    auto within_unit = within_range(zd, 0., 1.);
    if(within_unit) {
-      std::vector<strict_int> indexes = within_unit->indexes();
+      const std::vector<strict_int> & indexes = within_unit->indexes();
       *within_unit = 0.;
    }
 

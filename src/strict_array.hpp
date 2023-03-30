@@ -427,11 +427,15 @@ template<IntegerType IntType>
 
 template<RealType T>
 [[nodiscard]] inline StrictVal<T> & Array<T>::operator[](internal::Last)
-{ return elem[sz-1]; }
+{
+   return elem[sz-1];
+}
 
 template<RealType T>
 [[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](internal::Last) const
-{ return elem[sz-1]; }
+{
+   return elem[sz-1];
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -674,6 +678,7 @@ public:
       : start{start}, sz{size}, incr{incr} {
       ASSERT_STRICT_DEBUG(size > 0);
    }
+
    STRICT_GENERATE_EXPR_COPY_ASSIGN(SequenceExpr)
 
    template<IntegerType IntType>
@@ -709,6 +714,7 @@ public:
    using expr_type = UnaryExpr<OneDimBaseT, Op>;
 
    explicit UnaryExpr(const OneDimBaseT & A, Op op) : A{A}, op{op} { ASSERT_STRICT_DEBUG(!A.empty()); }
+
    STRICT_GENERATE_EXPR_COPY_ASSIGN(UnaryExpr)
 
    template<IntegerType IntType>
@@ -748,6 +754,7 @@ public:
       ASSERT_STRICT_DEBUG(!A.empty());
       ASSERT_STRICT_DEBUG(A.size() == B.size());
    }
+
    STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExpr)
 
    template<IntegerType IntType>
@@ -786,6 +793,7 @@ public:
       static_assert(SameType<RealTypeOf<OneDimBaseT1>, T2>);
       ASSERT_STRICT_DEBUG(!B.empty());
    }
+
    STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValLeft)
 
    template<IntegerType IntType>
@@ -824,6 +832,7 @@ public:
       static_assert(SameType<RealTypeOf<OneDimBaseT1>, T2>);
       ASSERT_STRICT_DEBUG(!A.empty());
    }
+
    STRICT_GENERATE_EXPR_COPY_ASSIGN(BinExprValRight)
 
    template<IntegerType IntType>
