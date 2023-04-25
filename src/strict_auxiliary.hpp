@@ -3,7 +3,7 @@
 #pragma once
 
 #if __cplusplus < 202002L
-   #error requires c++20 or higher
+#error requires c++20 or higher
 #else
 
 #include <iterator>
@@ -148,6 +148,13 @@ namespace internal {
 }
 static constexpr internal::Last last;
 static constexpr internal::All all;
+
+namespace internal {
+   template<BaseType BaseT>
+   bool valid_index(const BaseT & A, SizeTypeOf<BaseT> index) {
+      return index > -1 && index < A.size();
+   }
+}
 
 }
 

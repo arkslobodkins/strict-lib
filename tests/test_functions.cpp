@@ -8,32 +8,33 @@
 #include "../src/strict_util.hpp"
 
 using namespace strict_array;
+using namespace strict_array::util;
 
 template<FloatingType T>
 void assert_inf_norm()
 {
    Array<T> A{T{1}, T{2}, T{3}, T{4}, T{5}};
-   assert(within_tol_abs<T>(norm_inf(A), T{5}));
+   assert(is_within_tol_abs<T>(norm_inf(A), T{5}));
 
    A = {T{-1}, T{-2}, T{-3}, T{-4}, T{-5}};
-   assert(within_tol_abs<T>(norm_inf(A), T{5}));
+   assert(is_within_tol_abs<T>(norm_inf(A), T{5}));
 
    A = {T{5}, T{4}, T{3}, T{2}, T{1}};
-   assert(within_tol_abs<T>(norm_inf(A), T{5}));
+   assert(is_within_tol_abs<T>(norm_inf(A), T{5}));
 
    A = {T{-5}, T{-4}, T{-3}, T{-2}, T{-1}};
-   assert(within_tol_abs<T>(norm_inf(A), T{5}));
+   assert(is_within_tol_abs<T>(norm_inf(A), T{5}));
 
    A = {T{-3}, T{-2}, T{-5}, T{-4}, T{-1}};
-   assert(within_tol_abs<T>(norm_inf(A), T{5}));
+   assert(is_within_tol_abs<T>(norm_inf(A), T{5}));
 
    Array<T> B{T{2}, T{8}, T{6}, T{4}, T{0}, T{-4}, T{-2}};
-   assert(within_tol_abs<T>(norm_inf(B[seq(0, 2)]), T{8}));
-   assert(within_tol_abs<T>(norm_inf(B[seq(0, 2)] + T{1}), T{9}));
-   assert(within_tol_abs<T>(norm_inf(B[seq(0, 2)] * T{2}), T{16}));
-   assert(within_tol_abs<T>(norm_inf(B[seq(0, 2)] + B[seq(1, 3)]), T{14}));
-   assert(within_tol_abs<T>(norm_inf(B[seq(0, 4)][seq(3, 4)]), T{4}));
-   assert(within_tol_abs<T>(norm_inf(T{4}*B[seq(3, 4)]), T{16}));
+   assert(is_within_tol_abs<T>(norm_inf(B[seq(0, 2)]), T{8}));
+   assert(is_within_tol_abs<T>(norm_inf(B[seq(0, 2)] + T{1}), T{9}));
+   assert(is_within_tol_abs<T>(norm_inf(B[seq(0, 2)] * T{2}), T{16}));
+   assert(is_within_tol_abs<T>(norm_inf(B[seq(0, 2)] + B[seq(1, 3)]), T{14}));
+   assert(is_within_tol_abs<T>(norm_inf(B[seq(0, 4)][seq(3, 4)]), T{4}));
+   assert(is_within_tol_abs<T>(norm_inf(T{4}*B[seq(3, 4)]), T{16}));
    std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 
@@ -41,11 +42,11 @@ template<FloatingType T>
 void assert_max()
 {
    Array<T> A{T{1}, T{2}, T{3}, T{4}, T{5}};
-   assert(within_tol_abs<T>(max(A), T{5}));
+   assert(is_within_tol_abs<T>(max(A), T{5}));
 
    A = {T{-1}, T{-2}, T{-3}, T{-4}, T{-5}};
-   assert(within_tol_abs<T>(max(A), T{-1}));
-   assert(within_tol_abs<T>(max(T{-1} * A), T{5}));
+   assert(is_within_tol_abs<T>(max(A), T{-1}));
+   assert(is_within_tol_abs<T>(max(T{-1} * A), T{5}));
    std::cout << "passed " << __func__ << " for type " << typeid(T).name() << std::endl;
 }
 

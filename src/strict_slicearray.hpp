@@ -3,7 +3,7 @@
 #pragma once
 
 #if __cplusplus < 202002L
-   #error requires c++20 or higher
+#error requires c++20 or higher
 #else
 
 #include "strict_auxiliary.hpp"
@@ -12,6 +12,7 @@
 #include "strict_val.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <initializer_list>
 #include <type_traits>
 #include <utility>
@@ -38,7 +39,7 @@ public:
 
    // note: m_stride is already valid, m_start and m_size are "partially" valid
    template<BaseType BaseT>
-   bool valid(const BaseT & A) const
+   [[nodiscard]] bool valid(const BaseT & A) const
    {
       return internal::valid_index(A, m_start) &&
          internal::valid_index(A, m_start + m_stride * (m_size-1));
@@ -64,7 +65,7 @@ public:
       ASSERT_STRICT_DEBUG(stride > 0);
    }
 
-   slice to_slice() const { return slice{m_first, (m_last-m_first)/m_stride + 1, m_stride}; }
+   [[nodiscard]] slice to_slice() const { return slice{m_first, (m_last-m_first)/m_stride + 1, m_stride}; }
 
    [[nodiscard]] strict_int first() const { return m_first; }
    [[nodiscard]] strict_int last() const { return m_last; }
@@ -72,7 +73,7 @@ public:
 
    // note: m_stride is already valid, m_first and m_last are "partially" valid
    template<BaseType BaseT>
-   bool valid(const BaseT & A) const
+   [[nodiscard]] bool valid(const BaseT & A) const
    {
       return internal::valid_index(A, m_first) &&
          internal::valid_index(A, m_last);

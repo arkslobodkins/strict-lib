@@ -6,14 +6,13 @@
 #error requires c++20 or higher
 #else
 
-#include <cassert>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 
 #define STRICT_THROW_OUT_OF_RANGE()                                                         \
    do {                                                                                     \
-   throw std::out_of_range{"OUT OF RANGE! " + trace_err(__FILE__, __func__, __LINE__)};     \
+      throw std::out_of_range{"OUT OF RANGE! " + trace_err(__FILE__, __func__, __LINE__)};  \
    } while(0)
 
 #ifndef STRICT_DEBUG_OFF

@@ -3,7 +3,7 @@
 #pragma once
 
 #if __cplusplus < 202002L
-   #error requires c++20 or higher
+#error requires c++20 or higher
 #else
 
 #include <cmath>

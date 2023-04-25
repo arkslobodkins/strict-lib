@@ -6,13 +6,14 @@
 #include "../src/strict_util.hpp"
 
 using namespace strict_array;
+using namespace strict_array::util;
 
 template<RealType T, SliceArrayBaseType1D SliceArrayBaseT1D>
 void assert_randarray(const std::valarray<T> & v, const SliceArrayBaseT1D & s)
 {
    assert((long long int)v.size() == s.size());
    for(auto i = 0LL; i < s.size(); ++i)
-      assert(within_tol_abs<T>(v[i], s[i]));
+      assert(is_within_tol_abs<T>(v[i], s[i]));
 }
 
 template<StandardFloatingType T>

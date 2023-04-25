@@ -12,4 +12,3 @@ example2: example2.cpp
 
 clean:
 	rm -rf example1.x example2.x
-
