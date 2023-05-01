@@ -15,7 +15,7 @@ Array<float128> ode_solve(Strict128 h, Strict128 t_init, Strict128 t_final, Stri
 
    // trapezoidal method
    for(strict_int i = 0; i < nsteps; ++i) {
-      y[i+1] = (y[i] + h/2.Q * y[i]) / (1.Q - h/2.Q);
+      y[i+1] = (y[i] + y[i] * h/2.Q) / (1.Q - h/2.Q);
    }
 
    return y;
