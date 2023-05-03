@@ -93,8 +93,5 @@ int main(int argc, char *argv[])
    cout << zf3 << endl;
    print(zf3, "zf3"); // print including the variable name
 
-   auto & ref =  zf2;
-   auto x1 = ValueTypeOf<decltype(ref)>{2.L};
-
    return EXIT_SUCCESS;
 }

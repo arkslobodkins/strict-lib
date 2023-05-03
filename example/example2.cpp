@@ -84,14 +84,14 @@ int main()
    cout << "total sum = " << sum(expr) << endl << endl; // 0 + 2 + 4 ... is hopefully 72
 
    // 4. If for any reason there is a need to convert value to a different type,
-   // convert_type() function can be used. Conversion is needed because both prod
+   // real_cast() function can be used. Conversion is needed because both prod
    // and sqt in the example below are not float32.
 
    Array<float32> D{1.F, 2.F, 3.F, 4.F, 5.F};
    apply(D, [](auto & x) {x = x*x;});
-   float64 prod = dot_prod(D, D).convert_type<float64>();
+   float64 prod = real_cast<float64>(dot_prod(D, D));
    for(auto it = D.begin(); it != D.end(); ++it) {
-      float64 sqt = sqrt(it->convert_type<float64>());
+      float64 sqt = sqrt(real_cast<float64>(*it));
       cout << "square root of " << *it << " = " << sqt << endl;
    }
    cout << endl;

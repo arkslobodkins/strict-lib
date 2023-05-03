@@ -444,7 +444,7 @@ template<RealType U>
 {
    Array<U> A(size());
    for(size_type i = 0; i < size(); ++i)
-      A[i] = ((*this)[i]).template convert_type<U>();
+      A[i] = strict_cast<U>((*this)[i]);
    return A;
 }
 
@@ -484,7 +484,7 @@ template<IntegerType T>
    ASSERT_STRICT_DEBUG(h >= l);
    std::srand(static_cast<unsigned>((std::time(0))));
    Array<T> A(sz);
-   long long int diff_range = (h - l).template convert_type<long long int>() + 1;
+   long long int diff_range = real_cast<long long int>(h - l) + 1;
    for(auto & x : A)
       x = l + T(std::rand() % diff_range);
    return A;

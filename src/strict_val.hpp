@@ -41,7 +41,6 @@ public:
    template<RealType U> constexpr inline StrictVal(U val);
    template<RealType U> constexpr inline StrictVal & operator=(U val) &;
    template<RealType U> [[nodiscard]] constexpr inline operator U () const;    // safe conversion
-   template<RealType U> [[nodiscard]] constexpr inline U convert_type() const; // conversion chosen by the user;
 
    [[nodiscard]] constexpr StrictVal operator+() const { return *this; }
    [[nodiscard]] constexpr StrictVal operator-() const { return StrictVal{-T{*this}}; }
@@ -70,6 +69,8 @@ private:
    T x{};
 };
 
+template<RealType T, RealType U> [[nodiscard]] constexpr inline T real_cast(U val);
+template<RealType T, RealType U> [[nodiscard]] constexpr inline T real_cast(StrictVal<U> strict_val);
 template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> strict_cast(U val);
 template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> strict_cast(StrictVal<U> strict_val);
 
@@ -186,13 +187,6 @@ template<RealType U>
    return x;
 }
 
-template<RealType T>
-template<RealType U>
-[[nodiscard]] constexpr inline U StrictVal<T>::convert_type() const
-{
-   return static_cast<U>(x);
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 constexpr inline StrictVal<T> & StrictVal<T>::operator+=(StrictVal<T> strict_val) &
@@ -263,12 +257,20 @@ constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(U val) &
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T, RealType U>
+[[nodiscard]] constexpr inline T real_cast(U val)
+{ return static_cast<T>(val); }
+
+template<RealType T, RealType U>
+[[nodiscard]] constexpr inline T real_cast(StrictVal<U> strict_val)
+{ return real_cast<T>(U(strict_val)); }
+
+template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> strict_cast(U val)
 { return StrictVal<T>{T(val)}; }
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> strict_cast(StrictVal<U> strict_val)
-{ return strict_val.template convert_type<T>(); }
+{ return real_cast<T>(strict_val); }
 
 template<RealType T, RealType U>
 constexpr inline U & operator+=(U & val, StrictVal<T> strict_val)

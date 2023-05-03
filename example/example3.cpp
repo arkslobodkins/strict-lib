@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdlib>
 #include "../src/strict_array.hpp"
 
@@ -9,6 +10,9 @@ using namespace strict_array;
 
 Array<float128> ode_solve(Strict128 h, Strict128 t_init, Strict128 t_final, Strict128 y_init)
 {
+   assert(h > 0.Q);
+   assert(t_final > t_init);
+
    strict_int nsteps = strict_cast<strict_int>((t_final - t_init) / h);
    Array<float128> y(nsteps+1);
    y[0] = y_init;
@@ -23,6 +27,9 @@ Array<float128> ode_solve(Strict128 h, Strict128 t_init, Strict128 t_final, Stri
 
 Array<float128> ode_exact(Strict128 h, Strict128 t_init, Strict128 t_final, Strict128 y_init)
 {
+   assert(h > 0.Q);
+   assert(t_final > t_init);
+
    strict_int nsteps = strict_cast<strict_int>((t_final - t_init) / h);
    Array<float128> y(nsteps+1);
 
@@ -37,9 +44,16 @@ Array<float128> ode_exact(Strict128 h, Strict128 t_init, Strict128 t_final, Stri
 
 int main()
 {
-   auto y = ode_solve(powq(2.Q, -10), 0.Q, 1.Q, 1.Q);
-   auto y_exact = ode_exact(powq(2.Q, -10), 0.Q, 1.Q, 1.Q);
-   std::cout << max(abs(y - y_exact)) << std::endl;
+   Strict128 h = pows_int<float128>(2.Q, -24); // floating-point number
+   Strict128 t_init = 0.Q;
+   Strict128 t_final = 1.Q;
+   Strict128 y_init = 1.Q; // y(t_init), t_init is not necessarily 0
+
+   auto y = ode_solve(h, t_init, t_final, y_init);
+   auto y_exact = ode_exact(h, t_init, t_final, y_init);
+   Strict128 rel_error = norm_inf((y - y_exact)/y_exact);
+
+   std::cout << "maximum relative error: " << rel_error << std::endl;
 
    return EXIT_SUCCESS;
 }
