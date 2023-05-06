@@ -15,6 +15,7 @@ void assert_real()
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(RealType<float128>);
    #endif
+
    static_assert(!RealType<unsigned int>);
    static_assert(!RealType<const int>);
    static_assert(!RealType<int &>);
@@ -28,6 +29,7 @@ void assert_int()
    static_assert(IntegerType<int>);
    static_assert(IntegerType<long int>);
    static_assert(IntegerType<long long int>);
+
    static_assert(!IntegerType<double>);
 
    std::cout << "passed " << __func__ << std::endl;
@@ -41,6 +43,7 @@ void assert_floating()
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(FloatingType<float128>);
    #endif
+
    static_assert(!FloatingType<int>);
 
    std::cout << "passed " << __func__ << std::endl;
@@ -51,6 +54,7 @@ void assert_standard_floating()
    static_assert(StandardFloatingType<float>);
    static_assert(StandardFloatingType<double>);
    static_assert(StandardFloatingType<long double>);
+
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(!StandardFloatingType<float128>);
    #endif
@@ -64,6 +68,7 @@ void assert_quad_floating()
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(QuadType<float128>);
    #endif
+
    static_assert(!QuadType<float>);
    static_assert(!QuadType<double>);
    static_assert(!QuadType<long double>);
@@ -78,6 +83,7 @@ void assert_not_quad_floating()
    static_assert(NotQuadType<double>);
    static_assert(NotQuadType<long double>);
    static_assert(NotQuadType<int>);
+
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(!NotQuadType<float128>);
    #endif
@@ -91,8 +97,9 @@ void assert_int_base()
    static_assert(IntegerBaseType<Array<int>>);
    static_assert(IntegerBaseType<Array<long int>>);
    static_assert(IntegerBaseType<Array<long long int>>);
-   static_assert(!IntegerBaseType<Array<double>>);
+
    static_assert(!IntegerBaseType<int>);
+   static_assert(!IntegerBaseType<Array<double>>);
 
    static_assert(IntegerBaseType<const Array<int>>);
    static_assert(!IntegerBaseType<Array<int>&>);
@@ -108,8 +115,9 @@ void assert_floating_base()
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(FloatingBaseType<Array<float128>>);
    #endif
-   static_assert(!FloatingBaseType<Array<int>>);
+
    static_assert(!FloatingBaseType<int>);
+   static_assert(!FloatingBaseType<Array<int>>);
 
    static_assert(FloatingBaseType<const Array<float>>);
    static_assert(!FloatingBaseType<Array<float> &>);
@@ -123,6 +131,7 @@ void assert_standard_floating_base()
    static_assert(StandardFloatingBaseType<Array<float>>);
    static_assert(StandardFloatingBaseType<Array<double>>);
    static_assert(StandardFloatingBaseType<Array<long double>>);
+
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(!StandardFloatingBaseType<Array<float128>>);
    #endif
@@ -139,6 +148,7 @@ void assert_quad_base()
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(QuadFloatingBaseType<Array<float128>>);
    #endif
+
    static_assert(!QuadFloatingBaseType<Array<int>>);
    static_assert(!QuadFloatingBaseType<Array<float>>);
    static_assert(!QuadFloatingBaseType<Array<double>>);
@@ -154,6 +164,7 @@ void assert_not_quad_base()
    static_assert(NotQuadFloatingBaseType<Array<float>>);
    static_assert(NotQuadFloatingBaseType<Array<double>>);
    static_assert(NotQuadFloatingBaseType<Array<long double>>);
+
    #ifdef STRICT_QUADRUPLE_PRECISION
    static_assert(!NotQuadFloatingBaseType<Array<float128>>);
    #endif
