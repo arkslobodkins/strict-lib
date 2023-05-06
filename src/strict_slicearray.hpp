@@ -132,7 +132,7 @@ public:
 
    // assign either Array, SliceArray, or their expression template
    template<OneDimBaseType OneDimBaseT>
-      SliceArray & Assign(const OneDimBaseT & A);
+      SliceArray & operator=(const OneDimBaseT & A);
 
    template<IntegerType IntType>
       [[nodiscard]] inline auto & operator[](IntType i);
@@ -215,7 +215,7 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(std::initializer_li
 
 template<DirectBaseType DirectBaseT>
 template<OneDimBaseType OneDimBaseT>
-SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::Assign(const OneDimBaseT & A)
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    std::copy(A.begin(), A.end(), begin());
@@ -371,7 +371,7 @@ public:
 
    // assign either Array, SliceArray, or their expression template
    template<OneDimBaseType OneDimBaseT>
-      RandSliceArray & Assign(const OneDimBaseT & A);
+      RandSliceArray & operator=(const OneDimBaseT & A);
 
    template<IntegerType IntType>
       [[nodiscard]] inline auto & operator[](IntType i);
@@ -480,7 +480,7 @@ RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator=(std::initia
 
 template<DirectBaseType DirectBaseT>
 template<OneDimBaseType OneDimBaseT>
-RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::Assign(const OneDimBaseT & A)
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    std::copy(A.begin(), A.end(), begin());

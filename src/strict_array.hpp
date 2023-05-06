@@ -54,16 +54,12 @@ public:
    Array & operator=(const Array & A) &;
    Array & operator=(Array && A) & noexcept;
 
-   // assign any one-dimensional type of the same real_type
+   // construct and assign any one-dimensional type of the same real_type
    template<OneDimBaseType OneDimBaseT>
-      Array & Assign(const OneDimBaseT & A) &;
+      Array(const OneDimBaseT & A);
 
-   // constructor and assignment for Array expression templates
-   template<ArrayExprType1D ArrayExprT1D>
-      Array(const ArrayExprT1D & expr);
-
-   template<ArrayExprType1D ArrayExprT1D>
-      Array & operator=(const ArrayExprT1D & expr) &;
+   template<OneDimBaseType OneDimBaseT>
+      Array & operator=(const OneDimBaseT & A) &;
 
    ~Array();
 
@@ -124,10 +120,6 @@ private:
    template<ArrayBaseType1D ArrayBaseT1D, typename F>
       void apply1(const ArrayBaseT1D & A, F f);
 };
-
-// construct Array from any one-dimensional type of the same real type
-template<OneDimBaseType OneDimBaseT>
-[[nodiscard]] auto Construct(const OneDimBaseT & A);
 
 template<IntegerType T>
 [[nodiscard]] Array<T> random(Size size, Low<T> low = Low<T>{}, High<T> high = High<T>{T(1)});
@@ -205,7 +197,9 @@ template<IntegerType IntType>
 Array<T>::Array(IntType size) :
    elem{new StrictVal<T>[static_cast<std::size_t>(size)]},
    sz{size}
-{ ASSERT_STRICT_DEBUG(sz > -1); }
+{
+   ASSERT_STRICT_DEBUG(sz > -1);
+}
 
 template<RealType T>
 template<IntegerType IntType>
@@ -219,11 +213,15 @@ Array<T>::Array(IntType size, StrictVal<T> val) :
 template<RealType T>
 Array<T>::Array(std::initializer_list<StrictVal<T>> list) :
    Array(static_cast<size_type>(list.size()))
-{ std::copy(list.begin(), list.end(), begin()); }
+{
+   std::copy(list.begin(), list.end(), begin());
+}
 
 template<RealType T> Array<T>::Array(const Array<T> & A) :
    Array(A.size())
-{ std::copy(A.begin(), A.end(), begin()); }
+{
+   std::copy(A.begin(), A.end(), begin());
+}
 
 template<RealType T>
 Array<T>::Array(Array<T> && A) noexcept :
@@ -265,9 +263,17 @@ Array<T> & Array<T>::operator=(Array<T> && A) & noexcept
    return *this;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 template<OneDimBaseType OneDimBaseT>
-Array<T> & Array<T>::Assign(const OneDimBaseT & A) &
+Array<T>::Array(const OneDimBaseT & A) : Array(A.size())
+{
+   std::copy(A.begin(), A.end(), begin());
+}
+
+template<RealType T>
+template<OneDimBaseType OneDimBaseT>
+Array<T> & Array<T>::operator=(const OneDimBaseT & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    std::copy(A.begin(), A.end(), begin());
@@ -275,24 +281,10 @@ Array<T> & Array<T>::Assign(const OneDimBaseT & A) &
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-template<ArrayExprType1D ArrayExprT1D>
-Array<T>::Array(const ArrayExprT1D & expr) :
-   Array(expr.size())
-{ std::copy(expr.begin(), expr.end(), begin()); }
-
-template<RealType T>
-template<ArrayExprType1D ArrayExprT1D>
-Array<T> & Array<T>::operator=(const ArrayExprT1D & expr) &
-{
-   ASSERT_STRICT_DEBUG(sz == expr.size());
-   std::copy(expr.begin(), expr.end(), begin());
-   return *this;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T> Array<T>::~Array()
-{ delete[] elem; }
+{
+   delete[] elem;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -460,14 +452,6 @@ void Array<T>::apply1(const ArrayBaseT1D & A, F f)
    (void)A;
    for(size_type i = 0; i < sz; ++i)
       f(i);
-}
-
-template<OneDimBaseType OneDimBaseT>
-[[nodiscard]] auto Construct(const OneDimBaseT & A)
-{
-   Array<RealTypeOf<OneDimBaseT>> C(A.size());
-   C.Assign(A);
-   return C;
 }
 
 template<IntegerType T>
