@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <ios>
 #if __cplusplus < 202002L
 #error requires c++20 or higher
 #else
@@ -530,7 +531,7 @@ std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
    else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10 + 1;
    else                              num_digits = int(std::cout.precision());
 
-   os << std::setprecision(num_digits) << T{strict_val};
+   os << std::scientific << std::showpoint << std::setprecision(num_digits) << T{strict_val};
    return os;
 }
 

@@ -7,6 +7,9 @@
 #else
 
 #include <iterator>
+#include <utility>
+#include <type_traits>
+#include <vector>
 
 #include "strict_concepts.hpp"
 #include "strict_iterator.hpp"
@@ -125,8 +128,13 @@ class SmallObjectName                                     \
 {                                                         \
 public:                                                   \
    explicit SmallObjectName() : x{} {}                    \
-   template<IntegerType IntType>                          \
-   explicit SmallObjectName(IntType x) : x{x} {}          \
+                                                          \
+   template<IntegerType T>                                \
+   explicit SmallObjectName(StrictVal<T> x) :             \
+      x{real_cast<strict_int>(x)} {}                      \
+                                                          \
+   explicit SmallObjectName(strict_int x) : x{x} {}       \
+                                                          \
    strict_int get() const { return x; }                   \
 private:                                                  \
    strict_int x;                                          \

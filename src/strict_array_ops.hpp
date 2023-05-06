@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -104,7 +105,7 @@ template<BaseType BaseT>
 
 template<typename T>
 requires (BaseType<std::remove_reference_t<T>>)
-[[nodiscard]] auto within_range(T && A, ValueTypeOf<std::remove_reference_t<T>> low, ValueTypeOf<std::remove_reference_t<T>> high);
+[[nodiscard]] auto within_range(T && A, ValueTypeOf<T> low, ValueTypeOf<T> high);
 
 template<typename T, typename Cond>
 requires (BaseType<std::remove_reference_t<T>>)
@@ -133,13 +134,14 @@ namespace internal {
    {
       using size_type = SizeTypeOf<BaseT>;
       auto count_digit = [](size_type number) -> size_type {
-         if(!number) return 1;
+         if(!number)
+            return 1;
          return static_cast<size_type>(std::log10(number)) + 1;
       };
 
       size_type max_digits = count_digit(max_ind);
       size_type ind_digits = count_digit(ind);
-      return std::string(static_cast<std::basic_string<char>::size_type>(1+max_digits-ind_digits), 32);
+      return std::string(static_cast<std::basic_string<char>::size_type>(1 + max_digits-ind_digits), 32);
    }
 }
 
@@ -256,7 +258,8 @@ template<FloatingBaseType FloatBaseT>
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto x : A)
-      if(!isfinites(x)) return false;
+      if(!isfinites(x))
+         return false;
    return true;
 }
 
@@ -365,7 +368,8 @@ template<BaseType BaseT>
    ASSERT_STRICT_DEBUG(!A.empty());
    using real_type = RealTypeOf<BaseT>;
    for(auto x : A)
-      if(x == real_type{0}) return true;
+      if(x == real_type{0})
+         return true;
    return false;
 }
 
@@ -375,7 +379,8 @@ template<BaseType BaseT>
    ASSERT_STRICT_DEBUG(!A.empty());
    using real_type = RealTypeOf<BaseT>;
    for(auto x : A)
-      if(x <= real_type{0}) return false;
+      if(x <= real_type{0})
+         return false;
    return true;
 }
 
@@ -385,7 +390,8 @@ template<BaseType BaseT>
    ASSERT_STRICT_DEBUG(!A.empty());
    using real_type = RealTypeOf<BaseT>;
    for(auto x : A)
-      if(x >= real_type{0}) return false;
+      if(x >= real_type{0})
+         return false;
    return true;
 }
 
@@ -421,7 +427,7 @@ template<BaseType BaseT>
 
 template<typename T>
 requires (BaseType<std::remove_reference_t<T>>)
-[[nodiscard]] auto within_range(T && A, ValueTypeOf<std::remove_reference_t<T>> low, ValueTypeOf<std::remove_reference_t<T>> high)
+[[nodiscard]] auto within_range(T && A, ValueTypeOf<T> low, ValueTypeOf<T> high)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    ASSERT_STRICT_DEBUG(high >= low);
@@ -447,7 +453,8 @@ requires (BaseType<std::remove_reference_t<T>>)
 
    std::vector<size_type> indexes;
    for(size_type i = 0; i < A.size(); ++i)
-      if(c(A[i])) indexes.push_back(i);
+      if(c(A[i]))
+         indexes.push_back(i);
 
    if(!indexes.empty())
       return std::optional<decltype(A[indexes])>(A[indexes]);
@@ -472,7 +479,8 @@ void apply_if(T && A, F f, Cond c)
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    for(auto & x : A)
-      if(c(x)) f(x);
+      if(c(x))
+         f(x);
 }
 
 // !std::is_const for better error messages

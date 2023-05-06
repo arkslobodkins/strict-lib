@@ -7,14 +7,10 @@
 #else
 
 #include <algorithm>
-#include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <initializer_list>
-#include <numeric>
-#include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "strict_auxiliary.hpp"
 #include "strict_array_ops.hpp"

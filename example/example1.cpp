@@ -93,5 +93,7 @@ int main(int argc, char *argv[])
    cout << zf3 << endl;
    print(zf3, "zf3"); // print including the variable name
 
+   auto x = Size{1};
+
    return EXIT_SUCCESS;
 }

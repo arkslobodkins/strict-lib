@@ -66,7 +66,7 @@ template<typename T> concept BinaryOperationType = BaseOf<BinaryOperation, T>;
 class Base {};
 class Expr : private Base {};
 template<typename T> concept BaseType = BaseOf<Base, T>;               // BaseType returns false for references
-                                                                       // rereferenceness is not removed to prevent
+                                                                       // referenceness is not removed to prevent
                                                                        // a possibility of dangling references
                                                                        // in generic code
 
