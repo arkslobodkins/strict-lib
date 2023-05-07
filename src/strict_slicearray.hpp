@@ -370,7 +370,7 @@ public:
 
    STRICT_GENERATE_SLICES()
 
-   [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sl.size() > -1); return m_indexes.size(); }
+   [[nodiscard]] size_type size() const { return m_indexes.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
 
    const std::vector<size_type> & indexes() const & { return m_indexes; }
@@ -678,7 +678,7 @@ public:
 
    STRICT_GENERATE_CONST_SLICES()
 
-   [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sl.size() > -1); return m_indexes.size(); }
+   [[nodiscard]] size_type size() const { return m_indexes.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
 
 private:
