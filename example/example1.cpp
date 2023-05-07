@@ -14,6 +14,10 @@ int main()
       *slice *= 100.;
    }
 
+   z = e_unit<double>(0, 10);
+   z = sequence<double>(Size{10}, Start{-10.}, Incr{1.});
+   z = {-5., -4., -3., -2., -1., 0., 1., 2., 3., 4.};
+   z[seqN(0, 5)] = 5. * x[seqN(0, 5)] + 10. * y[seqN(0, 5)];
    z = abs(z);
 
    auto all_pos = all_positive(z);
