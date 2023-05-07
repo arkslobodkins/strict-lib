@@ -14,20 +14,24 @@ int main()
       *slice_cond *= 100.;
    }
 
-   z = e_unit<double>(0, 10);
-   z = sequence<double>(Size{10}, Start{-10.}, Incr{1.});
-   z = {-5., -4., -3., -2., -1., 0., 1., 2., 3., 4.};
-   z += abs(z);
-
    z[seqN(0, 5)] = 5. * x[seqN(0, 5)] + 10. * y[seqN(0, 5)];
    z[{0, 5, 9}] = 10.;
    auto slice_even = z[seq(0, z.size()-1, 2)];
    slice_even = sqrt(abs(slice_even));
 
-   auto all_pos = all_positive(z);
-   auto all_neg = all_negative(z);
-   auto all_greater = all_satisfy(z, [](auto x) { return x > -0.5; });
-   auto any_greater = any_satisfy(z, [](auto x) { return x > -0.5; });
+   z = e_unit<double>(0, 10);
+   z = sequence<double>(Size{10}, Start{-10.}, Incr{1.});
+   z = {-5., -4., -3., -2., -1., 0., 1., 2., 3., 4.};
+   z += abs(z);
+
+   z.resize_and_assign(2. * x[seqN(0, 5)]);
+   z.resize(9);
+   z = linspace<double>(Size{9}, Start{-2.}, End{2.});
+
+   bool all_pos = all_positive(z);
+   bool all_neg = all_negative(z);
+   bool all_greater = all_satisfy(z, [](auto x) { return x > -0.5; });
+   bool any_greater = any_satisfy(z, [](auto x) { return x > -0.5; });
 
    std::cout << z << std::endl;
    print(z, "z");

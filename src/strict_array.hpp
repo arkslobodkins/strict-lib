@@ -1040,7 +1040,7 @@ template<RealType T>
    auto sz = size.get();
    ASSERT_STRICT_DEBUG(sz > 1);
    return SequenceExpr<Array<T>>
-      {start.get(), sz, ( end.get()-start.get() )/strict_cast<T>(sz-1)};
+      {start.get(), sz, ( end.get() - start.get() )/strict_cast<T>(sz-1)};
 }
 
 }

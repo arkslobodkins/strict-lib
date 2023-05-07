@@ -5,7 +5,7 @@ CXXFLAGS = -std=gnu++20 -O3
 LFLAGS = -lquadmath -lm
 
 example1: example1.cpp
-	$(CXX) $(CXXFLAGS) example1.cpp -o example1.x $(LFLAGS) -DSTRICT_DEBUG_OFF
+	$(CXX) $(CXXFLAGS) example1.cpp -o example1.x $(LFLAGS)
 
 example2: example2.cpp
 	$(CXX) $(CXXFLAGS) example2.cpp -o example2.x $(LFLAGS) -DSTRICT_DEBUG_OFF
