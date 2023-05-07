@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <cassert>
 #include <initializer_list>
-#include <type_traits>
+#include <iostream>
 #include <utility>
 #include <vector>
 
@@ -227,7 +227,9 @@ template<IntegerType IntType>
 [[nodiscard]] inline auto & SliceArray<DirectBaseT>::operator[](IntType i)
 {
    #ifndef STRICT_DEBUG_OFF
-   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   if(!internal::valid_index(*this, i)) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return A[sl.start() + i * sl.stride()];
 }
@@ -237,18 +239,24 @@ template<IntegerType IntType>
 [[nodiscard]] const inline auto & SliceArray<DirectBaseT>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
-   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   if(!internal::valid_index(*this, i)) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return A[sl.start() + i*sl.stride()];
 }
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto & SliceArray<DirectBaseT>::operator[](internal::Last)
-{ return A[sl.start() + (size()-1)*sl.stride()]; }
+{
+   return A[sl.start() + (size()-1)*sl.stride()];
+}
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] const inline auto & SliceArray<DirectBaseT>::operator[](internal::Last) const
-{ return A[sl.start() + (size()-1)*sl.stride()]; }
+{
+   return A[sl.start() + (size()-1)*sl.stride()];
+}
 
 template<DirectBaseType DirectBaseT>
 SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator+=(StrictVal<real_type> val)
@@ -492,7 +500,9 @@ template<IntegerType IntType>
 [[nodiscard]] inline auto & RandSliceArray<DirectBaseT>::operator[](IntType i)
 {
    #ifndef STRICT_DEBUG_OFF
-   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   if(!internal::valid_index(*this, i)) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return A[m_indexes[i]];
 }
@@ -502,7 +512,9 @@ template<IntegerType IntType>
 [[nodiscard]] inline const auto & RandSliceArray<DirectBaseT>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
-   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   if(!internal::valid_index(*this, i)) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return A[m_indexes[i]];
 }
@@ -651,14 +663,18 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
 inline ConstSliceArray<BaseT>::ConstSliceArray(const BaseT & A, slice sl) : A{A}, sl{sl}
-{ ASSERT_STRICT_DEBUG(sl.valid(A)); }
+{
+   ASSERT_STRICT_DEBUG(sl.valid(A));
+}
 
 template<BaseType BaseT>
 template<IntegerType IntType>
 [[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
-   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   if(!internal::valid_index(*this, i)) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return A[sl.start() + i*sl.stride()];
 }
@@ -712,8 +728,9 @@ inline RandConstSliceArray<BaseT>::RandConstSliceArray(const BaseT & A, std::vec
    ASSERT_STRICT_DEBUG(m_indexes.size() <= A.size());
    ASSERT_STRICT_DEBUG(m_indexes[0] > -1);
    #ifndef STRICT_DEBUG_OFF
-   for(size_type i = 1; i < m_indexes.size(); ++i)
+   for(size_type i = 1; i < m_indexes.size(); ++i) {
       assert(m_indexes[i] > m_indexes[i-1]);
+   }
    #endif
 }
 
@@ -722,7 +739,9 @@ template<IntegerType IntType>
 [[nodiscard]] inline decltype(auto) RandConstSliceArray<BaseT>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
-   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   if(!internal::valid_index(*this, i)) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return A[m_indexes[i]];
 }

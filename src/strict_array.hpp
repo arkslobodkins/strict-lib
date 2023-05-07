@@ -170,20 +170,11 @@ template<OneDimBaseType T1, OneDimBaseType T2>
 template<RealType T, IntegerType IntType1 = strict_int, IntegerType IntType2 = strict_int>
 [[nodiscard]] auto e_unit(IntType1 j, IntType2 size);
 
-template<RealType T, IntegerType IntType1 = strict_int, IntegerType IntType2 = strict_int>
-[[nodiscard]] auto e_slice_unit(IntType1 j, IntType2 size);
-
 template<RealType T>
 [[nodiscard]] auto sequence(Size size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
 
 template<RealType T>
-[[nodiscard]] auto slice_sequence(Size size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
-
-template<RealType T>
 [[nodiscard]] auto linspace(Size size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
-
-template<RealType T>
-[[nodiscard]] auto slice_linspace(Size size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -398,7 +389,9 @@ template<IntegerType IntType>
 [[nodiscard]] inline StrictVal<T> & Array<T>::operator[](IntType i)
 {
    #ifndef STRICT_DEBUG_OFF
-   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   if(!internal::valid_index(*this, i)) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return elem[i];
 }
@@ -408,7 +401,9 @@ template<IntegerType IntType>
 [[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](IntType i) const
 {
    #ifndef STRICT_DEBUG_OFF
-   if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+   if(!internal::valid_index(*this, i)) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return elem[i];
 }
@@ -634,7 +629,9 @@ public:
    template<IntegerType IntType>
    [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
-      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      if(!internal::valid_index(*this, i)) {
+         STRICT_THROW_OUT_OF_RANGE();
+      }
       #endif
       return j == i ? real_type{1} : real_type{0};
    }
@@ -664,7 +661,9 @@ public:
    template<IntegerType IntType>
    [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
-      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      if(!internal::valid_index(*this, i)) {
+         STRICT_THROW_OUT_OF_RANGE();
+      }
       #endif
       return start + incr * static_cast<real_type>(i);
    }
@@ -700,7 +699,9 @@ public:
    template<IntegerType IntType>
    [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
-      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      if(!internal::valid_index(*this, i)) {
+         STRICT_THROW_OUT_OF_RANGE();
+      }
       #endif
       return op(A[i]);
    }
@@ -730,7 +731,6 @@ public:
 
    explicit BinExpr(const OneDimBaseT1 & A, const OneDimBaseT2 & B, Op op) : A{A}, B{B}, op{op} {
       static_assert(SameType<typename OneDimBaseT1::value_type, typename OneDimBaseT2::value_type>);
-      static_assert(SameType<typename OneDimBaseT1::base_type, typename OneDimBaseT2::base_type>);
       ASSERT_STRICT_DEBUG(!A.empty());
       ASSERT_STRICT_DEBUG(A.size() == B.size());
    }
@@ -740,7 +740,9 @@ public:
    template<IntegerType IntType>
    [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
-      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      if(!internal::valid_index(*this, i)) {
+         STRICT_THROW_OUT_OF_RANGE();
+      }
       #endif
       return op(A[i], B[i]);
    }
@@ -779,7 +781,9 @@ public:
    template<IntegerType IntType>
    [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
-      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      if(!internal::valid_index(*this, i)) {
+         STRICT_THROW_OUT_OF_RANGE();
+      }
       #endif
       return op(val, B[i]);
    }
@@ -818,7 +822,9 @@ public:
    template<IntegerType IntType>
    [[nodiscard]] value_type operator[](IntType i) const {
       #ifndef STRICT_DEBUG_OFF
-      if(!internal::valid_index(*this, i)) STRICT_THROW_OUT_OF_RANGE();
+      if(!internal::valid_index(*this, i)) {
+         STRICT_THROW_OUT_OF_RANGE();
+      }
       #endif
       return op(A[i], val);
    }
@@ -842,141 +848,195 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator+(const T1 & A, const T2 & B)
-{ return BinExpr{A, B, Plus{}}; }
+{
+   return BinExpr{A, B, Plus{}};
+}
 
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator-(const T1 & A, const T2 & B)
-{ return BinExpr{A, B, Minus{}}; }
+{
+   return BinExpr{A, B, Minus{}};
+}
 
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator*(const T1 & A, const T2 & B)
-{ return BinExpr{A, B, Mult{}}; }
+{
+   return BinExpr{A, B, Mult{}};
+}
 
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto operator/(const T1 & A, const T2 & B)
-{ return BinExpr{A, B, Divide{}}; }
+{
+   return BinExpr{A, B, Divide{}};
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(StrictVal<U> val, const T & B)
-{ return BinExprValLeft{B, U{val}, Plus{}}; }
+{
+   return BinExprValLeft{B, U{val}, Plus{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(StrictVal<U> val, const T & B)
-{ return BinExprValLeft{B, U{val}, Minus{}}; }
+{
+   return BinExprValLeft{B, U{val}, Minus{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(StrictVal<U> val, const T & B)
-{ return BinExprValLeft{B, U{val}, Mult{}}; }
+{
+   return BinExprValLeft{B, U{val}, Mult{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(StrictVal<U> val, const T & B)
-{ return BinExprValLeft{B, U{val}, Divide{}}; }
+{
+   return BinExprValLeft{B, U{val}, Divide{}};
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(const T & A, StrictVal<U> val)
-{ return BinExprValRight{A, U{val}, Plus{}}; }
+{
+   return BinExprValRight{A, U{val}, Plus{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(const T & A, StrictVal<U> val)
-{ return BinExprValRight{A, U{val}, Minus{}}; }
+{
+   return BinExprValRight{A, U{val}, Minus{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(const T & A, StrictVal<U> val)
-{ return BinExprValRight{A, U{val}, Mult{}}; }
+{
+   return BinExprValRight{A, U{val}, Mult{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(const T & A, StrictVal<U> val)
-{ return BinExprValRight{A, U{val}, Divide{}}; }
+{
+   return BinExprValRight{A, U{val}, Divide{}};
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(U val, const T & B)
-{ return BinExprValLeft{B, val, Plus{}}; }
+{
+   return BinExprValLeft{B, val, Plus{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(U val, const T & B)
-{ return BinExprValLeft{B, val, Minus{}}; }
+{
+   return BinExprValLeft{B, val, Minus{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(U val, const T & B)
-{ return BinExprValLeft{B, val, Mult{}}; }
+{
+   return BinExprValLeft{B, val, Mult{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(U val, const T & B)
-{ return BinExprValLeft{B, val, Divide{}}; }
+{
+   return BinExprValLeft{B, val, Divide{}};
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator+(const T & A, U val)
-{ return BinExprValRight{A, val, Plus{}}; }
+{
+   return BinExprValRight{A, val, Plus{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator-(const T & A, U val)
-{ return BinExprValRight{A, val, Minus{}}; }
+{
+   return BinExprValRight{A, val, Minus{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator*(const T & A, U val)
-{ return BinExprValRight{A, val, Mult{}}; }
+{
+   return BinExprValRight{A, val, Mult{}};
+}
 
 template<OneDimBaseType T, RealType U>
 [[nodiscard]] auto operator/(const T & A, U val)
-{ return BinExprValRight{A, val, Divide{}}; }
+{
+   return BinExprValRight{A, val, Divide{}};
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T>
 [[nodiscard]] auto operator+(const T & A)
-{ return UnaryExpr{A, UnaryPlus{}}; }
+{
+   return UnaryExpr{A, UnaryPlus{}};
+}
 
 template<OneDimBaseType T>
 [[nodiscard]] auto operator-(const T & A)
-{ return UnaryExpr{A, UnaryMinus{}}; }
+{
+   return UnaryExpr{A, UnaryMinus{}};
+}
 
 template<OneDimBaseType T>
 [[nodiscard]] auto abs(const T & A)
-{ return UnaryExpr{A, UnaryAbs{}}; }
+{
+   return UnaryExpr{A, UnaryAbs{}};
+}
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto pow(const T & A, ValueTypeOf<T> p)
-{ return UnaryExpr{A, UnaryPow{p}}; }
+{
+   return UnaryExpr{A, UnaryPow{p}};
+}
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto pow_int(const T & A, StrictVal<int> p)
-{ return UnaryExpr{A, UnaryPowInt{p}}; }
+{
+   return UnaryExpr{A, UnaryPowInt{p}};
+}
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto exp(const T & A)
-{ return UnaryExpr{A, UnaryExp{}}; }
+{
+   return UnaryExpr{A, UnaryExp{}};
+}
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto log(const T & A)
-{ return UnaryExpr{A, UnaryLog{}}; }
+{
+   return UnaryExpr{A, UnaryLog{}};
+}
 
 template<OneDimFloatingBaseType T>
 [[nodiscard]] auto sqrt(const T & A)
-{ return UnaryExpr{A, UnarySqrt{}}; }
+{
+   return UnaryExpr{A, UnarySqrt{}};
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto two_prod(const T1 & A, const T2 & B)
-{ return std::pair{BinExpr{A, B, BinaryTwoProdFirst{}}, BinExpr{A, B, BinaryTwoProdSecond{}}}; }
+{
+   return std::pair{BinExpr{A, B, BinaryTwoProdFirst{}}, BinExpr{A, B, BinaryTwoProdSecond{}}};
+}
 
 template<RealType T, IntegerType IntType1, IntegerType IntType2>
 [[nodiscard]] auto e_unit(IntType1 j, IntType2 size)
-{ return StandardUnitVectorExpr<Array<T>> {j, size}; }
-
-template<RealType T, IntegerType IntType1, IntegerType IntType2>
-[[nodiscard]] auto e_slice_unit(IntType1 j, IntType2 size)
-{ return StandardUnitVectorExpr<SliceArray<Array<T>>> {j, size}; }
+{
+   return StandardUnitVectorExpr<Array<T>> {j, size};
+}
 
 template<RealType T>
 [[nodiscard]] auto sequence(Size size, Start<T> start, Incr<T> incr)
-{ return SequenceExpr<Array<T>> {start.get(), size.get(), incr.get()}; }
-
-template<RealType T>
-[[nodiscard]] auto slice_sequence(Size size, Start<T> start, Incr<T> incr)
-{ return SequenceExpr<SliceArray<Array<T>>> {start.get(), size.get(), incr.get()}; }
+{
+   return SequenceExpr<Array<T>> {start.get(), size.get(), incr.get()};
+}
 
 template<RealType T>
 [[nodiscard]] auto linspace(Size size, Start<T> start, End<T> end)
@@ -984,15 +1044,6 @@ template<RealType T>
    auto sz = size.get();
    ASSERT_STRICT_DEBUG(sz > 1);
    return SequenceExpr<Array<T>>
-      {start.get(), sz, ( end.get()-start.get() )/strict_cast<T>(sz-1)};
-}
-
-template<RealType T>
-[[nodiscard]] auto slice_linspace(Size size, Start<T> start, End<T> end)
-{
-   auto sz = size.get();
-   ASSERT_STRICT_DEBUG(sz > 1);
-   return SequenceExpr<SliceArray<Array<T>>>
       {start.get(), sz, ( end.get()-start.get() )/strict_cast<T>(sz-1)};
 }
 

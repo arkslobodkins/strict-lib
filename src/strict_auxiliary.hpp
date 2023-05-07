@@ -133,7 +133,8 @@ public:                                                   \
    explicit SmallObjectName(StrictVal<T> x) :             \
       x{real_cast<strict_int>(x)} {}                      \
                                                           \
-   explicit SmallObjectName(strict_int x) : x{x} {}       \
+   template<IntegerType T>                                \
+   explicit SmallObjectName(T x) : x{x} {}                \
                                                           \
    strict_int get() const { return x; }                   \
 private:                                                  \
