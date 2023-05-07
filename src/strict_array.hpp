@@ -23,14 +23,12 @@ namespace strict_array {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-class Array : private ArrayBase1D
+class Array : private Base1D
 {
 public:
    using size_type = strict_int;
    using value_type = StrictVal<T>;
    using real_type = T;
-   using base_type = ArrayBase1D;
-   using expr_base_type = ArrayExpr1D;
 
    // expr_type and slice_type inform expression templates and SliceArrays
    // about how the object should be stored.
@@ -68,17 +66,17 @@ public:
    Array & operator*=(value_type val) &;
    Array & operator/=(value_type val) &;
 
-   template<ArrayBaseType1D ArrayBaseT1D>
-      Array & operator+=(const ArrayBaseT1D & A) &;
+   template<OneDimBaseType OneDimBaseT>
+      Array & operator+=(const OneDimBaseT & A) &;
 
-   template<ArrayBaseType1D ArrayBaseT1D>
-      Array & operator-=(const ArrayBaseT1D & A) &;
+   template<OneDimBaseType OneDimBaseT>
+      Array & operator-=(const OneDimBaseT & A) &;
 
-   template<ArrayBaseType1D ArrayBaseT1D>
-      Array & operator*=(const ArrayBaseT1D & A) &;
+   template<OneDimBaseType OneDimBaseT>
+      Array & operator*=(const OneDimBaseT & A) &;
 
-   template<ArrayBaseType1D ArrayBaseT1D>
-      Array & operator/=(const ArrayBaseT1D & A) &;
+   template<OneDimBaseType OneDimBaseT>
+      Array & operator/=(const OneDimBaseT & A) &;
 
    void swap(Array & A) noexcept;
 
@@ -87,8 +85,8 @@ public:
 
    void resize_and_assign(Array && A);
 
-   template<ArrayBaseType1D ArrayBaseT1D>
-      void resize_and_assign(const ArrayBaseT1D & A);
+   template<OneDimBaseType OneDimBaseT>
+      void resize_and_assign(const OneDimBaseT & A);
 
    template<IntegerType IntType>
       [[nodiscard]] inline value_type & operator[](IntType i);
@@ -117,8 +115,8 @@ private:
    size_type sz;
 
    template<typename F> void apply0(F f);
-   template<ArrayBaseType1D ArrayBaseT1D, typename F>
-      void apply1(const ArrayBaseT1D & A, F f);
+   template<OneDimBaseType OneDimBaseT, typename F>
+      void apply1(const OneDimBaseT & A, F f);
 };
 
 template<IntegerType T>
@@ -312,8 +310,8 @@ Array<T> & Array<T>::operator/=(StrictVal<T> val) &
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
-template<ArrayBaseType1D ArrayBaseT1D>
-Array<T> & Array<T>::operator+=(const ArrayBaseT1D & A) &
+template<OneDimBaseType OneDimBaseT>
+Array<T> & Array<T>::operator+=(const OneDimBaseT & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -322,8 +320,8 @@ Array<T> & Array<T>::operator+=(const ArrayBaseT1D & A) &
 }
 
 template<RealType T>
-template<ArrayBaseType1D ArrayBaseT1D>
-Array<T> & Array<T>::operator-=(const ArrayBaseT1D & A) &
+template<OneDimBaseType OneDimBaseT>
+Array<T> & Array<T>::operator-=(const OneDimBaseT & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -332,8 +330,8 @@ Array<T> & Array<T>::operator-=(const ArrayBaseT1D & A) &
 }
 
 template<RealType T>
-template<ArrayBaseType1D ArrayBaseT1D>
-Array<T> & Array<T>::operator*=(const ArrayBaseT1D & A) &
+template<OneDimBaseType OneDimBaseT>
+Array<T> & Array<T>::operator*=(const OneDimBaseT & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -342,8 +340,8 @@ Array<T> & Array<T>::operator*=(const ArrayBaseT1D & A) &
 }
 
 template<RealType T>
-template<ArrayBaseType1D ArrayBaseT1D>
-Array<T> & Array<T>::operator/=(const ArrayBaseT1D & A) &
+template<OneDimBaseType OneDimBaseT>
+Array<T> & Array<T>::operator/=(const OneDimBaseT & A) &
 {
    ASSERT_STRICT_DEBUG(sz == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -376,8 +374,8 @@ void Array<T>::resize_and_assign(Array<T> && A)
 }
 
 template<RealType T>
-template<ArrayBaseType1D ArrayBaseT1D>
-void Array<T>::resize_and_assign(const ArrayBaseT1D & A)
+template<OneDimBaseType OneDimBaseT>
+void Array<T>::resize_and_assign(const OneDimBaseT & A)
 {
    resize(A.size());
    *this = A;
@@ -441,8 +439,8 @@ void Array<T>::apply0(F f)
 }
 
 template<RealType T>
-template<ArrayBaseType1D ArrayBaseT1D, typename F>
-void Array<T>::apply1(const ArrayBaseT1D & A, F f)
+template<OneDimBaseType OneDimBaseT, typename F>
+void Array<T>::apply1(const OneDimBaseT & A, F f)
 {
    (void)A;
    for(size_type i = 0; i < sz; ++i)
@@ -605,8 +603,6 @@ struct BinaryTwoProdSecond : private BinaryOperation
    using size_type = typename OneDimObjectType::size_type;            \
    using value_type = typename OneDimObjectType::value_type;          \
    using real_type = typename OneDimObjectType::real_type;            \
-   using base_type = typename OneDimObjectType::base_type;            \
-   using expr_base_type = typename OneDimObjectType::expr_base_type;  \
 
 #define STRICT_GENERATE_EXPR_COPY_ASSIGN(StrictClassName)             \
    StrictClassName(const StrictClassName &) = default;                \
@@ -614,7 +610,7 @@ struct BinaryTwoProdSecond : private BinaryOperation
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimBaseT>
-class StandardUnitVectorExpr : private OneDimBaseT::expr_base_type
+class StandardUnitVectorExpr : private Base1D
 {
 public:
    STRICT_GENERATE_CONST_ITERATORS()
@@ -645,7 +641,7 @@ private:
 };
 
 template<OneDimBaseType OneDimBaseT>
-class SequenceExpr : private OneDimBaseT::expr_base_type
+class SequenceExpr : private Base1D
 {
 public:
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT)
@@ -686,7 +682,7 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimBaseT, UnaryOperationType Op>
-class UnaryExpr : private OneDimBaseT::expr_base_type
+class UnaryExpr : private Base1D
 {
 public:
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT)
@@ -723,7 +719,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimBaseT1, OneDimBaseType OneDimBaseT2, BinaryOperationType Op>
-class BinExpr : private OneDimBaseT1::expr_base_type
+class BinExpr : private Base1D
 {
 public:
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1)
@@ -765,7 +761,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
-class BinExprValLeft : private OneDimBaseT1::expr_base_type
+class BinExprValLeft : private Base1D
 {
 public:
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1)
@@ -806,7 +802,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<OneDimBaseType OneDimBaseT1, RealType T2, BinaryOperationType Op>
-class BinExprValRight : private OneDimBaseT1::expr_base_type
+class BinExprValRight : private Base1D
 {
 public:
    STRICT_GENERATE_USING_EXPR_TYPES(OneDimBaseT1)

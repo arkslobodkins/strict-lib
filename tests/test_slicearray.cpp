@@ -8,8 +8,8 @@
 using namespace strict_array;
 using namespace strict_array::util;
 
-template<RealType T, SliceArrayBaseType1D SliceArrayBaseT1D>
-void assert_slicearray(const std::valarray<T> & v, const SliceArrayBaseT1D & s)
+template<RealType T, OneDimBaseType OneDimBaseT>
+void assert_slicearray(const std::valarray<T> & v, const OneDimBaseT & s)
 {
    assert((long long int)v.size() == s.size());
    for(auto i = 0LL; i < s.size(); ++i)

@@ -106,7 +106,7 @@ using index_vec = std::vector<strict_int>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectBaseType DirectBaseT>
-class SliceArray : private SliceArrayBase1D
+class SliceArray : private Base1D
 {
 public:
    STRICT_GENERATE_ITERATORS()
@@ -114,18 +114,12 @@ public:
    using size_type = typename DirectBaseT::size_type;
    using value_type = typename DirectBaseT::value_type;
    using real_type = typename DirectBaseT::real_type;
-   using base_type = SliceArrayBase1D;
-   using expr_base_type = SliceArrayExpr1D;
    using expr_type = SliceArray<DirectBaseT>;
    using slice_type = SliceArray<DirectBaseT>;
 
    explicit inline SliceArray(DirectBaseT & A, slice sl);
    SliceArray(const SliceArray & s);
    SliceArray & operator=(const SliceArray & s);
-
-   // assign other types of 1-D SliceArray
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      SliceArray & operator=(const SliceArrayBaseT1D & s);
 
    SliceArray & operator=(StrictVal<real_type> s);
    SliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
@@ -138,35 +132,36 @@ public:
       [[nodiscard]] inline auto & operator[](IntType i);
    template<IntegerType IntType>
       [[nodiscard]] const inline auto & operator[](IntType i) const;
+
    [[nodiscard]] inline auto & operator[](internal::Last);
    [[nodiscard]] const inline auto & operator[](internal::Last) const;
 
    STRICT_GENERATE_SLICES()
-
-   [[nodiscard]] size_type size() const { return sl.size(); }
+   [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sl.size() > -1); return sl.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
+
 
    SliceArray & operator+=(StrictVal<real_type> val);
    SliceArray & operator-=(StrictVal<real_type> val);
    SliceArray & operator*=(StrictVal<real_type> val);
    SliceArray & operator/=(StrictVal<real_type> val);
 
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      SliceArray & operator+=(const SliceArrayBaseT1D & A);
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      SliceArray & operator-=(const SliceArrayBaseT1D & A);
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      SliceArray & operator*=(const SliceArrayBaseT1D & A);
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      SliceArray & operator/=(const SliceArrayBaseT1D & A);
+   template<OneDimBaseType OneDimBaseT>
+      SliceArray & operator+=(const OneDimBaseT & A);
+   template<OneDimBaseType OneDimBaseT>
+      SliceArray & operator-=(const OneDimBaseT & A);
+   template<OneDimBaseType OneDimBaseT>
+      SliceArray & operator*=(const OneDimBaseT & A);
+   template<OneDimBaseType OneDimBaseT>
+      SliceArray & operator/=(const OneDimBaseT & A);
 
 private:
    typename DirectBaseT::slice_type A;
    slice sl;
 
    template<typename F> void apply0(F f);
-   template<SliceArrayBaseType1D SliceArrayBaseT1D, typename F>
-      void apply1(const SliceArrayBaseT1D & A, F f);
+   template<OneDimBaseType OneDimBaseT, typename F>
+      void apply1(const OneDimBaseT & A, F f);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -183,16 +178,6 @@ SliceArray<DirectBaseT>::SliceArray(const SliceArray<DirectBaseT> & s) : A{s.A},
 template<DirectBaseType DirectBaseT>
 SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(const SliceArray<DirectBaseT> & s)
 {
-   ASSERT_STRICT_DEBUG(size() == s.size());
-   std::copy(s.begin(), s.end(), begin());
-   return *this;
-}
-
-template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator=(const SliceArrayBaseT1D & s)
-{
-   static_assert(SameType<RealTypeOf<SliceArrayBaseT1D>, real_type>); // compiler message
    ASSERT_STRICT_DEBUG(size() == s.size());
    std::copy(s.begin(), s.end(), begin());
    return *this;
@@ -291,8 +276,8 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator/=(StrictVal<real_typ
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator+=(const SliceArrayBaseT1D & A)
+template<OneDimBaseType OneDimBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator+=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -301,8 +286,8 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator+=(const SliceArrayBa
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator-=(const SliceArrayBaseT1D & A)
+template<OneDimBaseType OneDimBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator-=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -311,8 +296,8 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator-=(const SliceArrayBa
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator*=(const SliceArrayBaseT1D & A)
+template<OneDimBaseType OneDimBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator*=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -321,8 +306,8 @@ SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator*=(const SliceArrayBa
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator/=(const SliceArrayBaseT1D & A)
+template<OneDimBaseType OneDimBaseT>
+SliceArray<DirectBaseT> & SliceArray<DirectBaseT>::operator/=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -339,8 +324,8 @@ void SliceArray<DirectBaseT>::apply0(F f)
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D, typename F>
-void SliceArray<DirectBaseT>::apply1(const SliceArrayBaseT1D & A, F f)
+template<OneDimBaseType OneDimBaseT, typename F>
+void SliceArray<DirectBaseT>::apply1(const OneDimBaseT & A, F f)
 {
    (void)A;
    for(size_type i = 0; i < size(); ++i)
@@ -351,7 +336,7 @@ void SliceArray<DirectBaseT>::apply1(const SliceArrayBaseT1D & A, F f)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectBaseType DirectBaseT>
-class RandSliceArray : private SliceArrayBase1D
+class RandSliceArray : private Base1D
 {
 public:
    STRICT_GENERATE_ITERATORS()
@@ -359,8 +344,6 @@ public:
    using size_type = typename DirectBaseT::size_type;
    using value_type = typename DirectBaseT::value_type;
    using real_type = typename DirectBaseT::real_type;
-   using base_type = SliceArrayBase1D;
-   using expr_base_type = SliceArrayExpr1D;
    using expr_type = RandSliceArray<DirectBaseT>;
    using slice_type = RandSliceArray<DirectBaseT>;
 
@@ -369,10 +352,6 @@ public:
    RandSliceArray(RandSliceArray && rs);
    RandSliceArray & operator=(const RandSliceArray & rs);
    RandSliceArray & operator=(RandSliceArray && rs);
-
-   // assign other types of 1-D SliceArray
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      RandSliceArray & operator=(const SliceArrayBaseT1D & s);
 
    RandSliceArray & operator=(StrictVal<real_type> val);
    RandSliceArray & operator=(std::initializer_list<StrictVal<real_type>> list);
@@ -385,12 +364,13 @@ public:
       [[nodiscard]] inline auto & operator[](IntType i);
    template<IntegerType IntType>
       [[nodiscard]] inline const auto & operator[](IntType i) const;
+
    [[nodiscard]] inline auto & operator[](internal::Last);
    [[nodiscard]] inline const auto & operator[](internal::Last) const;
 
    STRICT_GENERATE_SLICES()
 
-   [[nodiscard]] size_type size() const { return m_indexes.size(); }
+   [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sl.size() > -1); return m_indexes.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
 
    const std::vector<size_type> & indexes() const & { return m_indexes; }
@@ -401,22 +381,22 @@ public:
    RandSliceArray & operator*=(StrictVal<real_type> val);
    RandSliceArray & operator/=(StrictVal<real_type> val);
 
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      RandSliceArray & operator+=(const SliceArrayBaseT1D & A);
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      RandSliceArray & operator-=(const SliceArrayBaseT1D & A);
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      RandSliceArray & operator*=(const SliceArrayBaseT1D & A);
-   template<SliceArrayBaseType1D SliceArrayBaseT1D>
-      RandSliceArray & operator/=(const SliceArrayBaseT1D & A);
+   template<OneDimBaseType OneDimBaseT>
+      RandSliceArray & operator+=(const OneDimBaseT & A);
+   template<OneDimBaseType OneDimBaseT>
+      RandSliceArray & operator-=(const OneDimBaseT & A);
+   template<OneDimBaseType OneDimBaseT>
+      RandSliceArray & operator*=(const OneDimBaseT & A);
+   template<OneDimBaseType OneDimBaseT>
+      RandSliceArray & operator/=(const OneDimBaseT & A);
 
 private:
    typename DirectBaseT::slice_type A;
    std::vector<size_type> m_indexes;
 
    template<typename F> void apply0(F f);
-   template<SliceArrayBaseType1D SliceArrayBaseT1D, typename F>
-      void apply1(const SliceArrayBaseT1D & A, F f);
+   template<OneDimBaseType OneDimBaseT, typename F>
+      void apply1(const OneDimBaseT & A, F f);
 };
 
 template<IntegerType IntType>
@@ -431,8 +411,9 @@ inline RandSliceArray<BaseT>::RandSliceArray(BaseT & A, std::vector<size_type> &
    ASSERT_STRICT_DEBUG(m_indexes.size() <= A.size());
    ASSERT_STRICT_DEBUG(m_indexes[0] > -1);
    #ifndef STRICT_DEBUG_OFF
-   for(size_type i = 1; i < m_indexes.size(); ++i)
+   for(size_type i = 1; i < m_indexes.size(); ++i) {
       assert(m_indexes[i] > m_indexes[i-1]);
+   }
    #endif
 }
 
@@ -458,16 +439,6 @@ RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator=(RandSliceAr
    ASSERT_STRICT_DEBUG(size() == rs.size());
    A = rs.A;
    m_indexes = std::move(rs.m_indexes);
-   return *this;
-}
-
-template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator=(const SliceArrayBaseT1D & rs)
-{
-   static_assert(SameType<RealTypeOf<SliceArrayBaseT1D>, real_type>); // compiler message
-   ASSERT_STRICT_DEBUG(size() == rs.size());
-   std::copy(rs.begin(), rs.end(), begin());
    return *this;
 }
 
@@ -564,8 +535,8 @@ RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator/=(StrictVal<
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator+=(const SliceArrayBaseT1D & A)
+template<OneDimBaseType OneDimBaseT>
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator+=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -574,8 +545,8 @@ RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator+=(const Slic
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator-=(const SliceArrayBaseT1D & A)
+template<OneDimBaseType OneDimBaseT>
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator-=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -584,8 +555,8 @@ RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator-=(const Slic
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator*=(const SliceArrayBaseT1D & A)
+template<OneDimBaseType OneDimBaseT>
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator*=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -594,8 +565,8 @@ RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator*=(const Slic
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D>
-RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator/=(const SliceArrayBaseT1D & A)
+template<OneDimBaseType OneDimBaseT>
+RandSliceArray<DirectBaseT> & RandSliceArray<DirectBaseT>::operator/=(const OneDimBaseT & A)
 {
    ASSERT_STRICT_DEBUG(size() == A.size());
    ASSERT_STRICT_DEBUG(!empty());
@@ -612,8 +583,8 @@ void RandSliceArray<DirectBaseT>::apply0(F f)
 }
 
 template<DirectBaseType DirectBaseT>
-template<SliceArrayBaseType1D SliceArrayBaseT1D, typename F>
-void RandSliceArray<DirectBaseT>::apply1(const SliceArrayBaseT1D & A, F f)
+template<OneDimBaseType OneDimBaseT, typename F>
+void RandSliceArray<DirectBaseT>::apply1(const OneDimBaseT & A, F f)
 {
    (void)A;
    for(size_type i = 0; i < size(); ++i)
@@ -631,7 +602,7 @@ std::ostream & operator<<(std::ostream & os, const std::vector<IntType> & indexe
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
-class ConstSliceArray : private SliceArrayBase1D
+class ConstSliceArray : private Base1D
 {
 public:
    STRICT_GENERATE_CONST_ITERATORS()
@@ -639,8 +610,6 @@ public:
    using size_type = typename BaseT::size_type;
    using value_type = typename BaseT::value_type;
    using real_type = typename BaseT::real_type;
-   using base_type = SliceArrayBase1D;
-   using expr_base_type = SliceArrayExpr1D;
    using expr_type = ConstSliceArray<BaseT>;
 
    explicit inline ConstSliceArray(const BaseT & A, slice sl);
@@ -652,7 +621,7 @@ public:
    [[nodiscard]] inline decltype(auto) operator[](internal::Last) const;
    STRICT_GENERATE_CONST_SLICES()
 
-   [[nodiscard]] size_type size() const { return sl.size(); }
+   [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sl.size() > -1); return sl.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
 
 private:
@@ -689,7 +658,7 @@ template<BaseType BaseT>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
-class RandConstSliceArray : private SliceArrayBase1D
+class RandConstSliceArray : private Base1D
 {
 public:
    STRICT_GENERATE_CONST_ITERATORS()
@@ -697,8 +666,6 @@ public:
    using size_type = typename BaseT::size_type;
    using value_type = typename BaseT::value_type;
    using real_type = typename BaseT::real_type;
-   using base_type = SliceArrayBase1D;
-   using expr_base_type = SliceArrayExpr1D;
    using expr_type = const RandConstSliceArray<BaseT>;
 
    explicit inline RandConstSliceArray(const BaseT & A, std::vector<size_type> && indexes);
@@ -711,7 +678,7 @@ public:
 
    STRICT_GENERATE_CONST_SLICES()
 
-   [[nodiscard]] size_type size() const { return m_indexes.size(); }
+   [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sl.size() > -1); return m_indexes.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
 
 private:

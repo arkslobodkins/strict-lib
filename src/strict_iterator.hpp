@@ -63,11 +63,15 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline iterator<DirectBaseT> operator+(typename iterator<DirectBaseT>::difference_type incr, const iterator<DirectBaseT> & it)
-{ return it + incr; }
+{
+   return it + incr;
+}
 
 template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline iterator<DirectBaseT> operator-(typename iterator<DirectBaseT>::difference_type incr, const iterator<DirectBaseT> & it)
-{ return it + incr; }
+{
+   return it + incr;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<DirectBaseType DirectBaseT>
@@ -153,7 +157,9 @@ template<DirectBaseType DirectBaseT>
 inline auto iterator<DirectBaseT>::operator[](difference_type n) const -> reference
 {
    #ifndef STRICT_DEBUG_OFF
-   if(pos + n < 0 || pos + n > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
+   if(pos + n < 0 || pos + n > (*A_ptr).size()-1) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return (*A_ptr)[pos + n];
 }
@@ -162,7 +168,9 @@ template<DirectBaseType DirectBaseT>
 inline auto iterator<DirectBaseT>::operator*() const -> reference
 {
    #ifndef STRICT_DEBUG_OFF
-   if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
+   if(pos < 0 || pos > (*A_ptr).size()-1) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return (*A_ptr)[pos];
 }
@@ -171,7 +179,9 @@ template<DirectBaseType DirectBaseT>
 [[nodiscard]] inline auto iterator<DirectBaseT>::operator->() const -> pointer
 {
    #ifndef STRICT_DEBUG_OFF
-   if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
+   if(pos < 0 || pos > (*A_ptr).size()-1) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return &((*A_ptr)[pos]);
 }
@@ -265,11 +275,15 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
 [[nodiscard]] inline const_iterator<BaseT> operator+(typename const_iterator<BaseT>::difference_type incr, const const_iterator<BaseT> & it)
-{ return it + incr; }
+{
+   return it + incr;
+}
 
 template<BaseType BaseT>
 [[nodiscard]] inline const_iterator<BaseT> operator-(typename const_iterator<BaseT>::difference_type incr, const const_iterator<BaseT> & it)
-{ return it + incr; }
+{
+   return it + incr;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<BaseType BaseT>
@@ -355,7 +369,9 @@ template<BaseType BaseT>
 inline decltype(auto) const_iterator<BaseT>::operator[](difference_type n) const
 {
    #ifndef STRICT_DEBUG_OFF
-   if(pos + n < 0 || pos + n > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
+   if(pos + n < 0 || pos + n > (*A_ptr).size()-1) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return (*A_ptr)[pos + n];
 }
@@ -364,7 +380,9 @@ template<BaseType BaseT>
 inline decltype(auto) const_iterator<BaseT>::operator*() const
 {
    #ifndef STRICT_DEBUG_OFF
-   if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
+   if(pos < 0 || pos > (*A_ptr).size()-1) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return (*A_ptr)[pos];
 }
@@ -375,7 +393,9 @@ template<BaseType BaseT>
    static_assert(std::is_lvalue_reference_v<decltype((*A_ptr)[0])>,
          "CANNOT ASSIGN ADDRESS OF ELEMENTS OF EXPRESSION TEMPLATES OR SLICES OF EXPRESSION TEMPLATES TO A POINTER");
    #ifndef STRICT_DEBUG_OFF
-   if(pos < 0 || pos > (*A_ptr).size()-1) STRICT_THROW_OUT_OF_RANGE();
+   if(pos < 0 || pos > (*A_ptr).size()-1) {
+      STRICT_THROW_OUT_OF_RANGE();
+   }
    #endif
    return &((*A_ptr)[pos]);
 }

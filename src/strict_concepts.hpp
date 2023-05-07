@@ -104,17 +104,8 @@ using ValueTypeOf = typename std::remove_reference_t<T>::value_type;
 using strict_int = long long int;
 static_assert(sizeof(strict_int) >= 8); // ensure 64-bit indexing
 
-class SliceArrayBase1D : protected Base {};
-class SliceArrayExpr1D : protected Expr, protected SliceArrayBase1D {};
-template<typename T> concept SliceArrayBaseType1D = BaseOf<SliceArrayBase1D, T>;
-template<typename T> concept SliceArrayExprType1D = BaseOf<SliceArrayExpr1D, T>;
-
-class ArrayBase1D : protected Base {};
-class ArrayExpr1D : protected Expr, protected ArrayBase1D {};
-template<typename T> concept ArrayBaseType1D = BaseOf<ArrayBase1D, T>;
-template<typename T> concept ArrayExprType1D = BaseOf<ArrayExpr1D, T>;
-
-template<typename T> concept OneDimBaseType = ArrayBaseType1D<T> || SliceArrayBaseType1D<T>;
+class Base1D : protected Base{};
+template<typename T> concept OneDimBaseType = BaseOf<Base1D, T>;
 template<typename T> concept OneDimFloatingBaseType = OneDimBaseType<T> && FloatingBaseType<T>;
 
 }

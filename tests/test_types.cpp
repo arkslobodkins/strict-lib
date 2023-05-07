@@ -198,48 +198,6 @@ void assert_direct_base_type()
    std::cout << "passed " << __func__ << std::endl;
 }
 
-void assert_array_base_type()
-{
-   Array<double> A(1), B(1);
-   static_assert(ArrayBaseType1D<decltype(A)>);
-   static_assert(ArrayBaseType1D<decltype(-A)>);
-   static_assert(ArrayBaseType1D<decltype(1. + A)>);
-   static_assert(ArrayBaseType1D<decltype(1. * A)>);
-   static_assert(ArrayBaseType1D<decltype(A + 1.)>);
-   static_assert(ArrayBaseType1D<decltype(A * 1.)>);
-   static_assert(ArrayBaseType1D<decltype(A + B)>);
-   static_assert(ArrayBaseType1D<decltype(A * B)>);
-
-   static_assert(!ArrayBaseType1D<decltype((-A)[seq(0, 0)])>);
-   static_assert(!ArrayBaseType1D<decltype((A + B)[seq(0, 0)])>);
-   static_assert(!ArrayBaseType1D<decltype((A * B)[seq(0, 0)])>);
-   static_assert(!ArrayBaseType1D<decltype(A[seq(0, 0)] * B[seq(0, 0)])>);
-   static_assert(!ArrayBaseType1D<decltype((A[seq(0, 0)] * B[seq(0, 0)])[seq(0, 0)])>);
-   std::cout << "passed " << __func__ << std::endl;
-}
-
-void assert_array_expr_type()
-{
-   Array<double> A(1);
-   const Array<double> B(1);
-   static_assert(ArrayExprType1D<decltype(abs(A))>);
-   static_assert(ArrayExprType1D<decltype(-A)>);
-   static_assert(ArrayExprType1D<decltype(1. + A)>);
-   static_assert(ArrayExprType1D<decltype(1. * A)>);
-   static_assert(ArrayExprType1D<decltype(A + 1.)>);
-   static_assert(ArrayExprType1D<decltype(A * 1.)>);
-   static_assert(ArrayExprType1D<decltype(A + B)>);
-   static_assert(ArrayExprType1D<decltype(A * B)>);
-
-   static_assert(!ArrayExprType1D<decltype(A)>);
-   static_assert(!ArrayExprType1D<decltype(B)>);
-   static_assert(!ArrayExprType1D<decltype(A[seq(0, 0)])>);
-   static_assert(!ArrayExprType1D<decltype(A[seq(0, 0)] + B[seq(0, 0)])>);
-   static_assert(!ArrayExprType1D<decltype(A[seq(0, 0)] + 1.)>);
-   static_assert(!ArrayExprType1D<decltype(1. + A[seq(0, 0)])>);
-   std::cout << "passed " << __func__ << std::endl;
-}
-
 int main(int argc, char *argv[])
 {
    assert_real();
@@ -256,7 +214,5 @@ int main(int argc, char *argv[])
    assert_not_quad_base();
 
    assert_direct_base_type();
-   assert_array_base_type();
-   assert_array_expr_type();
    return EXIT_SUCCESS;
 }
