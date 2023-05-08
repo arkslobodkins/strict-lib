@@ -191,311 +191,516 @@ template<RealType U>
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 constexpr inline StrictVal<T> & StrictVal<T>::operator+=(StrictVal<T> strict_val) &
-{ x += strict_val.x; return *this; }
+{
+   x += strict_val.x;
+   return *this;
+}
 
 template<RealType T>
 constexpr inline StrictVal<T> & StrictVal<T>::operator-=(StrictVal<T> strict_val) &
-{ x -= strict_val.x; return *this; }
+{
+   x -= strict_val.x;
+   return *this;
+}
 
 template<RealType T>
 constexpr inline StrictVal<T> & StrictVal<T>::operator*=(StrictVal<T> strict_val) &
-{ x *= strict_val.x; return *this; }
+{
+   x *= strict_val.x;
+   return *this;
+}
 
 template<RealType T>
 constexpr inline StrictVal<T> & StrictVal<T>::operator/=(StrictVal<T> strict_val) &
-{ x /= strict_val.x; return *this; }
+{
+   x /= strict_val.x;
+   return *this;
+}
 
 template<RealType T>
 template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator%=(StrictVal<T> strict_val) &
-{ x %= strict_val.x; return *this; }
+{
+   x %= strict_val.x;
+   return *this;
+}
 
 template<RealType T>
 template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(StrictVal<T> strict_val) &
-{ x <<= strict_val.x; return *this; }
+{
+   x <<= strict_val.x;
+   return *this;
+}
 
 template<RealType T>
 template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(StrictVal<T> strict_val) &
-{ x >>= strict_val.x; return *this; }
+{
+   x >>= strict_val.x;
+   return *this;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 template<RealType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator+=(U val) &
-{ static_assert(SameType<T, U>); x += val; return *this; }
+{
+   static_assert(SameType<T, U>);
+   x += val;
+   return *this;
+}
 
 template<RealType T>
 template<RealType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator-=(U val) &
-{ static_assert(SameType<T, U>); x -= val; return *this; }
+{
+   static_assert(SameType<T, U>);
+   x -= val;
+   return *this;
+}
 
 template<RealType T>
 template<RealType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator*=(U val) &
-{ static_assert(SameType<T, U>); x *= val; return *this; }
+{
+   static_assert(SameType<T, U>);
+   x *= val;
+   return *this;
+}
 
 template<RealType T>
 template<RealType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator/=(U val) &
-{ static_assert(SameType<T, U>); x /= val; return *this; }
+{
+   static_assert(SameType<T, U>);
+   x /= val;
+   return *this;
+}
 
 template<RealType T>
 template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator%=(U val) &
-{ static_assert(SameType<T, U>); x %= val; return *this; }
+{
+   static_assert(SameType<T, U>);
+   x %= val;
+   return *this;
+}
 
 template<RealType T>
 template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator<<=(U val) &
-{ static_assert(SameType<T, U>); x <<= val; return *this; }
+{
+   static_assert(SameType<T, U>);
+   x <<= val;
+   return *this;
+}
 
 template<RealType T>
 template<IntegerType U>
 constexpr inline StrictVal<T> & StrictVal<T>::operator>>=(U val) &
-{ static_assert(SameType<T, U>); x >>= val; return *this; }
+{
+   static_assert(SameType<T, U>);
+   x >>= val;
+   return *this;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline T real_cast(U val)
-{ return static_cast<T>(val); }
+{
+   return static_cast<T>(val);
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline T real_cast(StrictVal<U> strict_val)
-{ return real_cast<T>(U(strict_val)); }
+{
+   return real_cast<T>(U(strict_val));
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> strict_cast(U val)
-{ return StrictVal<T>{T(val)}; }
+{
+   return StrictVal<T>{T(val)};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> strict_cast(StrictVal<U> strict_val)
-{ return real_cast<T>(strict_val); }
+{
+   return real_cast<T>(strict_val);
+}
 
 template<RealType T, RealType U>
 constexpr inline U & operator+=(U & val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); val += T{strict_val}; return val; }
+{
+   static_assert(SameType<T, U>);
+   val += T{strict_val};
+   return val;
+}
 
 template<RealType T, RealType U>
 constexpr inline U & operator-=(U & val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); val -= T{strict_val}; return val; }
+{
+   static_assert(SameType<T, U>);
+   val -= T{strict_val};
+   return val;
+}
 
 template<RealType T, RealType U>
 constexpr inline U & operator*=(U & val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); val *= T{strict_val}; return val; }
+{
+   static_assert(SameType<T, U>);
+   val *= T{strict_val};
+   return val;
+}
 
 template<RealType T, RealType U>
 constexpr inline U & operator/=(U & val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); val /= T{strict_val}; return val; }
+{
+   static_assert(SameType<T, U>);
+   val /= T{strict_val};
+   return val;
+}
 
 template<IntegerType T, IntegerType U>
 constexpr inline U & operator%=(U & val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); val %= T{strict_val}; return val; }
+{
+   static_assert(SameType<T, U>);
+   val %= T{strict_val};
+   return val;
+}
 
 template<IntegerType T, IntegerType U>
 constexpr inline U & operator<<=(U & val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); val <<= T{strict_val}; return val; }
+{
+   static_assert(SameType<T, U>);
+   val <<= T{strict_val};
+   return val;
+}
 
 template<IntegerType T, IntegerType U>
 constexpr inline U & operator>>=(U & val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); val >>= T{strict_val}; return val; }
+{
+   static_assert(SameType<T, U>);
+   val >>= T{strict_val};
+   return val;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 [[nodiscard]] constexpr inline StrictVal<T> operator+(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T{T{v1} + T{v2}}}; }
+{
+   return StrictVal<T>{T{T{v1} + T{v2}}};
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline StrictVal<T> operator-(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T{T{v1} - T{v2}}}; }
+{
+   return StrictVal<T>{T{T{v1} - T{v2}}};
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline StrictVal<T> operator*(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T{T{v1} * T{v2}}}; }
+{
+   return StrictVal<T>{T{T{v1} * T{v2}}};
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline StrictVal<T> operator/(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T{T{v1} / T{v2}}}; }
+{
+   return StrictVal<T>{T{T{v1} / T{v2}}};
+}
 
 template<IntegerType T>
 [[nodiscard]] constexpr inline StrictVal<T> operator%(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T{T{v1} % T{v2}}}; }
+{
+   return StrictVal<T>{T{T{v1} % T{v2}}};
+}
 
 template<IntegerType T>
 [[nodiscard]] constexpr inline StrictVal<T> operator<<(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T{T(v1) << T{v2}}}; }
+{
+   return StrictVal<T>{T{T(v1) << T{v2}}};
+}
 
 template<IntegerType T>
 [[nodiscard]] constexpr inline StrictVal<T> operator>>(StrictVal<T> v1, StrictVal<T> v2)
-{ return StrictVal<T>{T{T{v1} >> T{v2}}}; }
+{
+   return StrictVal<T>{T{T{v1} >> T{v2}}};
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator+(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} + val}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{T{strict_val} + val}};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator-(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} - val}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{T{strict_val} - val}};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator*(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} * val}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{T{strict_val} * val}};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator/(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} / val}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{T{strict_val} / val}};
+}
 
 template<IntegerType T, IntegerType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator%(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} % val}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{T{strict_val} % val}};
+}
 
 template<IntegerType T, IntegerType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator<<(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} << val}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{T{strict_val} << val}};
+}
 
 template<IntegerType T, IntegerType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator>>(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{T{strict_val} >> val}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{T{strict_val} >> val}};
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator+(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{val + T{strict_val}}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{val + T{strict_val}}};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator-(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{val - T{strict_val}}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{val - T{strict_val}}};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator*(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{val * T{strict_val}}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{val * T{strict_val}}};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator/(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{val / T{strict_val}}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{val / T{strict_val}}};
+}
 
 template<IntegerType T, IntegerType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator%(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{val % T{strict_val}}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{val % T{strict_val}}};
+}
 
 template<IntegerType T, IntegerType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator<<(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{val << T{strict_val}}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{val << T{strict_val}}};
+}
 
 template<IntegerType T, IntegerType U>
 [[nodiscard]] constexpr inline StrictVal<T> operator>>(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return StrictVal<T>{T{val >> T{strict_val}}}; }
+{
+   static_assert(SameType<T, U>);
+   return StrictVal<T>{T{val >> T{strict_val}}};
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 [[nodiscard]] constexpr inline bool operator==(StrictVal<T> v1, StrictVal<T> v2)
-{ return T{v1} == T{v2}; }
+{
+   return T{v1} == T{v2};
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline bool operator<(StrictVal<T> v1, StrictVal<T> v2)
-{ return T{v1} < T{v2}; }
+{
+   return T{v1} < T{v2};
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline bool operator>(StrictVal<T> v1, StrictVal<T> v2)
-{ return T{v1} > T{v2}; }
+{
+   return T{v1} > T{v2};
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline bool operator<=(StrictVal<T> v1, StrictVal<T> v2)
-{ return T{v1} <= T{v2}; }
+{
+   return T{v1} <= T{v2};
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline bool operator>=(StrictVal<T> v1, StrictVal<T> v2)
-{ return T{v1} >= T{v2}; }
+{
+   return T{v1} >= T{v2};
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline bool operator!=(StrictVal<T> v1, StrictVal<T> v2)
-{ return T{v1} != T{v2}; }
+{
+   return T{v1} != T{v2};
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator==(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return T{strict_val} == val; }
+{
+   static_assert(SameType<T, U>);
+   return T{strict_val} == val;
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator<(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return T{strict_val} < val; }
+{
+   static_assert(SameType<T, U>);
+   return T{strict_val} < val;
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator>(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return T{strict_val} > val; }
+{
+   static_assert(SameType<T, U>);
+   return T{strict_val} > val;
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator<=(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return T{strict_val} <= val; }
+{
+   static_assert(SameType<T, U>);
+   return T{strict_val} <= val;
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator>=(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return T{strict_val} >= val; }
+{
+   static_assert(SameType<T, U>);
+   return T{strict_val} >= val;
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator!=(StrictVal<T> strict_val, U val)
-{ static_assert(SameType<T, U>); return T{strict_val} != val; }
+{
+   static_assert(SameType<T, U>);
+   return T{strict_val} != val;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator==(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return val == T{strict_val}; }
+{
+   static_assert(SameType<T, U>);
+   return val == T{strict_val};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator<(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return val < T{strict_val}; }
+{
+   static_assert(SameType<T, U>);
+   return val < T{strict_val};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator>(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return val > T{strict_val}; }
+{
+   static_assert(SameType<T, U>);
+   return val > T{strict_val};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator<=(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return val <= T{strict_val}; }
+{
+   static_assert(SameType<T, U>);
+   return val <= T{strict_val};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator>=(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return val >= T{strict_val}; }
+{
+   static_assert(SameType<T, U>);
+   return val >= T{strict_val};
+}
 
 template<RealType T, RealType U>
 [[nodiscard]] constexpr inline bool operator!=(U val, StrictVal<T> strict_val)
-{ static_assert(SameType<T, U>); return val != T{strict_val}; }
+{
+   static_assert(SameType<T, U>);
+   return val != T{strict_val};
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
 [[nodiscard]] constexpr inline StrictVal<T> abss(StrictVal<T> v)
-{ return T{v} > T{0} ? v : -v; }
+{
+   return T{v} > T{0} ? v : -v;
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline StrictVal<T> mins(StrictVal<T> v1, StrictVal<T> v2)
-{ return v1 < v2 ? v1 : v2; }
+{
+   return v1 < v2 ? v1 : v2;
+}
 
 template<RealType T>
 [[nodiscard]] constexpr inline StrictVal<T> maxs(StrictVal<T> v1, StrictVal<T> v2)
-{ return v1 > v2 ? v1 : v2; }
+{
+   return v1 > v2 ? v1 : v2;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v)
-{ return StrictVal<T>{std::exp(T{v})}; }
+{
+   return StrictVal<T>{std::exp(T{v})};
+}
 
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> logs(StrictVal<T> v)
-{ return StrictVal<T>{std::log(T{v})}; }
+{
+   return StrictVal<T>{std::log(T{v})};
+}
 
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v)
-{ return StrictVal<T>{std::sqrt(T{v})}; }
+{
+   return StrictVal<T>{std::sqrt(T{v})};
+}
 
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v)
-{ return StrictVal<T>{std::sin(T{v})}; }
+{
+   return StrictVal<T>{std::sin(T{v})};
+}
 
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v)
-{ return StrictVal<T>{std::cos(T{v})}; }
+{
+   return StrictVal<T>{std::cos(T{v})};
+}
 
 template<StandardFloatingType T>
 [[nodiscard]] inline bool isfinites(StrictVal<T> v)
@@ -511,15 +716,21 @@ template<StandardFloatingType T>
 
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> pows(StrictVal<T> v, StrictVal<T> p)
-{ return StrictVal<T>{std::pow(T{v}, T{p})}; }
+{
+   return StrictVal<T>{std::pow(T{v}, T{p})};
+}
 
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, StrictVal<int> p)
-{ return StrictVal<T>{ T(std::pow(T{v}, int{p})) }; }
+{
+   return StrictVal<T>{std::pow(T{v}, int{p})};
+}
 
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3)
-{ return StrictVal<T>{std::fma(T{v1}, T{v2}, T{v3})}; }
+{
+   return StrictVal<T>{std::fma(T{v1}, T{v2}, T{v3})};
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<NotQuadType T>
@@ -539,39 +750,57 @@ std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 #ifdef STRICT_QUADRUPLE_PRECISION
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> exps(StrictVal<T> v)
-{ return StrictVal<T>{expq(T{v})}; }
+{
+   return StrictVal<T>{expq(T{v})};
+}
 
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> logs(StrictVal<T> v)
-{ return StrictVal<T>{logq(T{v})}; }
+{
+   return StrictVal<T>{logq(T{v})};
+}
 
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> sqrts(StrictVal<T> v)
-{ return StrictVal<T>{sqrtq(T{v})}; }
+{
+   return StrictVal<T>{sqrtq(T{v})};
+}
 
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> sins(StrictVal<T> v)
-{ return StrictVal<T>{sinq(T{v})}; }
+{
+   return StrictVal<T>{sinq(T{v})};
+}
 
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> coss(StrictVal<T> v)
-{ return StrictVal<T>{cosq(T{v})}; }
+{
+   return StrictVal<T>{cosq(T{v})};
+}
 
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> pows(StrictVal<T> v, StrictVal<T> p)
-{ return StrictVal<T>{powq(T{v}, T{p})}; }
+{
+   return StrictVal<T>{powq(T{v}, T{p})};
+}
 
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, StrictVal<int> p)
-{ return StrictVal<T>{powq(T{v}, int{p})}; }
+{
+   return StrictVal<T>{powq(T{v}, int{p})};
+}
 
 template<QuadType T>
 [[nodiscard]] inline bool isfinites(StrictVal<T> v)
-{ return finiteq(T{v}); }
+{
+   return finiteq(T{v});
+}
 
 template<QuadType T>
 [[nodiscard]] inline StrictVal<T> fmas(StrictVal<T> v1, StrictVal<T> v2, StrictVal<T> v3)
-{ return StrictVal<T>{fmaq(T{v1}, T{v2}, T{v3})}; }
+{
+   return StrictVal<T>{fmaq(T{v1}, T{v2}, T{v3})};
+}
 
 template<QuadType T>
 std::ostream & operator<<(std::ostream & os, T val)

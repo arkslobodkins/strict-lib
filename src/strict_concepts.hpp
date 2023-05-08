@@ -41,20 +41,20 @@ concept StandardFloatingType = SameType<T, float> ||
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef STRICT_QUADRUPLE_PRECISION
-   static_assert(sizeof(__float128) == 16);
-   using float128 = __float128;
-   template<typename T> concept QuadType = SameType<T, float128>;
+static_assert(sizeof(__float128) == 16);
+using float128 = __float128;
+template<typename T> concept QuadType = SameType<T, float128>;
 
-   template<typename T> concept FloatingType = StandardFloatingType<T> || QuadType<T>;
+template<typename T> concept FloatingType = StandardFloatingType<T> || QuadType<T>;
 #else
-   template<typename T> concept FloatingType = StandardFloatingType<T>;
+template<typename T> concept FloatingType = StandardFloatingType<T>;
 #endif
 template<typename T> concept RealType = FloatingType<T> || IntegerType<T>;
 
 #ifdef STRICT_QUADRUPLE_PRECISION
-   template<typename T> concept NotQuadType = RealType<T> && !QuadType<T>;
+template<typename T> concept NotQuadType = RealType<T> && !QuadType<T>;
 #else
-   template<typename T> concept NotQuadType = RealType<T>;
+template<typename T> concept NotQuadType = RealType<T>;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
