@@ -22,11 +22,13 @@
 
 namespace strict_array {
 
+enum class skip_line { yes, no };
+
 template<BaseType BaseT>
 std::ostream & operator<<(std::ostream & os, const BaseT & A);
 
 template<BaseType BaseT>
-void print(const BaseT & A, const std::string & name);
+void print(const BaseT & A, const std::string & name, skip_line skip = skip_line::no);
 
 template<BaseType BaseT>
 [[nodiscard]] auto sum(const BaseT & A);
@@ -160,7 +162,7 @@ std::ostream & operator<<(std::ostream & os, const BaseT & A)
 }
 
 template<BaseType BaseT>
-void print(const BaseT & A, const std::string & name)
+void print(const BaseT & A, const std::string & name, skip_line skip)
 {
    if(A.empty()) {
       std::cout << __func__ << " : " << name  << " -> empty Array based object" << std::endl;
@@ -168,6 +170,9 @@ void print(const BaseT & A, const std::string & name)
    for(decltype(A.size()) i = 0; i < A.size(); ++i) {
       std::cout << name << "[" << i << "] ="
          << internal::smart_spaces<BaseT>(A.size(), i) << A[i] << std::endl;
+   }
+   if(skip == skip_line::yes) {
+      std::cout << std::endl;
    }
 }
 

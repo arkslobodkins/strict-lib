@@ -38,8 +38,7 @@ int main()
    bool any_greater = any_satisfy(z, [](auto x) { return x > -0.5; });
 
    std::cout << z << std::endl;
-   print(z, "z");
-   std::cout << std::endl;
+   print(z, "z", skip_line::yes);
 
    return EXIT_SUCCESS;
 }
