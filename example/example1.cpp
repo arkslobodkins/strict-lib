@@ -29,6 +29,9 @@ int main()
    z.resize(9);
    z = linspace<double>(Size{9}, Start{-2.}, End{2.});
 
+   Array<float> z_float = z.convert_type<float>();
+   std::unique_ptr<double[]> z_ptr = unique_blas_array(z);
+
    bool all_pos = all_positive(z);
    bool all_neg = all_negative(z);
    bool all_greater = all_satisfy(z, [](auto x) { return x > -0.5; });

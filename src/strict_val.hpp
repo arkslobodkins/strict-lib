@@ -723,7 +723,7 @@ template<StandardFloatingType T>
 template<StandardFloatingType T>
 [[nodiscard]] inline StrictVal<T> pows_int(StrictVal<T> v, StrictVal<int> p)
 {
-   return StrictVal<T>{std::pow(T{v}, int{p})};
+   return StrictVal<T>{T(std::pow(T{v}, int{p}))};
 }
 
 template<StandardFloatingType T>
