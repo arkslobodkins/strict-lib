@@ -16,6 +16,7 @@ int main()
 
    z[seqN(0, 5)] = 5. * x[seqN(0, 5)] + 10. * y[seqN(0, 5)];
    z[{0, 5, 9}] = 10.;
+   z[{0, 5, 9}] = {0., 10., 18.};
    auto slice_even = z[seq(0, z.size()-1, 2)];
    slice_even = sqrt(abs(slice_even));
 
