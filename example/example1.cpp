@@ -20,6 +20,7 @@ int main()
    z[{0, 5, 9}] = {0., 10., 18.};
    auto slice_even = z[seq(0, z.size()-1, 2)];
    slice_even = sqrt(abs(slice_even));
+   auto slice_slice_slice = z[seqN(0, 6)][{1, 3, 5}][seq(0, 2)];
 
    z = e_unit<double>(Index{0}, Size{10});
    z = sequence<double>(Size{10}, Start{-10.}, Incr{1.});

@@ -153,15 +153,32 @@ template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator*(const T & A,
 template<OneDimBaseType T, RealType U> [[nodiscard]] auto operator/(const T & A, U val);
 
 // unary operations
-template<OneDimBaseType T> [[nodiscard]] auto operator+(const T & A);
-template<OneDimBaseType T> [[nodiscard]] auto operator-(const T & A);
-template<OneDimBaseType T> [[nodiscard]] auto abs(const T & A);
-template<OneDimFloatingBaseType T> [[nodiscard]] auto pow(const T & A, ValueTypeOf<T> p);
-template<OneDimFloatingBaseType T, IntegerType IntT> [[nodiscard]] auto pow_int(const T & A, StrictVal<IntT> p);
-template<OneDimFloatingBaseType T, IntegerType IntT> [[nodiscard]] auto pow_int(const T & A, IntT p);
-template<OneDimFloatingBaseType T> [[nodiscard]] auto exp(const T & A);
-template<OneDimFloatingBaseType T> [[nodiscard]] auto log(const T & A);
-template<OneDimFloatingBaseType T> [[nodiscard]] auto sqrt(const T & A);
+template<OneDimBaseType T>
+[[nodiscard]] auto operator+(const T & A);
+
+template<OneDimBaseType T>
+[[nodiscard]] auto operator-(const T & A);
+
+template<OneDimBaseType T>
+[[nodiscard]] auto abs(const T & A);
+
+template<OneDimFloatingBaseType T>
+[[nodiscard]] auto pow(const T & A, ValueTypeOf<T> p);
+
+template<OneDimFloatingBaseType T, IntegerType IntT>
+[[nodiscard]] auto pow_int(const T & A, StrictVal<IntT> p);
+
+template<OneDimFloatingBaseType T, IntegerType IntT>
+[[nodiscard]] auto pow_int(const T & A, IntT p);
+
+template<OneDimFloatingBaseType T>
+[[nodiscard]] auto exp(const T & A);
+
+template<OneDimFloatingBaseType T>
+[[nodiscard]] auto log(const T & A);
+
+template<OneDimFloatingBaseType T>
+[[nodiscard]] auto sqrt(const T & A);
 
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto two_prod(const T1 & A, const T2 & B);
