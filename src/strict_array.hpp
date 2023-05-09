@@ -105,9 +105,6 @@ public:
    [[nodiscard]] value_type* data() & { return !empty() ? &elem[0] : nullptr; }
    [[nodiscard]] const value_type* data() const & { return !empty() ? &elem[0] : nullptr; }
 
-   template<RealType U>
-      [[nodiscard]] Array<U> convert_type() const; // conversion chosen by the user;
-
    STRICT_GENERATE_ITERATORS()
 
 private:
@@ -191,6 +188,9 @@ template<RealType T>
 
 template<RealType T>
 [[nodiscard]] auto linspace(Size size, Start<T> start = Start<T>{}, End<T> end = End<T>{T(1)});
+
+template<RealType T, OneDimBaseType OneDimBaseT>
+auto convert_type(const OneDimBaseT & A); // expression template that converts to a different type
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<RealType T>
@@ -434,18 +434,6 @@ template<RealType T>
 [[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](internal::Last) const
 {
    return elem[sz-1];
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<RealType T>
-template<RealType U>
-[[nodiscard]] Array<U> Array<T>::convert_type() const
-{
-   Array<U> A(size());
-   for(size_type i = 0; i < size(); ++i) {
-      A[i] = strict_cast<U>((*this)[i]);
-   }
-   return A;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -704,6 +692,47 @@ private:
    value_type start;
    size_type sz;
    value_type incr;
+};
+
+template<OneDimBaseType OneDimBaseT, RealType T>
+class ConvertExpr : private Base1D
+{
+public:
+   // STRICT_GENERATE_USING_EXPR_TYPES is not used
+   // here since value_type and real_type are different
+   using size_type = typename OneDimBaseT::size_type;
+   using value_type = StrictVal<T>;
+   using real_type = T;
+   using expr_type = ConvertExpr<OneDimBaseT, T>;
+
+   explicit ConvertExpr(const OneDimBaseT & A) : A{A} {
+      ASSERT_STRICT_DEBUG(!A.empty());
+   }
+
+   STRICT_GENERATE_EXPR_COPY_ASSIGN(ConvertExpr)
+
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](IntType i) const {
+      #ifndef STRICT_DEBUG_OFF
+      if(!internal::valid_index(*this, i)) {
+         STRICT_THROW_OUT_OF_RANGE();
+      }
+      #endif
+      return strict_cast<T>(A[i]);
+   }
+
+   [[nodiscard]] value_type operator[](internal::Last) const {
+      return strict_cast<T>(A[size()-1]);
+   }
+
+   STRICT_GENERATE_CONST_SLICES()
+   STRICT_GENERATE_CONST_ITERATORS()
+
+   [[nodiscard]] size_type size() const { return A.size(); }
+   [[nodiscard]] bool empty() const { return A.empty(); }
+
+private:
+   typename OneDimBaseT::expr_type A;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1073,6 +1102,12 @@ template<RealType T>
    ASSERT_STRICT_DEBUG(sz > 1);
    return SequenceExpr<Array<T>>
       {start.get(), sz, ( end.get() - start.get() )/strict_cast<T>(sz-1)};
+}
+
+template<RealType T, OneDimBaseType OneDimBaseT>
+auto convert_type(const OneDimBaseT & A)
+{
+   return ConvertExpr<OneDimBaseT, T>{A};
 }
 
 }
