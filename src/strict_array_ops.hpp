@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "strict_auxiliary.hpp"
 #include "strict_concepts.hpp"
 #include "strict_error.hpp"
 #include "strict_val.hpp"
@@ -107,7 +108,7 @@ template<BaseType BaseT>
 
 template<typename T>
 requires (BaseType<std::remove_reference_t<T>>)
-[[nodiscard]] auto within_range(T && A, ValueTypeOf<T> low, ValueTypeOf<T> high);
+[[nodiscard]] auto within_range(T && A, Low<RealTypeOf<T>> low, High<RealTypeOf<T>> high);
 
 template<typename T, typename Cond>
 requires (BaseType<std::remove_reference_t<T>>)
@@ -432,15 +433,17 @@ template<BaseType BaseT>
 
 template<typename T>
 requires (BaseType<std::remove_reference_t<T>>)
-[[nodiscard]] auto within_range(T && A, ValueTypeOf<T> low, ValueTypeOf<T> high)
+[[nodiscard]] auto within_range(T && A, Low<RealTypeOf<T>> low, High<RealTypeOf<T>> high)
 {
+   auto l = low.get();
+   auto h = high.get();
    ASSERT_STRICT_DEBUG(!A.empty());
-   ASSERT_STRICT_DEBUG(high >= low);
+   ASSERT_STRICT_DEBUG(h >= l);
    using size_type = SizeTypeOf<std::remove_reference_t<T>>;
 
    std::vector<size_type> indexes;
    for(size_type i = 0; i < A.size(); ++i)
-      if(A[i] >= low && A[i] <= high)
+      if(A[i] >= l && A[i] <= h)
          indexes.push_back(i);
 
    if(!indexes.empty()) {

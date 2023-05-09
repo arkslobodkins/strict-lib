@@ -10,6 +10,7 @@ int main()
    Array<double> y = random<double>(Size{10}, Low{-1.}, High{1.});
    Array<double> z = x + y;
 
+   auto slice_range = within_range(z, Low{-0.5}, High{0.5});
    auto slice_cond = within_cond(z, [](auto x) { return x > 0.; } );
    if(slice_cond) {
       *slice_cond *= 100.;

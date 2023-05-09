@@ -33,6 +33,11 @@ public:
       ASSERT_STRICT_DEBUG(stride > 0);
    }
 
+   template<typename I1, typename I2, typename I3 = strict_int>
+      explicit slice(I1 start, I2 size, I3 stride = 1)
+      : slice(real_cast<strict_int>(start), real_cast<strict_int>(size), real_cast<strict_int>(stride))
+   {}
+
    [[nodiscard]] strict_int start() const { return m_start; }
    [[nodiscard]] strict_int size() const { return m_size; }
    [[nodiscard]] strict_int stride() const { return m_stride; }
@@ -64,6 +69,11 @@ public:
       ASSERT_STRICT_DEBUG(last >= first);
       ASSERT_STRICT_DEBUG(stride > 0);
    }
+
+   template<typename I1, typename I2, typename I3 = strict_int>
+      explicit seq(I1 first, I2 last, I3 stride = 1)
+      : seq(real_cast<strict_int>(first), real_cast<strict_int>(last), real_cast<strict_int>(stride))
+   {}
 
    [[nodiscard]] slice to_slice() const { return slice{m_first, (m_last-m_first)/m_stride + 1, m_stride}; }
 
@@ -132,6 +142,11 @@ public:
       [[nodiscard]] inline auto & operator[](IntType i);
    template<IntegerType IntType>
       [[nodiscard]] const inline auto & operator[](IntType i) const;
+
+   template<IntegerType IntType>
+      [[nodiscard]] inline auto & operator[](StrictVal<IntType> i);
+   template<IntegerType IntType>
+      [[nodiscard]] const inline auto & operator[](StrictVal<IntType> i) const;
 
    [[nodiscard]] inline auto & operator[](internal::Last);
    [[nodiscard]] const inline auto & operator[](internal::Last) const;
@@ -228,6 +243,20 @@ template<IntegerType IntType>
    }
    #endif
    return A[sl.start() + i*sl.stride()];
+}
+
+template<DirectBaseType DirectBaseT>
+template<IntegerType IntType>
+[[nodiscard]] inline auto & SliceArray<DirectBaseT>::operator[](StrictVal<IntType> i)
+{
+   return operator[](IntType{i});
+}
+
+template<DirectBaseType DirectBaseT>
+template<IntegerType IntType>
+[[nodiscard]] const inline auto & SliceArray<DirectBaseT>::operator[](StrictVal<IntType> i) const
+{
+   return operator[](IntType{i});
 }
 
 template<DirectBaseType DirectBaseT>
@@ -366,6 +395,11 @@ public:
    template<IntegerType IntType>
       [[nodiscard]] inline const auto & operator[](IntType i) const;
 
+   template<IntegerType IntType>
+      [[nodiscard]] inline auto & operator[](StrictVal<IntType> i);
+   template<IntegerType IntType>
+      [[nodiscard]] inline const auto & operator[](StrictVal<IntType> i) const;
+
    [[nodiscard]] inline auto & operator[](internal::Last);
    [[nodiscard]] inline const auto & operator[](internal::Last) const;
 
@@ -489,6 +523,20 @@ template<IntegerType IntType>
    }
    #endif
    return A[m_indexes[i]];
+}
+
+template<DirectBaseType DirectBaseT>
+template<IntegerType IntType>
+[[nodiscard]] inline auto & RandSliceArray<DirectBaseT>::operator[](StrictVal<IntType> i)
+{
+   return operator[](IntType{i});
+}
+
+template<DirectBaseType DirectBaseT>
+template<IntegerType IntType>
+[[nodiscard]] inline const auto & RandSliceArray<DirectBaseT>::operator[](StrictVal<IntType> i) const
+{
+   return operator[](IntType{i});
 }
 
 template<DirectBaseType DirectBaseT>
@@ -621,6 +669,8 @@ public:
 
    template<IntegerType IntType>
       [[nodiscard]] inline decltype(auto) operator[](IntType i) const;
+   template<IntegerType IntType>
+      [[nodiscard]] inline decltype(auto) operator[](StrictVal<IntType> i) const;
    [[nodiscard]] inline decltype(auto) operator[](internal::Last) const;
    STRICT_GENERATE_CONST_SLICES()
 
@@ -652,6 +702,13 @@ template<IntegerType IntType>
 }
 
 template<BaseType BaseT>
+template<IntegerType IntType>
+[[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](StrictVal<IntType> i) const
+{
+   return operator[](IntType{i});
+}
+
+template<BaseType BaseT>
 [[nodiscard]] inline decltype(auto) ConstSliceArray<BaseT>::operator[](internal::Last) const
 {
    return A[sl.start() + (size()-1)*sl.stride()];
@@ -677,6 +734,8 @@ public:
 
    template<IntegerType IntType>
       [[nodiscard]] inline decltype(auto) operator[](IntType i) const;
+   template<IntegerType IntType>
+      [[nodiscard]] inline decltype(auto) operator[](StrictVal<IntType> i) const;
    [[nodiscard]] inline decltype(auto) operator[](internal::Last) const;
 
    STRICT_GENERATE_CONST_SLICES()
@@ -714,6 +773,13 @@ template<IntegerType IntType>
    }
    #endif
    return A[m_indexes[i]];
+}
+
+template<BaseType BaseT>
+template<IntegerType IntType>
+[[nodiscard]] inline decltype(auto) RandConstSliceArray<BaseT>::operator[](StrictVal<IntType> i) const
+{
+   return operator[](IntType{i});
 }
 
 template<BaseType BaseT>

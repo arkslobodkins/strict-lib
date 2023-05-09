@@ -56,9 +56,13 @@ template<FloatingType T>
    if(abs1 == T(0) && abs2 == T(0)) {
       return true;
    }
+   // at this point, at least one of val1 and val2
+   // is nonzero and division by 0 does not happen
    return abss(val1 - val2) / maxs(abs1, abs2) < tol;
 }
 
+// Uses a mix of relative and abolute comparison.
+// Absolute comparison is used when both values are close to 0.
 template<FloatingType T>
 [[nodiscard]] bool is_within_tol_rel_balanced(StrictVal<T> val1, StrictVal<T> val2,
                              StrictVal<T> tol = StrictVal<T>{T(1.e-14)},

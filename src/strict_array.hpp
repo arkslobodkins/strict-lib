@@ -43,6 +43,12 @@ public:
    template<IntegerType IntType>
       explicit Array(IntType size, value_type val);
 
+   template<IntegerType IntType>
+      explicit Array(StrictVal<IntType> size);
+
+   template<IntegerType IntType>
+      explicit Array(StrictVal<IntType> size, value_type val);
+
    explicit Array(std::initializer_list<value_type> list);
    Array(const Array & A);
    Array(Array && a) noexcept;
@@ -83,16 +89,25 @@ public:
    template<IntegerType IntType>
       void resize(IntType size);
 
-   void resize_and_assign(Array && A);
+   template<IntegerType IntType>
+      void resize(StrictVal<IntType> size);
 
    template<OneDimBaseType OneDimBaseT>
       void resize_and_assign(const OneDimBaseT & A);
+
+   void resize_and_assign(Array && A);
 
    template<IntegerType IntType>
       [[nodiscard]] inline value_type & operator[](IntType i);
 
    template<IntegerType IntType>
       [[nodiscard]] inline const value_type & operator[](IntType i) const;
+
+   template<IntegerType IntType>
+      [[nodiscard]] inline value_type & operator[](StrictVal<IntType> i);
+
+   template<IntegerType IntType>
+      [[nodiscard]] inline const value_type & operator[](StrictVal<IntType> i) const;
 
    [[nodiscard]] inline value_type & operator[](internal::Last);
    [[nodiscard]] inline const value_type & operator[](internal::Last) const;
@@ -216,6 +231,16 @@ Array<T>::Array(IntType size, StrictVal<T> val) :
    ASSERT_STRICT_DEBUG(sz > 0);
    std::fill(begin(), end(), val);
 }
+
+template<RealType T>
+template<IntegerType IntType>
+Array<T>::Array(StrictVal<IntType> size) : Array(IntType{size})
+{}
+
+template<RealType T>
+template<IntegerType IntType>
+Array<T>::Array(StrictVal<IntType> size, StrictVal<T> val) : Array(IntType{size}, val)
+{}
 
 template<RealType T>
 Array<T>::Array(std::initializer_list<StrictVal<T>> list) :
@@ -385,6 +410,13 @@ void Array<T>::resize(IntType size)
 }
 
 template<RealType T>
+template<IntegerType IntType>
+void Array<T>::resize(StrictVal<IntType> size)
+{
+   resize(IntType{size});
+}
+
+template<RealType T>
 void Array<T>::resize_and_assign(Array<T> && A)
 {
    resize(A.size());
@@ -422,6 +454,20 @@ template<IntegerType IntType>
    }
    #endif
    return elem[i];
+}
+
+template<RealType T>
+template<IntegerType IntType>
+[[nodiscard]] inline StrictVal<T> & Array<T>::operator[](StrictVal<IntType> i)
+{
+   return operator[](IntType{i});
+}
+
+template<RealType T>
+template<IntegerType IntType>
+[[nodiscard]] inline const StrictVal<T> & Array<T>::operator[](StrictVal<IntType> i) const
+{
+   return operator[](IntType{i});
 }
 
 template<RealType T>
@@ -646,6 +692,11 @@ public:
       return j == i ? real_type{1} : real_type{0};
    }
 
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](StrictVal<IntType> i) const {
+      return operator[](IntType{i});
+   }
+
    [[nodiscard]] size_type size() const { return sz; }
    [[nodiscard]] bool empty() const { return false; }
 
@@ -676,6 +727,11 @@ public:
       }
       #endif
       return start + incr * static_cast<real_type>(i);
+   }
+
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](StrictVal<IntType> i) const {
+      return operator[](IntType{i});
    }
 
    [[nodiscard]] value_type operator[](internal::Last) const {
@@ -721,6 +777,11 @@ public:
       return strict_cast<T>(A[i]);
    }
 
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](StrictVal<IntType> i) const {
+      return operator[](IntType{i});
+   }
+
    [[nodiscard]] value_type operator[](internal::Last) const {
       return strict_cast<T>(A[size()-1]);
    }
@@ -755,6 +816,11 @@ public:
       }
       #endif
       return op(A[i]);
+   }
+
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](StrictVal<IntType> i) const {
+      return operator[](IntType{i});
    }
 
    [[nodiscard]] value_type operator[](internal::Last) const {
@@ -798,6 +864,11 @@ public:
       return op(A[i], B[i]);
    }
 
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](StrictVal<IntType> i) const {
+      return operator[](IntType{i});
+   }
+
    [[nodiscard]] value_type operator[](internal::Last) const {
       return op(A[size()-1], B[size()-1]);
    }
@@ -839,6 +910,11 @@ public:
       return op(val, B[i]);
    }
 
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](StrictVal<IntType> i) const {
+      return operator[](IntType{i});
+   }
+
    [[nodiscard]] value_type operator[](internal::Last) const {
       return op(B[size()-1], val);
    }
@@ -878,6 +954,11 @@ public:
       }
       #endif
       return op(A[i], val);
+   }
+
+   template<IntegerType IntType>
+   [[nodiscard]] value_type operator[](StrictVal<IntType> i) const {
+      return operator[](IntType{i});
    }
 
    [[nodiscard]] value_type operator[](internal::Last) const {
