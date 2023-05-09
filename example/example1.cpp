@@ -5,6 +5,7 @@ using namespace strict_array;
 
 int main()
 {
+   Array<int> r = random<int>(Size{10}, Low{-10}, High{10});
    Array<double> x = random<double>(Size{10}, Low{-1.}, High{1.});
    Array<double> y = random<double>(Size{10}, Low{-1.}, High{1.});
    Array<double> z = x + y;
@@ -20,7 +21,7 @@ int main()
    auto slice_even = z[seq(0, z.size()-1, 2)];
    slice_even = sqrt(abs(slice_even));
 
-   z = e_unit<double>(0, 10);
+   z = e_unit<double>(Index{0}, Size{10});
    z = sequence<double>(Size{10}, Start{-10.}, Incr{1.});
    z = {-5., -4., -3., -2., -1., 0., 1., 2., 3., 4.};
    z += abs(z);

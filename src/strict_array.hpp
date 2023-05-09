@@ -157,7 +157,8 @@ template<OneDimBaseType T> [[nodiscard]] auto operator+(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto operator-(const T & A);
 template<OneDimBaseType T> [[nodiscard]] auto abs(const T & A);
 template<OneDimFloatingBaseType T> [[nodiscard]] auto pow(const T & A, ValueTypeOf<T> p);
-template<OneDimFloatingBaseType T> [[nodiscard]] auto pow_int(const T & A, StrictVal<int> p);
+template<OneDimFloatingBaseType T, IntegerType IntT> [[nodiscard]] auto pow_int(const T & A, StrictVal<IntT> p);
+template<OneDimFloatingBaseType T, IntegerType IntT> [[nodiscard]] auto pow_int(const T & A, IntT p);
 template<OneDimFloatingBaseType T> [[nodiscard]] auto exp(const T & A);
 template<OneDimFloatingBaseType T> [[nodiscard]] auto log(const T & A);
 template<OneDimFloatingBaseType T> [[nodiscard]] auto sqrt(const T & A);
@@ -165,8 +166,8 @@ template<OneDimFloatingBaseType T> [[nodiscard]] auto sqrt(const T & A);
 template<OneDimBaseType T1, OneDimBaseType T2>
 [[nodiscard]] auto two_prod(const T1 & A, const T2 & B);
 
-template<RealType T, IntegerType IntType1 = strict_int, IntegerType IntType2 = strict_int>
-[[nodiscard]] auto e_unit(IntType1 j, IntType2 size);
+template<RealType T>
+[[nodiscard]] auto e_unit(Index j, Size size);
 
 template<RealType T>
 [[nodiscard]] auto sequence(Size size, Start<T> start = Start<T>{}, Incr<T> incr = Incr<T>{T(1)});
@@ -424,8 +425,9 @@ template<RealType U>
 [[nodiscard]] Array<U> Array<T>::convert_type() const
 {
    Array<U> A(size());
-   for(size_type i = 0; i < size(); ++i)
+   for(size_type i = 0; i < size(); ++i) {
       A[i] = strict_cast<U>((*this)[i]);
+   }
    return A;
 }
 
@@ -434,8 +436,9 @@ template<RealType T>
 template<typename F>
 void Array<T>::apply0(F f)
 {
-   for(size_type i = 0; i < sz; ++i)
+   for(size_type i = 0; i < sz; ++i) {
       f(i);
+   }
 }
 
 template<RealType T>
@@ -443,8 +446,9 @@ template<OneDimBaseType OneDimBaseT, typename F>
 void Array<T>::apply1(const OneDimBaseT & A, F f)
 {
    (void)A;
-   for(size_type i = 0; i < sz; ++i)
+   for(size_type i = 0; i < sz; ++i) {
       f(i);
+   }
 }
 
 template<IntegerType T>
@@ -455,11 +459,13 @@ template<IntegerType T>
    auto h = high.get();
    ASSERT_STRICT_DEBUG(sz > 0);
    ASSERT_STRICT_DEBUG(h >= l);
+
    std::srand(static_cast<unsigned>((std::time(0))));
    Array<T> A(sz);
    long long int diff_range = real_cast<long long int>(h - l) + 1;
-   for(auto & x : A)
+   for(auto & x : A) {
       x = l + T(std::rand() % diff_range);
+   }
    return A;
 }
 
@@ -471,10 +477,12 @@ template<FloatingType T>
    auto h = high.get();
    ASSERT_STRICT_DEBUG(sz > 0);
    ASSERT_STRICT_DEBUG(h >= l);
+
    std::srand(static_cast<unsigned>((std::time(0))));
    Array<T> A(sz);
-   for(auto & x : A)
+   for(auto & x : A) {
       x = l + (h - l) * T(std::rand()) / T(RAND_MAX);
+   }
    return A;
 }
 
@@ -515,16 +523,17 @@ private:
    StrictVal<T> p;
 };
 
+template<IntegerType T>
 struct UnaryPowInt : private UnaryOperation
 {
-   UnaryPowInt(StrictVal<int> p) : p{p} {}
+   UnaryPowInt(StrictVal<T> p) : p{p} {}
 
-   template<RealType T>
-   StrictVal<T> operator()(StrictVal<T> strict_val) const {
+   template<RealType U>
+   StrictVal<U> operator()(StrictVal<U> strict_val) const {
       return pows_int(strict_val, p);
    }
 private:
-   StrictVal<int> p;
+   StrictVal<T> p;
 };
 
 struct UnaryExp : private UnaryOperation
@@ -991,10 +1000,16 @@ template<OneDimFloatingBaseType T>
    return UnaryExpr{A, UnaryPow{p}};
 }
 
-template<OneDimFloatingBaseType T>
-[[nodiscard]] auto pow_int(const T & A, StrictVal<int> p)
+template<OneDimFloatingBaseType T, IntegerType IntT>
+[[nodiscard]] auto pow_int(const T & A, StrictVal<IntT> p)
 {
-   return UnaryExpr{A, UnaryPowInt{p}};
+   return UnaryExpr{A, UnaryPowInt<IntT>{p}};
+}
+
+template<OneDimFloatingBaseType T, IntegerType IntT>
+[[nodiscard]] auto pow_int(const T & A, IntT p)
+{
+   return UnaryExpr{A, UnaryPowInt<IntT>{p}};
 }
 
 template<OneDimFloatingBaseType T>
@@ -1022,10 +1037,10 @@ template<OneDimBaseType T1, OneDimBaseType T2>
    return std::pair{BinExpr{A, B, BinaryTwoProdFirst{}}, BinExpr{A, B, BinaryTwoProdSecond{}}};
 }
 
-template<RealType T, IntegerType IntType1, IntegerType IntType2>
-[[nodiscard]] auto e_unit(IntType1 j, IntType2 size)
+template<RealType T>
+[[nodiscard]] auto e_unit(Index j, Size size)
 {
-   return StandardUnitVectorExpr<Array<T>> {j, size};
+   return StandardUnitVectorExpr<Array<T>> {j.get(), size.get()};
 }
 
 template<RealType T>

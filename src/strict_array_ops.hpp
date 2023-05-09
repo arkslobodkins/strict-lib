@@ -136,8 +136,9 @@ namespace internal {
    {
       using size_type = SizeTypeOf<BaseT>;
       auto count_digit = [](size_type number) -> size_type {
-         if(!number)
+         if(!number) {
             return 1;
+         }
          return static_cast<size_type>(std::log10(number)) + 1;
       };
 
@@ -181,8 +182,9 @@ template<BaseType BaseT>
 {
    ASSERT_STRICT_DEBUG(!A.empty());
    auto s = A[0];
-   for(decltype(A.size()) i = 1; i < A.size(); ++i)
+   for(decltype(A.size()) i = 1; i < A.size(); ++i) {
       s += A[i];
+   }
    return s;
 }
 
@@ -354,7 +356,6 @@ template<BaseType BaseT1, BaseType BaseT2>
 {
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_DEBUG(!A1.empty());
-   static_assert(SameType<typename BaseT1::base_type, typename BaseT2::base_type>);
    return sum(A1 * A2);
 }
 
@@ -363,7 +364,6 @@ template<FloatingBaseType FloatBaseT1, FloatingBaseType FloatBaseT2>
 {
    ASSERT_STRICT_DEBUG(A1.size() == A2.size());
    ASSERT_STRICT_DEBUG(!A1.empty());
-   static_assert(SameType<typename FloatBaseT1::base_type, typename FloatBaseT2::base_type>);
    return stable_sum(two_prod(A1, A2).first) + stable_sum(two_prod(A1, A2).second);
 }
 
@@ -443,10 +443,12 @@ requires (BaseType<std::remove_reference_t<T>>)
       if(A[i] >= low && A[i] <= high)
          indexes.push_back(i);
 
-   if(!indexes.empty())
+   if(!indexes.empty()) {
       return std::optional<decltype(A[indexes])>(A[indexes]);
-   else
+   }
+   else {
       return std::optional<decltype(A[indexes])>(std::nullopt);
+   }
 }
 
 template<typename T, typename Cond>
@@ -461,10 +463,12 @@ requires (BaseType<std::remove_reference_t<T>>)
       if(c(A[i]))
          indexes.push_back(i);
 
-   if(!indexes.empty())
+   if(!indexes.empty()) {
       return std::optional<decltype(A[indexes])>(A[indexes]);
-   else
+   }
+   else {
       return std::optional<decltype(A[indexes])>(std::nullopt);
+   }
 }
 
 // !std::is_const for better error messages

@@ -745,10 +745,18 @@ template<NotQuadType T>
 std::ostream & operator<<(std::ostream & os, StrictVal<T> strict_val)
 {
    int num_digits{};
-   if(SameType<T, float>)            num_digits = std::numeric_limits<float>::digits10;
-   else if(SameType<T, double>)      num_digits = std::numeric_limits<double>::digits10;
-   else if(SameType<T, long double>) num_digits = std::numeric_limits<long double>::digits10;
-   else                              num_digits = int(std::cout.precision());
+   if(SameType<T, float>) {
+      num_digits = std::numeric_limits<float>::digits10;
+   }
+   else if(SameType<T, double>) {
+      num_digits = std::numeric_limits<double>::digits10;
+   }
+   else if(SameType<T, long double>) {
+      num_digits = std::numeric_limits<long double>::digits10;
+   }
+   else {
+      num_digits = int(std::cout.precision());
+   }
 
    os << std::scientific << std::showpoint << std::setprecision(num_digits) << T{strict_val};
    return os;

@@ -140,7 +140,6 @@ public:
    [[nodiscard]] size_type size() const { ASSERT_STRICT_DEBUG(sl.size() > -1); return sl.size(); }
    [[nodiscard]] bool empty() const { return size() == 0; }
 
-
    SliceArray & operator+=(StrictVal<real_type> val);
    SliceArray & operator-=(StrictVal<real_type> val);
    SliceArray & operator*=(StrictVal<real_type> val);
@@ -319,8 +318,9 @@ template<DirectBaseType DirectBaseT>
 template<typename F>
 void SliceArray<DirectBaseT>::apply0(F f)
 {
-   for(size_type i = 0; i < size(); ++i)
+   for(size_type i = 0; i < size(); ++i) {
       f(i);
+   }
 }
 
 template<DirectBaseType DirectBaseT>
@@ -328,8 +328,9 @@ template<OneDimBaseType OneDimBaseT, typename F>
 void SliceArray<DirectBaseT>::apply1(const OneDimBaseT & A, F f)
 {
    (void)A;
-   for(size_type i = 0; i < size(); ++i)
+   for(size_type i = 0; i < size(); ++i) {
       f(i);
+   }
 }
 
 
@@ -578,8 +579,9 @@ template<DirectBaseType DirectBaseT>
 template<typename F>
 void RandSliceArray<DirectBaseT>::apply0(F f)
 {
-   for(size_type i = 0; i < size(); ++i)
+   for(size_type i = 0; i < size(); ++i) {
       f(i);
+   }
 }
 
 template<DirectBaseType DirectBaseT>
@@ -587,8 +589,9 @@ template<OneDimBaseType OneDimBaseT, typename F>
 void RandSliceArray<DirectBaseT>::apply1(const OneDimBaseT & A, F f)
 {
    (void)A;
-   for(size_type i = 0; i < size(); ++i)
+   for(size_type i = 0; i < size(); ++i) {
       f(i);
+   }
 }
 
 template<IntegerType IntType>

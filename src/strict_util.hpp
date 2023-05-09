@@ -11,7 +11,7 @@
 
 #define STRICT_TIME(a)                                        \
 do {                                                          \
-   strict_array::timer t;                                     \
+   strict_array::util::timer t;                               \
    a;                                                         \
    std::printf("%s took: %.4e seconds\n", #a, t.wall_time()); \
    } while (0)
