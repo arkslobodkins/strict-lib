@@ -35,7 +35,9 @@ public:
 
    template<typename I1, typename I2, typename I3 = strict_int>
       explicit slice(I1 start, I2 size, I3 stride = 1)
-      : slice(real_cast<strict_int>(start), real_cast<strict_int>(size), real_cast<strict_int>(stride))
+      : slice(internal::int_real_cast<strict_int>(start),
+              internal::int_real_cast<strict_int>(size),
+              internal::int_real_cast<strict_int>(stride))
    {}
 
    [[nodiscard]] strict_int start() const { return m_start; }
@@ -72,7 +74,9 @@ public:
 
    template<typename I1, typename I2, typename I3 = strict_int>
       explicit seq(I1 first, I2 last, I3 stride = 1)
-      : seq(real_cast<strict_int>(first), real_cast<strict_int>(last), real_cast<strict_int>(stride))
+      : seq(internal::int_real_cast<strict_int>(first),
+            internal::int_real_cast<strict_int>(last),
+            internal::int_real_cast<strict_int>(stride))
    {}
 
    [[nodiscard]] slice to_slice() const { return slice{m_first, (m_last-m_first)/m_stride + 1, m_stride}; }

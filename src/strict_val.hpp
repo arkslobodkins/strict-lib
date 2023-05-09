@@ -75,6 +75,11 @@ template<RealType T, RealType U> [[nodiscard]] constexpr inline T real_cast(Stri
 template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> strict_cast(U val);
 template<RealType T, RealType U> [[nodiscard]] constexpr inline StrictVal<T> strict_cast(StrictVal<U> strict_val);
 
+namespace internal {
+   template<IntegerType T, IntegerType U> [[nodiscard]] constexpr inline T int_real_cast(U val);
+   template<IntegerType T, IntegerType U> [[nodiscard]] constexpr inline T int_real_cast(StrictVal<U> strict_val);
+};
+
 template<RealType T, RealType U> constexpr inline U & operator+=(U & val, StrictVal<T> strict_val);
 template<RealType T, RealType U> constexpr inline U & operator-=(U & val, StrictVal<T> strict_val);
 template<RealType T, RealType U> constexpr inline U & operator*=(U & val, StrictVal<T> strict_val);
@@ -331,6 +336,19 @@ template<RealType T, RealType U>
 {
    return real_cast<T>(strict_val);
 }
+
+namespace internal {
+   template<IntegerType T, IntegerType U>
+   [[nodiscard]] constexpr inline T int_real_cast(U val)
+   {
+      return static_cast<T>(val);
+   }
+   template<IntegerType T, IntegerType U>
+   [[nodiscard]] constexpr inline T int_real_cast(StrictVal<U> strict_val)
+   {
+      return int_real_cast<T>(U(strict_val));
+   }
+};
 
 template<RealType T, RealType U>
 constexpr inline U & operator+=(U & val, StrictVal<T> strict_val)
