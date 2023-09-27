@@ -1,0 +1,15 @@
+a pair of iterators for constructors of Array, FixedArray
+decide whether to add safer version for explicit types or not(40%)
+
+replace member arithmetic operations with a macro(40%)
+replace macro definitions of implicit and explicit types with private internal class(50)
+consider slice of complement indexes(70%)
+consider contexpr math in C++23(30%)
+consider ranges(necessary?)(20%)
+consider nullopt in case negative argument is passed to sqrt(25%)
+consider separating strict_auxiliary into strict_auxiliary_val and strict_auxiliary_array(40%)
+
+
+
+
+
