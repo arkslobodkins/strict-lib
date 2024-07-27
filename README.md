@@ -1,4 +1,4 @@
-#strict - lib
+#strict-lib
 
 Type safe C++ 20 numerical library. Two-dimensional arrays are not included since
 some functionality is not complete yet. Documentation, testing, and additional
