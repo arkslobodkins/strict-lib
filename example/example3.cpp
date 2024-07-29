@@ -8,7 +8,7 @@
 using namespace slib;
 
 
-// example5 solves first order ODE y' = y, y(t0) = y0, for any t0 and y0
+// example 3 solves first order ODE y' = y, y(t0) = y0, for any t0 and y0
 // using trapezoidal method. Exact solution is y(t) = y0/exp(t0) exp(t)
 
 

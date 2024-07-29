@@ -19,7 +19,7 @@ constexpr OneDimBaseType auto MergeAbs(Args&&... args) {
 }
 
 
-// example1 introduces 1-d array classes and performs some operations on them
+// example 1 introduces 1-d array classes and performs some operations on them
 int main() {
    Array1D<double> x = random(Size{5}, Low{-1.}, High{1.});
    FixedArray1D<double, 5> y = random(5, -1._sd, 1._sd);

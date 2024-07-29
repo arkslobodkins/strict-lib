@@ -6,7 +6,7 @@
 #include <strict_lib.hpp>
 
 
-// example0 demonstrates how Strict arithmetic types can help
+// example 0 demonstrates how Strict arithmetic types can help
 // to prevent errors that arise when using built-in arithmetic types
 int main() {
    using namespace std;
