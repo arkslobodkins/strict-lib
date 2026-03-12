@@ -1,0 +1,123 @@
+---
+Checks:          'clang-diagnostic-*,clang-diagnostic-*,clang-analyzer-*,readability-*,-readability-else-after-return'
+WarningsAsErrors: ''
+HeaderFileExtensions:
+  - ''
+  - h
+  - hh
+  - hpp
+  - hxx
+ImplementationFileExtensions:
+  - c
+  - cc
+  - cpp
+  - cxx
+HeaderFilterRegex: '.*'
+ExcludeHeaderFilterRegex: ''
+FormatStyle:     none
+User:            slobod
+CheckOptions:
+  readability-ambiguous-smartptr-reset-call.SmartPointers: '::std::shared_ptr;::std::unique_ptr;::boost::shared_ptr'
+  readability-avoid-const-params-in-decls.IgnoreMacros: 'true'
+  readability-avoid-return-with-void-value.IgnoreMacros: 'true'
+  readability-avoid-return-with-void-value.StrictMode: 'true'
+  readability-braces-around-statements.ShortStatementLines: '0'
+  readability-const-return-type.IgnoreMacros: 'true'
+  readability-container-data-pointer.IgnoredContainers: ''
+  readability-container-size-empty.ExcludedComparisonTypes: '::std::array'
+  readability-duplicate-include.IgnoredFilesList: ''
+  readability-enum-initial-value.AllowExplicitSequentialInitialValues: 'true'
+  readability-enum-initial-value.AllowExplicitZeroFirstInitialValue: 'true'
+  readability-function-cognitive-complexity.DescribeBasicIncrements: 'true'
+  readability-function-cognitive-complexity.IgnoreMacros: 'false'
+  readability-function-cognitive-complexity.Threshold: '25'
+  readability-function-size.BranchThreshold: none
+  readability-function-size.CountMemberInitAsStmt: 'true'
+  readability-function-size.LineThreshold: none
+  readability-function-size.NestingThreshold: none
+  readability-function-size.ParameterThreshold: none
+  readability-function-size.StatementThreshold: '800'
+  readability-function-size.VariableThreshold: none
+  readability-identifier-length.IgnoredBindingNames: '^[_]$'
+  readability-identifier-length.IgnoredExceptionVariableNames: '^[e]$'
+  readability-identifier-length.IgnoredLoopCounterNames: '^[ijk_]$'
+  readability-identifier-length.IgnoredParameterNames: '^[n]$'
+  readability-identifier-length.IgnoredVariableNames: ''
+  readability-identifier-length.LineCountThreshold: '0'
+  readability-identifier-length.MinimumBindingNameLength: '2'
+  readability-identifier-length.MinimumExceptionNameLength: '2'
+  readability-identifier-length.MinimumLoopCounterNameLength: '2'
+  readability-identifier-length.MinimumParameterNameLength: '3'
+  readability-identifier-length.MinimumVariableNameLength: '3'
+  readability-identifier-naming.AggressiveDependentMemberLookup: 'false'
+  readability-identifier-naming.CheckAnonFieldInParent: 'false'
+  readability-identifier-naming.GetConfigPerFile: 'true'
+  readability-identifier-naming.IgnoreFailedSplit: 'false'
+  readability-identifier-naming.IgnoreMainLikeFunctions: 'false'
+  readability-implicit-bool-conversion.AllowIntegerConditions: 'false'
+  readability-implicit-bool-conversion.AllowLogicalOperatorConversion: 'false'
+  readability-implicit-bool-conversion.AllowPointerConditions: 'false'
+  readability-implicit-bool-conversion.UseUpperCaseLiteralSuffix: 'false'
+  readability-inconsistent-declaration-parameter-name.IgnoreMacros: 'true'
+  readability-inconsistent-declaration-parameter-name.Strict: 'false'
+  readability-magic-numbers.IgnoreAllFloatingPointValues: 'false'
+  readability-magic-numbers.IgnoreBitFieldsWidths: 'true'
+  readability-magic-numbers.IgnorePowersOf2IntegerValues: 'false'
+  readability-magic-numbers.IgnoreTypeAliases: 'false'
+  readability-magic-numbers.IgnoreUserDefinedLiterals: 'false'
+  readability-magic-numbers.IgnoredFloatingPointValues: '1.0;100.0;'
+  readability-magic-numbers.IgnoredIntegerValues: '1;2;3;4;'
+  readability-named-parameter.InsertPlainNamesInForwardDecls: 'false'
+  readability-operators-representation.BinaryOperators: ''
+  readability-operators-representation.OverloadedOperators: ''
+  readability-qualified-auto.AddConstToQualified: 'true'
+  readability-qualified-auto.AllowedTypes: ''
+  readability-qualified-auto.IgnoreAliasing: 'true'
+  readability-redundant-casting.IgnoreMacros: 'true'
+  readability-redundant-casting.IgnoreTypeAliases: 'false'
+  readability-redundant-declaration.IgnoreMacros: 'true'
+  readability-redundant-member-init.IgnoreBaseInCopyConstructors: 'false'
+  readability-redundant-member-init.IgnoreMacros: 'false'
+  readability-redundant-parentheses.AllowedDecls: 'std::max;std::min'
+  readability-redundant-qualified-alias.OnlyNamespaceScope: 'false'
+  readability-redundant-smartptr-get.IgnoreMacros: 'true'
+  readability-redundant-string-init.StringNames: '::std::basic_string_view;::std::basic_string'
+  readability-simplify-boolean-expr.ChainedConditionalAssignment: 'false'
+  readability-simplify-boolean-expr.ChainedConditionalReturn: 'false'
+  readability-simplify-boolean-expr.IgnoreMacros: 'false'
+  readability-simplify-boolean-expr.SimplifyDeMorgan: 'true'
+  readability-simplify-boolean-expr.SimplifyDeMorganRelaxed: 'false'
+  readability-simplify-subscript-expr.Types: '::std::basic_string;::std::basic_string_view;::std::vector;::std::array;::std::span'
+  readability-static-accessed-through-instance.NameSpecifierNestingThreshold: '3'
+  readability-string-compare.StringLikeClasses: '::std::basic_string;::std::basic_string_view'
+  readability-suspicious-call-argument.Abbreviation: 'true'
+  readability-suspicious-call-argument.Abbreviations: 'str=string;lst=list;arr=array;num=number;ptr=pointer;i=index;ln=line;cpy=copy;src=source;dest=destination;val=value;idx=index;vec=vector;wdth=width;nr=number;elem=element;srv=server;pos=position;cl=client;stmt=statement;len=length;buf=buffer;dist=distancedst=distance;hght=height;var=variable;addr=address;col=column;attr=attribute;cnt=count;ref=reference'
+  readability-suspicious-call-argument.Dice: 'true'
+  readability-suspicious-call-argument.DiceDissimilarBelow: '60'
+  readability-suspicious-call-argument.DiceSimilarAbove: '70'
+  readability-suspicious-call-argument.Equality: 'true'
+  readability-suspicious-call-argument.JaroWinkler: 'true'
+  readability-suspicious-call-argument.JaroWinklerDissimilarBelow: '75'
+  readability-suspicious-call-argument.JaroWinklerSimilarAbove: '85'
+  readability-suspicious-call-argument.Levenshtein: 'true'
+  readability-suspicious-call-argument.LevenshteinDissimilarBelow: '50'
+  readability-suspicious-call-argument.LevenshteinSimilarAbove: '66'
+  readability-suspicious-call-argument.MinimumIdentifierNameLength: '3'
+  readability-suspicious-call-argument.Prefix: 'true'
+  readability-suspicious-call-argument.PrefixDissimilarBelow: '25'
+  readability-suspicious-call-argument.PrefixSimilarAbove: '30'
+  readability-suspicious-call-argument.Substring: 'true'
+  readability-suspicious-call-argument.SubstringDissimilarBelow: '40'
+  readability-suspicious-call-argument.SubstringSimilarAbove: '50'
+  readability-suspicious-call-argument.Suffix: 'true'
+  readability-suspicious-call-argument.SuffixDissimilarBelow: '25'
+  readability-suspicious-call-argument.SuffixSimilarAbove: '30'
+  readability-trailing-comma.MultiLineCommaPolicy: Append
+  readability-trailing-comma.SingleLineCommaPolicy: Remove
+  readability-uniqueptr-delete-release.PreferResetCall: 'false'
+  readability-uppercase-literal-suffix.IgnoreMacros: 'true'
+  readability-uppercase-literal-suffix.NewSuffixes: ''
+  readability-use-std-min-max.IncludeStyle: llvm
+SystemHeaders:   false
+...
+
