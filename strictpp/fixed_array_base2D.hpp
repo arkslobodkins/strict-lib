@@ -97,7 +97,7 @@ template <Builtin T, ImplicitIntStatic M, ImplicitIntStatic N, AlignmentFlag AF>
 STRICT_NODISCARD_CONSTEXPR
 FixedArrayBase2D<T, M, N, AF>::FixedArrayBase2D(use::List2D<value_type> list) {
    ASSERT_STRICT_DEBUG(valid_list2D(list));
-   auto [nrows, ncols] = list2D_row_col_sizes(list);
+   auto [nrows, ncols] = row_col_sizes_list2D(list);
    ASSERT_STRICT_DEBUG(this->rows() == nrows);
    ASSERT_STRICT_DEBUG(this->cols() == ncols);
    copy(list, *this);

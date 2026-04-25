@@ -30,23 +30,23 @@ template <OneDimBaseType Base1, OneDimBaseType Base2>
 STRICT_CONSTEXPR auto merge(const Base1& A1, const Base2& A2);
 
 
-template <OneDimBaseType Base, StrictBuiltin Strict_t, StrictBuiltin... StrictArgs>
-STRICT_CONSTEXPR auto merge(const Base& A, Strict_t x, StrictArgs... xargs);
+template <OneDimBaseType Base, StrictBuiltin StrictT, StrictBuiltin... StrictArgs>
+STRICT_CONSTEXPR auto merge(const Base& A, StrictT x, StrictArgs... xargs);
 
 
-template <OneDimBaseType Base, StrictBuiltin Strict_t>
-STRICT_CONSTEXPR auto merge(const Base& A, Strict_t x);
+template <OneDimBaseType Base, StrictBuiltin StrictT>
+STRICT_CONSTEXPR auto merge(const Base& A, StrictT x);
 
 
 // Cannot separate values from OneDimBaseType, so one must use StrictAndBase&...
-template <StrictBuiltin Strict_t1, StrictBuiltin Strict_t2, typename... StrictAndBase>
+template <StrictBuiltin StrictT1, StrictBuiltin StrictT2, typename... StrictAndBase>
    requires OneDimBaseType<detail::LastPack_t<StrictAndBase...>>
          && detail::AllStrictExceptLast<StrictAndBase...>
-STRICT_CONSTEXPR auto merge(Strict_t1 x1, Strict_t2 x2, const StrictAndBase&... xargs_and_A);
+STRICT_CONSTEXPR auto merge(StrictT1 x1, StrictT2 x2, const StrictAndBase&... xargs_and_A);
 
 
-template <StrictBuiltin Strict_t, OneDimBaseType Base>
-STRICT_CONSTEXPR auto merge(Strict_t x, const Base& A);
+template <StrictBuiltin StrictT, OneDimBaseType Base>
+STRICT_CONSTEXPR auto merge(StrictT x, const Base& A);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -303,30 +303,30 @@ STRICT_CONSTEXPR auto merge(const Base1& A1, const Base2& A2) {
 }
 
 
-template <OneDimBaseType Base, StrictBuiltin Strict_t, StrictBuiltin... StrictArgs>
-STRICT_CONSTEXPR auto merge(const Base& A, Strict_t x, StrictArgs... xargs) {
+template <OneDimBaseType Base, StrictBuiltin StrictT, StrictBuiltin... StrictArgs>
+STRICT_CONSTEXPR auto merge(const Base& A, StrictT x, StrictArgs... xargs) {
    return merge(merge(A, x), xargs...);
 }
 
 
-template <OneDimBaseType Base, StrictBuiltin Strict_t>
-STRICT_CONSTEXPR auto merge(const Base& A, Strict_t x) {
+template <OneDimBaseType Base, StrictBuiltin StrictT>
+STRICT_CONSTEXPR auto merge(const Base& A, StrictT x) {
    auto AE = generate(A, [](auto z) { return z; });
    auto op = [AE, x](auto i) { return i == AE.size() ? x : AE.un(i); };
    return generate(irange(AE.size() + 1_sl), op);
 }
 
 
-template <StrictBuiltin Strict_t1, StrictBuiltin Strict_t2, typename... StrictAndBase>
+template <StrictBuiltin StrictT1, StrictBuiltin StrictT2, typename... StrictAndBase>
    requires OneDimBaseType<detail::LastPack_t<StrictAndBase...>>
          && detail::AllStrictExceptLast<StrictAndBase...>
-STRICT_CONSTEXPR auto merge(Strict_t1 x1, Strict_t2 x2, const StrictAndBase&... xargs_and_A) {
+STRICT_CONSTEXPR auto merge(StrictT1 x1, StrictT2 x2, const StrictAndBase&... xargs_and_A) {
    return merge(x1, merge(x2, xargs_and_A...));
 }
 
 
-template <StrictBuiltin Strict_t, OneDimBaseType Base>
-STRICT_CONSTEXPR auto merge(Strict_t x, const Base& A) {
+template <StrictBuiltin StrictT, OneDimBaseType Base>
+STRICT_CONSTEXPR auto merge(StrictT x, const Base& A) {
    auto AE = generate(A, [](auto z) { return z; });
    auto op = [AE, x](auto i) { return i == 0_sl ? x : AE.un(i - 1_sl); };
    return generate(irange(AE.size() + 1_sl), op);

@@ -181,7 +181,7 @@ STRICT_NODISCARD_CONSTEXPR ArrayBase2D<T, AF>::ArrayBase2D(Rows m, Cols n, Value
 
 template <Builtin T, AlignmentFlag AF>
 STRICT_NODISCARD_CONSTEXPR ArrayBase2D<T, AF>::ArrayBase2D(use::List2D<value_type> list)
-   : ArrayBase2D(list2D_row_col_sizes(list).first, list2D_row_col_sizes(list).second) {
+   : ArrayBase2D(row_col_sizes_list2D(list).first, row_col_sizes_list2D(list).second) {
    ASSERT_STRICT_DEBUG(valid_list2D(list));
    copy(list, *this);
 }

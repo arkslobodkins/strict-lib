@@ -164,7 +164,7 @@ public:
    constexpr Strict<T> random() const {
       auto rand_num = this->generate();
       if constexpr(Floating<T>) {
-         return low_ + (strict_cast<T>(rand_num) / strict_cast<T>(modulus_)) * (high_ - low_);
+         return low_ + (strict_cast<T>(rand_num) / strict_cast<T>(modulus)) * (high_ - low_);
       } else if constexpr(Integer<T>) {
          if(low_ == Zero<T> && high_ == One<T>) {
             return rand_num > this->generate() ? Zero<T> : One<T>;
@@ -177,15 +177,15 @@ public:
    }
 
 private:
-   static constexpr Strict<unsigned> modulus_{10'000'000U};
-   static constexpr Strict<unsigned> multiplier_{8U};
-   static constexpr Strict<unsigned> increment_{13U};
+   static constexpr Strict<unsigned> modulus{10'000'000U};
+   static constexpr Strict<unsigned> multiplier{8U};
+   static constexpr Strict<unsigned> increment{13U};
    mutable Strict<unsigned> previous_;
    Strict<T> low_;
    Strict<T> high_;
 
    constexpr Strict<unsigned> generate() const {
-      previous_ = ((multiplier_ * previous_ + increment_) % modulus_);
+      previous_ = ((multiplier * previous_ + increment) % modulus);
       return previous_;
    }
 };

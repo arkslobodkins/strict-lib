@@ -15,7 +15,7 @@
 // Removed std::format since Intel and clang compilers do not support it(at this time).
 #define STRICT_TIME(a)                                                       \
    do {                                                                      \
-      spp::timer t;                                                          \
+      spp::Timer t;                                                          \
       a;                                                                     \
       std::ostringstream stream;                                             \
       stream << (#a) << " took: " << std::setprecision(4) << std::scientific \
@@ -27,23 +27,23 @@
 namespace spp {
 
 
-struct timer {
-   explicit timer() : start{std::chrono::high_resolution_clock::now()} {
+struct Timer {
+   explicit Timer() : start_{std::chrono::high_resolution_clock::now()} {
    }
 
    void restart() {
-      start = std::chrono::high_resolution_clock::now();
+      start_ = std::chrono::high_resolution_clock::now();
    }
 
    Strict64 wall_time() const {
       return Strict64{static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                             std::chrono::high_resolution_clock::now() - start)
+                                             std::chrono::high_resolution_clock::now() - start_)
                                              .count())
                       / 1.e9};
    }
 
 private:
-   std::chrono::system_clock::time_point start;
+   std::chrono::system_clock::time_point start_;
 };
 
 

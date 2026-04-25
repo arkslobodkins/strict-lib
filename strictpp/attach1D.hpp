@@ -25,12 +25,12 @@ class ConstSliceArrayBase1D;
 
 
 template <Builtin T>
-struct STRICT_NODISCARD strict_attach_ptr1D : private CopyBase1D {
+struct STRICT_NODISCARD StrictAttachPtr1D : private CopyBase1D {
 public:
    using value_type = Strict<T>;
    using builtin_type = T;
 
-   STRICT_NODISCARD strict_attach_ptr1D(T* data, ImplicitInt n)
+   STRICT_NODISCARD StrictAttachPtr1D(T* data, ImplicitInt n)
       : data_{reinterpret_cast<Strict<T>*>(data)},
         n_{n.get()} {
    }
@@ -54,12 +54,12 @@ private:
 
 
 template <Builtin T>
-struct STRICT_NODISCARD const_strict_attach_ptr1D : private CopyBase1D {
+struct STRICT_NODISCARD ConstStrictAttachPtr1D : private CopyBase1D {
 public:
    using value_type = Strict<T>;
    using builtin_type = T;
 
-   STRICT_NODISCARD const_strict_attach_ptr1D(const T* data, ImplicitInt n)
+   STRICT_NODISCARD ConstStrictAttachPtr1D(const T* data, ImplicitInt n)
       : data_{reinterpret_cast<const Strict<T>*>(data)},
         n_{n.get()} {
    }
@@ -85,7 +85,7 @@ private:
 template <detail::PointerConvertibleLvalue T>
 auto attach1D(T&& data, ImplicitInt n) {
    using namespace detail;
-   auto proxy = strict_attach_ptr1D(data, n);
+   auto proxy = StrictAttachPtr1D(data, n);
    return StrictArrayMutable1D<SliceArrayBase1D<decltype(proxy), seqN>>{
       proxy, seqN{0, n}
    };
@@ -95,7 +95,7 @@ auto attach1D(T&& data, ImplicitInt n) {
 template <detail::PointerConvertibleLvalueConst T>
 auto attach1D(T&& data, ImplicitInt n) {
    using namespace detail;
-   auto proxy = const_strict_attach_ptr1D(data, n);
+   auto proxy = ConstStrictAttachPtr1D(data, n);
    return StrictArrayBase1D<ConstSliceArrayBase1D<decltype(proxy), seqN>>{
       proxy, seqN{0, n}
    };

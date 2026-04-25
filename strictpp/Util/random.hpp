@@ -148,46 +148,46 @@ struct Generator;
 
 template <Integer T>
 struct Generator<T> {
-   Generator(Strict<T> l, Strict<T> h) : gen{std::random_device{}()}, dst{l.val(), h.val()} {
+   Generator(Strict<T> l, Strict<T> h) : gen_{std::random_device{}()}, dst_{l.val(), h.val()} {
    }
 
    auto random() const {
-      return Strict{dst(gen)};
+      return Strict{dst_(gen_)};
    }
 
 private:
-   mutable std::mt19937 gen;
-   mutable std::uniform_int_distribution<T> dst;
+   mutable std::mt19937 gen_;
+   mutable std::uniform_int_distribution<T> dst_;
 };
 
 
 template <Boolean T>
 struct Generator<T> {
-   Generator(Strict<T> l, Strict<T> h) : gen{std::random_device{}()}, dst{l.val(), h.val()} {
+   Generator(Strict<T> l, Strict<T> h) : gen_{std::random_device{}()}, dst_{l.val(), h.val()} {
    }
 
    auto random() const {
-      return dst(gen) % 2 == 0 ? false_sb : true_sb;
+      return dst_(gen_) % 2 == 0 ? false_sb : true_sb;
    }
 
 private:
-   mutable std::mt19937 gen;
-   mutable std::uniform_int_distribution<int> dst;
+   mutable std::mt19937 gen_;
+   mutable std::uniform_int_distribution<int> dst_;
 };
 
 
 template <StandardFloating T>
 struct Generator<T> {
-   Generator(Strict<T> l, Strict<T> h) : gen{std::random_device{}()}, dst{l.val(), h.val()} {
+   Generator(Strict<T> l, Strict<T> h) : gen_{std::random_device{}()}, dst_{l.val(), h.val()} {
    }
 
    auto random() const {
-      return Strict{dst(gen)};
+      return Strict{dst_(gen_)};
    }
 
 private:
-   mutable std::mt19937 gen;
-   mutable std::uniform_real_distribution<T> dst;
+   mutable std::mt19937 gen_;
+   mutable std::uniform_real_distribution<T> dst_;
 };
 
 
@@ -196,17 +196,17 @@ private:
 template <Quadruple T>
 struct Generator<T> {
    Generator(Strict<T> l, Strict<T> h)
-      : gen{std::random_device{}()},
-        dst{l.sd().val(), h.sd().val()} {
+      : gen_{std::random_device{}()},
+        dst_{l.sd().val(), h.sd().val()} {
    }
 
    auto random() const {
-      return Strict{dst(gen)}.sq();
+      return Strict{dst_(gen_)}.sq();
    }
 
 private:
-   mutable std::mt19937 gen;
-   mutable std::uniform_real_distribution<double> dst;
+   mutable std::mt19937 gen_;
+   mutable std::uniform_real_distribution<double> dst_;
 };
 #endif
 

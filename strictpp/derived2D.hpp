@@ -39,7 +39,7 @@ using FixedArray2D = StrictArray2D<detail::FixedArrayBase2D<T, M, N, AF>>;
 
 template <TwoDimBaseType Base>
 class STRICT_NODISCARD StrictArrayBase2D : public Base,
-                                           public detail::Lval_CRTP<StrictArrayBase2D<Base>> {
+                                           public detail::LvalCRTP<StrictArrayBase2D<Base>> {
 public:
    using size_type = index_t;
    using typename Base::builtin_type;
@@ -50,7 +50,7 @@ public:
    using Base::rows;
 
    using Base::Base;
-   using detail::Lval_CRTP<StrictArrayBase2D<Base>>::lval;
+   using detail::LvalCRTP<StrictArrayBase2D<Base>>::lval;
 
    STRICT_NODISCARD_CONSTEXPR StrictArrayBase2D(const StrictArrayBase2D&) = default;
    STRICT_NODISCARD_CONSTEXPR StrictArrayBase2D(StrictArrayBase2D&&) = default;
@@ -648,8 +648,8 @@ private:
 template <detail::TwoDimNonConstBaseType Base>
 class STRICT_NODISCARD StrictArrayMutable2D
    : public StrictArrayBase2D<Base>,
-     public detail::Lval_CRTP<StrictArrayMutable2D<Base>>,
-     public detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>> {
+     public detail::LvalCRTP<StrictArrayMutable2D<Base>>,
+     public detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>> {
    using CommonBase2D = StrictArrayBase2D<Base>;
 
 public:
@@ -658,7 +658,7 @@ public:
    using typename CommonBase2D::value_type;
 
    using StrictArrayBase2D<Base>::StrictArrayBase2D;
-   using detail::Lval_CRTP<StrictArrayMutable2D<Base>>::lval;
+   using detail::LvalCRTP<StrictArrayMutable2D<Base>>::lval;
 
    STRICT_NODISCARD_CONSTEXPR StrictArrayMutable2D(const StrictArrayMutable2D&) = default;
    STRICT_NODISCARD_CONSTEXPR StrictArrayMutable2D(StrictArrayMutable2D&&) = default;
@@ -684,24 +684,24 @@ public:
       return static_cast<StrictArrayMutable2D&>(Base::operator=(A));
    }
 
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator+=;
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator-=;
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator*=;
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator/=;
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator%=;
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator<<=;
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator>>=;
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator&=;
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator|=;
-   using detail::Operands_CRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator^=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator+=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator-=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator*=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator/=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator%=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator<<=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator>>=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator&=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator|=;
+   using detail::OperandsCRTP<StrictArrayMutable2D<Base>, ValueTypeOf<Base>>::operator^=;
 };
 
 
 template <typename Base>
 class STRICT_NODISCARD StrictArray2D final
    : public StrictArrayMutable2D<Base>,
-     public detail::Lval_CRTP<StrictArray2D<Base>>,
-     public detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>> {
+     public detail::LvalCRTP<StrictArray2D<Base>>,
+     public detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>> {
    using CommonBase2D = StrictArrayBase2D<Base>;
    using MutableBase2D = StrictArrayMutable2D<Base>;
 
@@ -714,7 +714,7 @@ public:
    using typename MutableBase2D::value_type;
 
    using StrictArrayMutable2D<Base>::StrictArrayMutable2D;
-   using detail::Lval_CRTP<StrictArray2D<Base>>::lval;
+   using detail::LvalCRTP<StrictArray2D<Base>>::lval;
 
    STRICT_NODISCARD_CONSTEXPR StrictArray2D() = default;
    STRICT_NODISCARD_CONSTEXPR StrictArray2D(const StrictArray2D&) = default;
@@ -742,16 +742,16 @@ public:
       return static_cast<StrictArray2D&>(Base::operator=(A));
    }
 
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator+=;
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator-=;
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator*=;
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator/=;
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator%=;
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator<<=;
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator>>=;
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator&=;
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator|=;
-   using detail::Operands_CRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator^=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator+=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator-=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator*=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator/=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator%=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator<<=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator>>=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator&=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator|=;
+   using detail::OperandsCRTP<StrictArray2D<Base>, ValueTypeOf<Base>>::operator^=;
 
    ////////////////////////////////////////////////////////////////////////////////////////////////////
    STRICT_CONSTEXPR StrictLong bytes() const {
@@ -771,7 +771,7 @@ public:
    }
 
    STRICT_CONSTEXPR static StrictBool is_dynamic() {
-      return StrictBool{detail::has_resize<Base>::value};
+      return StrictBool{detail::HasResize<Base>::value};
    }
 
    STRICT_CONSTEXPR static StrictBool is_fixed() {

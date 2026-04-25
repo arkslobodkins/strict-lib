@@ -13,7 +13,7 @@ namespace spp::detail {
 
 
 template <typename Base>
-class Lval_CRTP {
+class LvalCRTP {
 public:
    STRICT_CONSTEXPR Base& lval() & = delete;
 
@@ -47,7 +47,7 @@ template <typename T1, typename T2> concept SameDimensionIntegerBaseType =
 
 
 template <typename Base, typename T>
-class Operands_CRTP {
+class OperandsCRTP {
 public:
    using value_type = T;
    using builtin_type = value_type::value_type;

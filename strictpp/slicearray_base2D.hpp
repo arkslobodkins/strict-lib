@@ -77,7 +77,7 @@ template <TwoDimNonConstBaseType Base, typename Sl1, typename Sl2>
 STRICT_CONSTEXPR SliceArrayBase2D<Base, Sl1, Sl2>&
 SliceArrayBase2D<Base, Sl1, Sl2>::operator=(use::List2D<value_type> list) {
    ASSERT_STRICT_DEBUG(valid_list2D(list));
-   auto [nrows, ncols] = list2D_row_col_sizes(list);
+   auto [nrows, ncols] = row_col_sizes_list2D(list);
    ASSERT_STRICT_DEBUG(this->rows() == nrows);
    ASSERT_STRICT_DEBUG(this->cols() == ncols);
    copy(list, *this);
